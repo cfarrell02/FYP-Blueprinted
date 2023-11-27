@@ -44,6 +44,4 @@ git clone https://github.com/your-username/project-blueprinted.git
   - [Subnautica](https://store.steampowered.com/app/264710/Subnautica/)
   - [RimWorld](https://store.steampowered.com/app/294100/RimWorld/)
 
-## License
 
-This project is licensed under the [License Type]. See the [LICENSE](LICENSE) file for details.
