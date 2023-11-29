@@ -1,31 +1,90 @@
 using UnityEngine;
 
-public class PerlinNoiseTerrain : MonoBehaviour
+public class BlockyTerrain : MonoBehaviour
 {
-    public int gridSizeX = 10; // Number of cubes along the X-axis
-    public int gridSizeZ = 10; // Number of cubes along the Z-axis
-    public float scale = 1f; // Noise scale affecting the terrain's height
+    public int gridSizeX = 10;
+    public int gridSizeZ = 10;
+    public float scale = 1f;
+    public float cubeHeight = 1f; // Set a fixed cube height
+    public GameObject cubePrefab;
+    public Transform playerTransform; // Reference to the player's transform
 
-    public GameObject cubePrefab; // Prefab of the cube to be instantiated
+    int previousPlayerPosX;
+    int previousPlayerPosZ;
+    int loadDistance = 30; // Distance around the player to load new terrain
 
     void Start()
     {
-        GenerateTerrain();
+        previousPlayerPosX = (int)playerTransform.position.x;
+        previousPlayerPosZ = (int)playerTransform.position.z;
+        GenerateInitialTerrain();
+    }
+
+    void Update()
+    {
+        int currentPlayerPosX = (int)playerTransform.position.x;
+        int currentPlayerPosZ = (int)playerTransform.position.z;
+
+        // Check if the player has moved to a new grid area
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance)
+        {
+            previousPlayerPosX = currentPlayerPosX;
+            previousPlayerPosZ = currentPlayerPosZ;
+            GenerateTerrain();
+        }
+    }
+
+    void GenerateInitialTerrain()
+    {
+        for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
+        {
+            for (int z = previousPlayerPosZ - loadDistance; z < previousPlayerPosZ + loadDistance; z++)
+            {
+                GenerateCubeAtPosition(x, z);
+            }
+        }
     }
 
     void GenerateTerrain()
     {
-        for (int x = 0; x < gridSizeX; x++)
-        {
-            for (int z = 0; z < gridSizeZ; z++)
-            {
-                float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f; // Adjust height with multiplier
+        int currentPlayerPosX = (int)playerTransform.position.x;
+        int currentPlayerPosZ = (int)playerTransform.position.z;
 
-                Vector3 cubePos = new Vector3(x, y, z); // Set cube position based on noise
-                GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity); // Instantiate cube
-                cube.transform.localScale = new Vector3(1f, 0.1f + y, 1f); // Adjust scale based on noise
-                cube.transform.parent = transform; // Set cubes as children of the terrain object
+        for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
+        {
+            if (Mathf.Abs(x - currentPlayerPosX) >= loadDistance)
+            {
+                // Do not regenerate cubes within the visible area
+                continue;
+            }
+
+            for (int z = previousPlayerPosZ - loadDistance; z < previousPlayerPosZ + loadDistance; z++)
+            {
+                if (Mathf.Abs(z - currentPlayerPosZ) >= loadDistance)
+                {
+                    // Do not regenerate cubes within the visible area
+                    continue;
+                }
+
+                GenerateCubeAtPosition(x, z);
             }
         }
+
+        previousPlayerPosX = currentPlayerPosX;
+        previousPlayerPosZ = currentPlayerPosZ;
+    }
+
+    void GenerateCubeAtPosition(int x, int z)
+    {
+        float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
+        y = Mathf.Round(y / cubeHeight) * cubeHeight;
+
+        Vector3 cubePos = new Vector3(x, y / 2f, z); // Adjust cube position based on height
+        GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
+
+        // Set a fixed cube size for width, height, and depth
+        cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+        cube.transform.parent = transform;
     }
 }
