@@ -25,9 +25,14 @@ public class BlockyTerrain : MonoBehaviour
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
 
+        print("Player position: " + currentPlayerPosX + ", " + currentPlayerPosZ);
+        print("Previous player position: " + previousPlayerPosX + ", " + previousPlayerPosZ);
+        print("Distance: " + Mathf.Abs(currentPlayerPosX - previousPlayerPosX) + ", " + Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ));
+        print("Load distance: " + loadDistance);
+
         // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance)
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance/2 ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance/2)
         {
             previousPlayerPosX = currentPlayerPosX;
             previousPlayerPosZ = currentPlayerPosZ;
