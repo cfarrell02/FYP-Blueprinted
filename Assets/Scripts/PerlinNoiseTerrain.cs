@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BlockyTerrain : MonoBehaviour
@@ -13,6 +14,8 @@ public class BlockyTerrain : MonoBehaviour
     int previousPlayerPosZ;
     int loadDistance = 30; // Distance around the player to load new terrain
 
+    Dictionary<Vector2, float> coordsToHeight = new Dictionary<Vector2, float>();
+
     void Start()
     {
         previousPlayerPosX = (int)playerTransform.position.x;
@@ -25,11 +28,7 @@ public class BlockyTerrain : MonoBehaviour
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
 
-        print("Player position: " + currentPlayerPosX + ", " + currentPlayerPosZ);
-        print("Previous player position: " + previousPlayerPosX + ", " + previousPlayerPosZ);
-        print("Distance: " + Mathf.Abs(currentPlayerPosX - previousPlayerPosX) + ", " + Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ));
-        print("Load distance: " + loadDistance);
-
+        print(coordsToHeight.Keys.Count);
         // Check if the player has moved to a new grid area
         if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance/2 ||
             Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance/2)
@@ -38,6 +37,7 @@ public class BlockyTerrain : MonoBehaviour
             previousPlayerPosZ = currentPlayerPosZ;
             GenerateTerrain();
         }
+        UnloadTerrain();
     }
 
     void GenerateInitialTerrain()
@@ -82,14 +82,43 @@ public class BlockyTerrain : MonoBehaviour
 
     void GenerateCubeAtPosition(int x, int z)
     {
-        float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
-        y = Mathf.Round(y / cubeHeight) * cubeHeight;
 
-        Vector3 cubePos = new Vector3(x, y / 2f, z); // Adjust cube position based on height
-        GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
+        if (!coordsToHeight.ContainsKey(new Vector2(x, z)))
+        {
+            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
+            y = Mathf.Round(y / cubeHeight) * cubeHeight;
+            Vector3 cubePos = new Vector3(x, y / 2f, z); // Adjust cube position based on height
+            GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
 
-        // Set a fixed cube size for width, height, and depth
-        cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-        cube.transform.parent = transform;
+            // Set a fixed cube size for width, height, and depth
+            cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+            cube.transform.parent = transform;
+            coordsToHeight.Add(new Vector2(x, z), y);
+
+        }
+        else
+        {
+            // We will instantiate a new cube here with the same coordinates
+            // as the one we removed from the scene
+            Instantiate(cubePrefab, new Vector3(x, coordsToHeight[new Vector2(x, z)] / 2f, z), Quaternion.identity);
+        }
     }
+
+
+void UnloadTerrain()
+{
+    GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
+
+    foreach (GameObject cube in cubes)
+    {
+        Vector3 pos = cube.transform.position;
+
+        // Remove cubes outside the visible area from the scene
+        if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
+            Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
+        {
+            Destroy(cube); // Remove cube from the scene
+        }
+    }
+}
 }
