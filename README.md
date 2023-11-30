@@ -5,17 +5,17 @@ Read more about the game [here](https://wit-my.sharepoint.com/:w:/g/personal/200
 
 ## Branches
 
-- **Prototype_1:** Includes initial development with low-level implementations for procedural generation, AI, and resource management.
-- **Prototype_2:** Expands features with a mix of low to medium level implementations for key game aspects.
-- **Prototype_3:** Focuses on advanced gameplay and immersion, integrating medium to advanced implementations for procedural generation, AI, and resource management.
-- **Prototype_4:** Represents the refined stage with advanced implementations, aiming for a polished game experience.
+- **[Prototype-1](https://github.com/cfarrell02/FYP-Blueprinted/tree/prototype-1)** Includes initial development with low-level implementations for procedural generation, AI, and resource management.
+- **Prototype-2:** Expands features with a mix of low to medium level implementations for key game aspects.
+- **Prototype-3:** Focuses on advanced gameplay and immersion, integrating medium to advanced implementations for procedural generation, AI, and resource management.
+- **Prototype-4:** Represents the refined stage with advanced implementations, aiming for a polished game experience.
 
 ## Installation
 
 To clone this repository, use the following command:
 
 ```
-git clone https://github.com/your-username/project-blueprinted.git
+git clone https://github.com/cfarrell02/project-blueprinted.git
 ```
 
 
