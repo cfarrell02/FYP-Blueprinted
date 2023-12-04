@@ -12,7 +12,7 @@ public class BlockyTerrain : MonoBehaviour
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
-    int loadDistance = 30; // Distance around the player to load new terrain
+    int loadDistance = 40; // Distance around the player to load new terrain
 
     Dictionary<Vector2, float> coordsToHeight = new Dictionary<Vector2, float>();
 
@@ -86,8 +86,8 @@ public class BlockyTerrain : MonoBehaviour
         if (!coordsToHeight.ContainsKey(new Vector2(x, z)))
         {
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
-            y = Mathf.Round(y / cubeHeight) * cubeHeight;
-            Vector3 cubePos = new Vector3(x, y / 2f, z); // Adjust cube position based on height
+            y = Mathf.Floor(y / cubeHeight) * cubeHeight;
+            Vector3 cubePos = new Vector3(x, y , z); // Adjust cube position based on height
             GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
 
             // Set a fixed cube size for width, height, and depth
@@ -100,7 +100,7 @@ public class BlockyTerrain : MonoBehaviour
         {
             // We will instantiate a new cube here with the same coordinates
             // as the one we removed from the scene
-            Instantiate(cubePrefab, new Vector3(x, coordsToHeight[new Vector2(x, z)] / 2f, z), Quaternion.identity);
+            Instantiate(cubePrefab, new Vector3(x, coordsToHeight[new Vector2(x, z)], z), Quaternion.identity);
         }
     }
 
