@@ -9,6 +9,7 @@ public class PlayerInventory : MonoBehaviour
 
     private int inventorySize = 0;
     GameObject[] inventory;
+    private GameObject _lookedAtObject;
 
     // Start is called before the first frame update
     void Start()
@@ -20,8 +21,44 @@ public class PlayerInventory : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        print("Inventory: ");
         print(GetInventoryString());
-        
+
+        // Raycast to see what block is in front of the player
+        RaycastHit hit;
+        Transform cameraTransform = Camera.main.transform;
+        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+
+        if (Physics.Raycast(ray, out hit, 5f))
+        {
+            if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
+            {
+                _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
+            }
+
+            _lookedAtObject = hit.collider.gameObject;
+            _lookedAtObject.GetComponent<Renderer>().material.color = Color.red;
+        }
+        else
+        {
+            if (_lookedAtObject != null)
+            {
+                _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
+                _lookedAtObject = null;
+            }
+        }
+
+        // on click, add the block to the inventory
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (_lookedAtObject != null)
+            {
+                if (AddItem(_lookedAtObject))
+                {
+                    Destroy(_lookedAtObject);
+                }
+            }
+        }
     }
 
     string GetInventoryString()
