@@ -14,7 +14,7 @@ public class BlockyTerrain : MonoBehaviour
     int previousPlayerPosZ;
     int loadDistance = 40; // Distance around the player to load new terrain
 
-    Dictionary<Vector2, float> coordsToHeight = new Dictionary<Vector2, float>();
+    Dictionary<Vector2, Block> coordsToHeight = new Dictionary<Vector2, Block>();
 
     void Start()
     {
@@ -28,7 +28,7 @@ public class BlockyTerrain : MonoBehaviour
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
 
-        print(coordsToHeight.Keys.Count);
+        //print(coordsToHeight.Keys.Count);
         // Check if the player has moved to a new grid area
         if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance/2 ||
             Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance/2)
@@ -82,30 +82,37 @@ public class BlockyTerrain : MonoBehaviour
 
     void GenerateCubeAtPosition(int x, int z)
     {
+        Vector2 currentPos = new Vector2(x, z);
 
-        if (!coordsToHeight.ContainsKey(new Vector2(x, z)))
+        if (!coordsToHeight.ContainsKey(currentPos))
         {
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
-            Vector3 cubePos = new Vector3(x, y , z); // Adjust cube position based on height
-            GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
+            Vector3 cubePos = new Vector3(x, y, z);
 
-            // Set a fixed cube size for width, height, and depth
+            GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
             cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
             cube.transform.parent = transform;
-            coordsToHeight.Add(new Vector2(x, z), y);
 
+            var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one);
+            coordsToHeight.Add(currentPos, blockItem);
         }
         else
         {
-            // We will instantiate a new cube here with the same coordinates
-            // as the one we removed from the scene
-            Instantiate(cubePrefab, new Vector3(x, coordsToHeight[new Vector2(x, z)], z), Quaternion.identity);
+            var blockItem = coordsToHeight[currentPos];
+
+
+                GameObject cube = Instantiate(cubePrefab, blockItem.Location, Quaternion.identity);
+                cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                cube.transform.parent = transform;
+            
+ 
         }
     }
 
 
-void UnloadTerrain()
+
+    void UnloadTerrain()
 {
     GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
 
@@ -121,4 +128,20 @@ void UnloadTerrain()
         }
     }
 }
+    public Dictionary<Vector2, Block> getHeightMap()
+    {
+        return coordsToHeight;
+    }
+
+    public bool RemoveBlock(Vector3 position)
+    {
+        Vector2 pos = new Vector2(position.x, position.z);
+        if (coordsToHeight.ContainsKey(pos))
+        {
+            coordsToHeight[pos] = new Block(); // Set the block to an empty air block
+            return true;
+        }
+        return false;
+    }
+
 }

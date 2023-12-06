@@ -8,21 +8,28 @@ public class PlayerInventory : MonoBehaviour
     public int inventoryCapacity = 10;
 
     private int inventorySize = 0;
-    GameObject[] inventory;
+    Block[] inventory;
     private GameObject _lookedAtObject;
+    private BlockyTerrain blockyTerrain;
+
+    private void Awake()
+    {
+        inventory = new Block[inventoryCapacity];
+    }
+    
 
     // Start is called before the first frame update
     void Start()
     {
-        inventory = new GameObject[inventoryCapacity];
+       // inventory = new GameObject[inventoryCapacity];
+       blockyTerrain = FindObjectOfType<BlockyTerrain>(); // Will only be one instance of BlockyTerrain, hopefully
         
     }
 
     // Update is called once per frame
     void Update()
     {
-        print("Inventory: ");
-        print(GetInventoryString());
+
 
         // Raycast to see what block is in front of the player
         RaycastHit hit;
@@ -35,6 +42,9 @@ public class PlayerInventory : MonoBehaviour
             {
                 _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
             }
+            if (hit.collider.gameObject.GetComponent<Renderer>() == null)
+                return;
+
 
             _lookedAtObject = hit.collider.gameObject;
             _lookedAtObject.GetComponent<Renderer>().material.color = Color.red;
@@ -53,8 +63,13 @@ public class PlayerInventory : MonoBehaviour
         {
             if (_lookedAtObject != null)
             {
-                if (AddItem(_lookedAtObject))
+                var block = blockyTerrain.getHeightMap()[new Vector2(_lookedAtObject.transform.position.x, _lookedAtObject.transform.position.z)];
+
+
+                if (AddItem(block))
                 {
+                    bool success = blockyTerrain.RemoveBlock(block.Location);
+                    print("Removed block: " + success);
                     Destroy(_lookedAtObject);
                 }
             }
@@ -63,54 +78,64 @@ public class PlayerInventory : MonoBehaviour
 
     string GetInventoryString()
     {
-        string str = "";
-        foreach (GameObject item in inventory)
+        string inventoryString = "Inventory: ";
+        for (int i = 0; i < inventory.Length; i++)
         {
-            if(item != null)
-            str += item.name + "\n";
+            if (inventory[i].Name != null )
+            {
+                inventoryString += inventory[i].Name + " ";
+            }
         }
-        return str;
+        return inventoryString;
+
     }
 
-    bool AddItem(GameObject item)
+    bool AddItem(Block item)
     {
         if (inventorySize >= inventoryCapacity)
             return false;
 
-        for(int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
+        for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
         {
-            if (inventory[freeIndex] == null)
+            if (inventory[freeIndex].Name == null)
             {
-                inventory[freeIndex] = item;
+                inventory[freeIndex] = item; // Assign the reference to the inventory
                 inventorySize++;
                 return true;
             }
         }
         return false;
-
     }
 
     bool RemoveItem(int index)
     {
-        if (inventory[index] == null)
+        if (inventory[index].Name == null)
             return false;
 
-        inventory[index] = null;
+        inventory[index] = new Block();
         inventorySize--;
         return true;
     }
 
-    bool RemoveItem(GameObject item)
+    public Block[] getInventory()
+    {
+        return inventory;
+    }
+
+    bool RemoveItem(Block item)
     {
         for(int itemIndex = 0; itemIndex< inventoryCapacity; ++itemIndex)
         {
-            if (inventory[itemIndex] == item)
+            if (inventory[itemIndex].Equals(item))
             {
-                inventory[itemIndex] = null;
+                inventory[itemIndex] = new Block(); // Assign the reference to the inventory
                 inventorySize--;
                 return true;
             }
         }
         return false;
     }
+
+
 }
+
