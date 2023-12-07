@@ -93,11 +93,15 @@ public class BlockyTerrain : MonoBehaviour
             {
                 Vector3 cubePos = new Vector3(x, i, z);
 
-                GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
-                cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                cube.transform.parent = transform;
+                if (i == y)
+                {
+                    GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
+                    cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                    cube.transform.parent = transform;
+                }
 
                 var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one);
+                blockItem.isLoaded = i == y;
                 verticalBlocks.Add(blockItem);
             }
 
@@ -111,9 +115,14 @@ public class BlockyTerrain : MonoBehaviour
             for (int i = 0; i < blockItem.Count; ++i)
             {
                 Block block = blockItem[i];
-                GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
-                cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                cube.transform.parent = transform;
+                // TODO - Find out why this is spawning blocks over existing blocks
+                if (!block.isLoaded)
+                {
+                    GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
+                    cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                    cube.transform.parent = transform;
+                    block.isLoaded = true;
+                }
             }
 
 
@@ -136,6 +145,19 @@ public class BlockyTerrain : MonoBehaviour
             if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
                 Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
             {
+                Block block = FindBlock(pos);
+                block.isLoaded = false;
+                //place block in the dictionary
+                Vector2 pos2D = new Vector2(pos.x, pos.z);
+                var blockList = coordsToHeight[pos2D];
+                for (int i = 0;i < blockList.Count; ++i)
+                {
+                    if (blockList[i].Location == pos)
+                    {
+                        blockList[i] = block;
+                        break;
+                    }
+                }
                 Destroy(cube); // Remove cube from the scene
             }
         }
@@ -172,6 +194,7 @@ public class BlockyTerrain : MonoBehaviour
             var blockList = coordsToHeight[pos];
             if (blockList.Count > 0)
             {
+                block.isLoaded = true;
                 blockList.Add(block);
                 Instantiate(cubePrefab, position, Quaternion.identity);
                 return true;
