@@ -33,7 +33,15 @@ public class HUD : MonoBehaviour
         {
             if (inventory[i].item.Name != null)
             {
+                if(playerInventoryObject.GetSelectedBlockIndex() == i)
+                {
+                    inventoryString += "<color=red>";
+                }
                 inventoryString += inventory[i].item.Name + "(" + inventory[i].count + ") ";
+                if (playerInventoryObject.GetSelectedBlockIndex() == i)
+                {
+                    inventoryString += "</color>";
+                }
             }
         }
         inventoryText.text = inventoryString;

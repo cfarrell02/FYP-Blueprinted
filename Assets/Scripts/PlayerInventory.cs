@@ -25,6 +25,8 @@ public class PlayerInventory : MonoBehaviour
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
 
+    int selectedBlockIndex = 0;
+
     private void Awake()
     {
         inventory = new InventoryItem<Block>[inventoryCapacity];
@@ -82,11 +84,44 @@ public class PlayerInventory : MonoBehaviour
                 if (AddItem(block))
                 {
                     bool success = blockyTerrain.RemoveBlock(block.Location);
-                    print("Removed block: " + success);
                     Destroy(_lookedAtObject);
                 }
             }
+        }else if (Input.GetMouseButtonDown(1))
+        {
+            var block = inventory[selectedBlockIndex];
+            if (block.count != 0 && _lookedAtObject != null && block.item.Name != null)
+            {
+
+                var blockPos = _lookedAtObject.transform.position;
+                //Determine which side the raycast hit the looked at object
+                Vector3 hitPoint = hit.point;
+                Vector3 hitNormal = hit.normal;
+                Vector3 hitDirection = hitPoint - blockPos;
+                // Place bloc one over from blockpos in the direction of the hit normal
+                Vector3 placePos = blockPos + hitNormal * blockyTerrain.cubePrefab.transform.localScale.y;
+                // Add the block to the terrain
+                var blockToAdd = new Block(block.item.Name, block.item.ID, block.item.Durability, block.item.MaxDurability, block.item.StackSize, block.item.MaxStackSize, placePos, block.item.Rotation, block.item.Scale);
+                blockyTerrain.AddBlock(placePos, blockToAdd);
+                // Remove the block from the inventory
+                RemoveItem(selectedBlockIndex);
+            }
+        }   
+
+        // Scroll wheel to change selected block
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f) // forward
+        {
+            selectedBlockIndex++;
+            if (selectedBlockIndex >= inventorySize)
+                selectedBlockIndex = 0;
         }
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0f) // backwards
+        {
+            selectedBlockIndex--;
+            if (selectedBlockIndex < 0)
+                selectedBlockIndex = inventorySize - 1;
+        }
+
     }
 
     string GetInventoryString()
@@ -133,6 +168,12 @@ public class PlayerInventory : MonoBehaviour
         if (inventory[index].item.Name == null)
             return false;
 
+        if (inventory[index].count > 1)
+        {
+            inventory[index].count--;
+            return true;
+        }
+
         inventory[index] = new InventoryItem<Block>(new Block(), 0);
         inventorySize--;
         return true;
@@ -155,6 +196,11 @@ public class PlayerInventory : MonoBehaviour
             }
         }
         return false;
+    }
+
+    public int GetSelectedBlockIndex()
+    {
+        return selectedBlockIndex;
     }
 
 

@@ -164,6 +164,22 @@ public class BlockyTerrain : MonoBehaviour
         return false;
     }
 
+    public bool AddBlock(Vector3 position, Block block)
+    {
+        Vector2 pos = new Vector2(position.x, position.z);
+        if (coordsToHeight.ContainsKey(pos))
+        {
+            var blockList = coordsToHeight[pos];
+            if (blockList.Count > 0)
+            {
+                blockList.Add(block);
+                Instantiate(cubePrefab, position, Quaternion.identity);
+                return true;
+            }
+        }
+        return false;
+    }   
+
 
     public Block FindBlock(Vector3 position)
     {

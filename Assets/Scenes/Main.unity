@@ -949,8 +949,40 @@ PrefabInstance:
       value: PlayerCapsule
       objectReference: {fileID: 0}
     - target: {fileID: 5356250546746154660, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: GroundedOffset
+      value: -0.27
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356250546746154660, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: GroundedRadius
+      value: 0.26
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356250546746154660, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: GroundLayers.m_Bits
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356250546746154665, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: m_Height
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356250546746154665, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: m_Radius
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 8581938533461346998, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8581938533461346999, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: m_Height
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8581938533461346999, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: m_Radius
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 8581938533461347000, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
