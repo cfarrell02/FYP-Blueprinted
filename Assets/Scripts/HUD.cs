@@ -13,7 +13,7 @@ public class HUD : MonoBehaviour
     public PlayerInventory playerInventoryObject;
 
 
-    Block[] inventory;
+    InventoryItem<Block>[] inventory;
 
     // Start is called before the first frame update
     void Start()
@@ -31,9 +31,9 @@ public class HUD : MonoBehaviour
         string inventoryString = "Inventory: ";
         for (int i = 0; i < inventory.Length; i++)
         {
-            if (inventory[i].Name != null)
+            if (inventory[i].item.Name != null)
             {
-                inventoryString += inventory[i].Name + " ";
+                inventoryString += inventory[i].item.Name + "(" + inventory[i].count + ") ";
             }
         }
         inventoryText.text = inventoryString;

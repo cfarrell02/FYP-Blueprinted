@@ -14,7 +14,7 @@ public class BlockyTerrain : MonoBehaviour
     int previousPlayerPosZ;
     int loadDistance = 40; // Distance around the player to load new terrain
 
-    Dictionary<Vector2, Block> coordsToHeight = new Dictionary<Vector2, Block>();
+    Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
 
     void Start()
     {
@@ -30,8 +30,8 @@ public class BlockyTerrain : MonoBehaviour
 
         //print(coordsToHeight.Keys.Count);
         // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance/2 ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance/2)
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance / 2 ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance / 2)
         {
             previousPlayerPosX = currentPlayerPosX;
             previousPlayerPosZ = currentPlayerPosZ;
@@ -88,47 +88,59 @@ public class BlockyTerrain : MonoBehaviour
         {
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
-            Vector3 cubePos = new Vector3(x, y, z);
+            List<Block> verticalBlocks = new List<Block>();
+            for (int i = -5; i <= y; ++i)
+            {
+                Vector3 cubePos = new Vector3(x, i, z);
 
-            GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
-            cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-            cube.transform.parent = transform;
+                GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
+                cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                cube.transform.parent = transform;
 
-            var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one);
-            coordsToHeight.Add(currentPos, blockItem);
+                var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one);
+                verticalBlocks.Add(blockItem);
+            }
+
+
+            coordsToHeight.Add(currentPos, verticalBlocks);
         }
         else
         {
             var blockItem = coordsToHeight[currentPos];
 
-
-                GameObject cube = Instantiate(cubePrefab, blockItem.Location, Quaternion.identity);
+            for (int i = 0; i < blockItem.Count; ++i)
+            {
+                Block block = blockItem[i];
+                GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
                 cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                 cube.transform.parent = transform;
-            
- 
+            }
+
+
+
+
         }
     }
 
 
 
     void UnloadTerrain()
-{
-    GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
-
-    foreach (GameObject cube in cubes)
     {
-        Vector3 pos = cube.transform.position;
+        GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
 
-        // Remove cubes outside the visible area from the scene
-        if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
-            Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
+        foreach (GameObject cube in cubes)
         {
-            Destroy(cube); // Remove cube from the scene
+            Vector3 pos = cube.transform.position;
+
+            // Remove cubes outside the visible area from the scene
+            if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
+                Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
+            {
+                Destroy(cube); // Remove cube from the scene
+            }
         }
     }
-}
-    public Dictionary<Vector2, Block> getHeightMap()
+    public Dictionary<Vector2, List<Block>> getHeightMap()
     {
         return coordsToHeight;
     }
@@ -138,10 +150,44 @@ public class BlockyTerrain : MonoBehaviour
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
-            coordsToHeight[pos] = new Block(); // Set the block to an empty air block
-            return true;
+            var blockList = coordsToHeight[pos];
+            if (blockList.Count > 0)
+            {
+                Block block = FindBlock(position);
+                if (block.Name != null)
+                {
+                    blockList.Remove(block);
+                    return true;
+                }
+            }
         }
         return false;
     }
 
+
+    public Block FindBlock(Vector3 position)
+    {
+        Vector2 pos = new Vector2(position.x, position.z);
+        if (coordsToHeight.ContainsKey(pos))
+        {
+            var blockList = coordsToHeight[pos];
+            if (blockList.Count > 0)
+            {
+                Block block = new Block(); // Empty Search block
+                foreach (Block b in blockList)
+                {
+                    if (b.Location == position)
+                    {
+                        block = b;
+                        break;
+                    }
+                }
+                if (block.Name != null)
+                {
+                    return block;
+                }
+            }
+        }
+        return new Block();
+    }   
 }

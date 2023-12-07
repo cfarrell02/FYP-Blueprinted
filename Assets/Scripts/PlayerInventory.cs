@@ -2,19 +2,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct InventoryItem<T>
+{
+    public T item { get; set;}
+    public int count { get; set; }
+
+    public InventoryItem(T item, int count)
+    {
+        this.item = item;
+        this.count = count;
+    }
+}
+
+
 public class PlayerInventory : MonoBehaviour
 {
 
     public int inventoryCapacity = 10;
 
     private int inventorySize = 0;
-    Block[] inventory;
+    InventoryItem<Block>[] inventory;
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
 
     private void Awake()
     {
-        inventory = new Block[inventoryCapacity];
+        inventory = new InventoryItem<Block>[inventoryCapacity];
     }
     
 
@@ -63,7 +76,7 @@ public class PlayerInventory : MonoBehaviour
         {
             if (_lookedAtObject != null)
             {
-                var block = blockyTerrain.getHeightMap()[new Vector2(_lookedAtObject.transform.position.x, _lookedAtObject.transform.position.z)];
+                var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
 
 
                 if (AddItem(block))
@@ -81,9 +94,9 @@ public class PlayerInventory : MonoBehaviour
         string inventoryString = "Inventory: ";
         for (int i = 0; i < inventory.Length; i++)
         {
-            if (inventory[i].Name != null )
+            if (inventory[i].item.Name != null )
             {
-                inventoryString += inventory[i].Name + " ";
+                inventoryString += inventory[i].item.Name + " ";
             }
         }
         return inventoryString;
@@ -97,9 +110,17 @@ public class PlayerInventory : MonoBehaviour
 
         for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
         {
-            if (inventory[freeIndex].Name == null)
+            if (inventory[freeIndex].item.ID == item.ID)
             {
-                inventory[freeIndex] = item; // Assign the reference to the inventory
+                inventory[freeIndex].count++;
+                return true;
+            }
+        }
+        for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
+        {
+            if (inventory[freeIndex].item.Name == null)
+            {
+                inventory[freeIndex] = new InventoryItem<Block>(item, 1);
                 inventorySize++;
                 return true;
             }
@@ -109,15 +130,15 @@ public class PlayerInventory : MonoBehaviour
 
     bool RemoveItem(int index)
     {
-        if (inventory[index].Name == null)
+        if (inventory[index].item.Name == null)
             return false;
 
-        inventory[index] = new Block();
+        inventory[index] = new InventoryItem<Block>(new Block(), 0);
         inventorySize--;
         return true;
     }
 
-    public Block[] getInventory()
+    public InventoryItem<Block>[] getInventory()
     {
         return inventory;
     }
@@ -128,7 +149,7 @@ public class PlayerInventory : MonoBehaviour
         {
             if (inventory[itemIndex].Equals(item))
             {
-                inventory[itemIndex] = new Block(); // Assign the reference to the inventory
+                inventory[itemIndex] = new InventoryItem<Block>(new Block(), 0);
                 inventorySize--;
                 return true;
             }
