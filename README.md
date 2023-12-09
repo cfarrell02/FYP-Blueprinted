@@ -1,7 +1,7 @@
 # Project Blueprinted
 
 Project Blueprinted is an open-world survival game that blends tower defense elements in a procedurally generated environment.  
-Read more about the game [here](https://wit-my.sharepoint.com/:w:/g/personal/20094046_wit_ie/EYDmwdb0nClKibTpL2jsJnsBhUCOecD6LBM5bSELwd5aUQ?e=LHpBX5)!
+
 
 ## Branches
 
