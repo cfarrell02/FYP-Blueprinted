@@ -14,7 +14,7 @@ public class BlockyTerrain : MonoBehaviour
     int previousPlayerPosZ;
     int loadDistance = 40; // Distance around the player to load new terrain
 
-    Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
+    private Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
 
     void Start()
     {
@@ -115,7 +115,6 @@ public class BlockyTerrain : MonoBehaviour
             for (int i = 0; i < blockItem.Count; ++i)
             {
                 Block block = blockItem[i];
-                // TODO - Find out why this is spawning blocks over existing blocks
                 if (!block.isLoaded)
                 {
                     GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
@@ -124,10 +123,6 @@ public class BlockyTerrain : MonoBehaviour
                     block.isLoaded = true;
                 }
             }
-
-
-
-
         }
     }
 
@@ -195,8 +190,17 @@ public class BlockyTerrain : MonoBehaviour
             if (blockList.Count > 0)
             {
                 block.isLoaded = true;
-                blockList.Add(block);
-                Instantiate(cubePrefab, position, Quaternion.identity);
+                for (int i = 0; i < blockList.Count; ++i)
+                {
+                    if (blockList[i].Location == position)
+                    {
+                        blockList[i] = block;
+                        break;
+                    }
+                }
+                var cube = Instantiate(cubePrefab, position, Quaternion.identity);
+                cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                cube.transform.parent = transform;
                 return true;
             }
         }

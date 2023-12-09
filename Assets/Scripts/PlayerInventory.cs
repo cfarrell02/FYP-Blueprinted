@@ -84,30 +84,31 @@ public class PlayerInventory : MonoBehaviour
                 if (AddItem(block))
                 {
                     bool success = blockyTerrain.RemoveBlock(block.Location);
-                    Destroy(_lookedAtObject);
-
-                    // Make a list of all six blocks around the block that was just removed
-                    Vector3[] surroundingBlocks = new Vector3[6];
-                    surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
-                    surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
-                    surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
-                    surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
-                    surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
-                    surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
-
-                    foreach (Vector3 surroundingBlock in surroundingBlocks)
+                    if (success)
                     {
-                        var surroundingBlockItem = blockyTerrain.FindBlock(surroundingBlock);
-                        // Instantiate the surrounding block if it exists
-                        if (surroundingBlockItem.Name != null)
+                        Destroy(_lookedAtObject);
+
+                        // Make a list of all six blocks around the block that was just removed
+                        Vector3[] surroundingBlocks = new Vector3[6];
+                        surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
+                        surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
+                        surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
+                        surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
+                        surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
+                        surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
+                        foreach (Vector3 surroundingBlock in surroundingBlocks)
                         {
-                            var foundBlock = blockyTerrain.FindBlock(surroundingBlock);
-                            if (!foundBlock.isLoaded)
+                            var surroundingBlockItem = blockyTerrain.FindBlock(surroundingBlock);
+                            // Instantiate the surrounding block if it exists
+                            if (surroundingBlockItem.Name != null)
                             {
-                                print("Placing block at " + surroundingBlock);
-                                var surroundingBlockPrefab = Instantiate(blockyTerrain.cubePrefab, surroundingBlock, Quaternion.identity);
-                                blockyTerrain.AddBlock(surroundingBlock, surroundingBlockItem);
-                                //surroundingBlockPrefab.GetComponent<Renderer>().material.color = Color.red;
+                                var foundBlock = blockyTerrain.FindBlock(surroundingBlock);
+                                if (foundBlock.Name != null && !foundBlock.isLoaded)
+                                {
+                                    //Add the block to the terrain, the method also instantiates the block
+                                    blockyTerrain.AddBlock(surroundingBlock, surroundingBlockItem);
+                                    //surroundingBlockPrefab.GetComponent<Renderer>().material.color = Color.red;
+                                }
                             }
                         }
                     }
