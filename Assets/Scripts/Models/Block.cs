@@ -11,6 +11,7 @@ public struct Block
     public Vector3 Location { get; set; }
     public Vector3 Rotation { get; set; }
     public Vector3 Scale { get; set; }
+    public bool isLoaded { get; set; }
 
     // Constructor for initialization
     public Block(
@@ -27,6 +28,7 @@ public struct Block
         Location = location;
         Rotation = rotation;
         Scale = scale;
+        isLoaded = false;
 
     }
 }
