@@ -1,17 +1,13 @@
 using UnityEngine;
 
-public struct Block
+public class Block : Entity
 {
-    public string Name { get; set; }
-    public int ID { get; set; }
-    public int Durability { get; set; }
-    public int MaxDurability { get; set; }
-    public int StackSize { get; set; }
-    public int MaxStackSize { get; set; }
+
     public Vector3 Location { get; set; }
     public Vector3 Rotation { get; set; }
     public Vector3 Scale { get; set; }
-    public bool isLoaded { get; set; }
+    public int Durability { get; set; }
+    public int MaxDurability { get; set; }
 
     // Constructor for initialization
     public Block(
@@ -30,5 +26,20 @@ public struct Block
         Scale = scale;
         isLoaded = false;
 
+    }
+
+    // Empty constructor
+    public Block()
+    {
+        Name = null;
+        ID = 0;
+        StackSize = 0;
+        MaxStackSize = 0;
+        Location = new Vector3(0, 0, 0);
+        Rotation = new Vector3(0, 0, 0);
+        Scale = new Vector3(0, 0, 0);
+        isLoaded = false;
+        Durability = 0;
+        MaxDurability = 0;
     }
 }

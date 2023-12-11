@@ -21,7 +21,7 @@ public class PlayerInventory : MonoBehaviour
     public int inventoryCapacity = 10;
 
     private int inventorySize = 0;
-    InventoryItem<Block>[] inventory;
+    InventoryItem<Entity>[] inventory;
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
 
@@ -29,7 +29,7 @@ public class PlayerInventory : MonoBehaviour
 
     private void Awake()
     {
-        inventory = new InventoryItem<Block>[inventoryCapacity];
+        inventory = new InventoryItem<Entity>[inventoryCapacity];
     }
     
 
@@ -127,8 +127,12 @@ public class PlayerInventory : MonoBehaviour
                 Vector3 hitDirection = hitPoint - blockPos;
                 // Place bloc one over from blockpos in the direction of the hit normal
                 Vector3 placePos = blockPos + hitNormal * blockyTerrain.cubePrefab.transform.localScale.y;
+
+                //Assume the entity is a block -- REMOVE THIS LATER WHEN WE HAVE MORE ENTITIES
+                var blockItem = (Block) block.item;
+
                 // Add the block to the terrain
-                var blockToAdd = new Block(block.item.Name, block.item.ID, block.item.Durability, block.item.MaxDurability, block.item.StackSize, block.item.MaxStackSize, placePos, block.item.Rotation, block.item.Scale);
+                var blockToAdd = new Block(blockItem.Name, blockItem.ID, blockItem.Durability, blockItem.MaxDurability, blockItem.StackSize, blockItem.MaxStackSize, placePos, new Vector3(0, 0, 0), new Vector3(1, 1, 1));
                 blockyTerrain.AddBlock(placePos, blockToAdd);
                 // Remove the block from the inventory
                 RemoveItem(selectedBlockIndex);
@@ -172,7 +176,7 @@ public class PlayerInventory : MonoBehaviour
 
         for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
         {
-            if (inventory[freeIndex].item.ID == item.ID)
+            if (inventory[freeIndex].item !=null && inventory[freeIndex].item.ID == item.ID)
             {
                 inventory[freeIndex].count++;
                 return true;
@@ -180,9 +184,9 @@ public class PlayerInventory : MonoBehaviour
         }
         for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
         {
-            if (inventory[freeIndex].item.Name == null)
+            if (inventory[freeIndex].item == null)
             {
-                inventory[freeIndex] = new InventoryItem<Block>(item, 1);
+                inventory[freeIndex] = new InventoryItem<Entity>(item, 1);
                 inventorySize++;
                 return true;
             }
@@ -192,7 +196,7 @@ public class PlayerInventory : MonoBehaviour
 
     bool RemoveItem(int index)
     {
-        if (inventory[index].item.Name == null)
+        if (inventory[index].item == null)
             return false;
 
         if (inventory[index].count > 1)
@@ -200,13 +204,12 @@ public class PlayerInventory : MonoBehaviour
             inventory[index].count--;
             return true;
         }
-
-        inventory[index] = new InventoryItem<Block>(new Block(), 0);
+        inventory[index] = new InventoryItem<Entity>(null, 0);
         inventorySize--;
         return true;
     }
 
-    public InventoryItem<Block>[] getInventory()
+    public InventoryItem<Entity>[] getInventory()
     {
         return inventory;
     }
@@ -217,7 +220,7 @@ public class PlayerInventory : MonoBehaviour
         {
             if (inventory[itemIndex].Equals(item))
             {
-                inventory[itemIndex] = new InventoryItem<Block>(new Block(), 0);
+                inventory[itemIndex] = new InventoryItem<Entity>(new Block(), 0);
                 inventorySize--;
                 return true;
             }

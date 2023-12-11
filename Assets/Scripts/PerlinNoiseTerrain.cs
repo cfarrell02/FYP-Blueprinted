@@ -198,6 +198,10 @@ public class BlockyTerrain : MonoBehaviour
                         break;
                     }
                 }
+                if (!blockList.Contains(block))
+                {
+                    blockList.Add(block);
+                }
                 var cube = Instantiate(cubePrefab, position, Quaternion.identity);
                 cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                 cube.transform.parent = transform;
