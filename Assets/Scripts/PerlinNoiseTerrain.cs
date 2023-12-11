@@ -98,14 +98,13 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosX = currentPlayerPosX;
         previousPlayerPosZ = currentPlayerPosZ;
 
-        // Find the chunk the player is in
-        GameObject chunk = GameObject.Find(currentChunk);
-        if (chunk != null)
+        GameObject[] chunks = GameObject.FindGameObjectsWithTag("Chunk"); // Chunk must be tagged as "Chunk"
+        foreach(GameObject chunk in chunks)
         {
-            // Find the NavMeshSurface component and build the NavMesh
             NavMeshSurface surface = chunk.GetComponent<NavMeshSurface>();
             surface.BuildNavMesh();
         }
+
     }
 
 
