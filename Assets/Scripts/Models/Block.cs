@@ -8,6 +8,7 @@ public class Block : Entity
     public Vector3 Scale { get; set; }
     public int Durability { get; set; }
     public int MaxDurability { get; set; }
+    public Vector2 ChunkLocation { get; set; }
 
     // Constructor for initialization
     public Block(

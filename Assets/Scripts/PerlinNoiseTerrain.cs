@@ -12,7 +12,8 @@ public class BlockyTerrain : MonoBehaviour
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
-    int loadDistance = 40; // Distance around the player to load new terrain
+    int loadDistance = 20; // Distance around the player to load new terrain
+    int loadDistanceMultiplier = 2; // Multiplier for the load distance when generating terrain
 
     private Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
 
@@ -42,9 +43,10 @@ public class BlockyTerrain : MonoBehaviour
 
     void GenerateInitialTerrain()
     {
-        for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
+        int extendedLoadDistance = loadDistance * loadDistanceMultiplier;
+        for (int x = previousPlayerPosX - extendedLoadDistance; x < previousPlayerPosX + extendedLoadDistance; x++)
         {
-            for (int z = previousPlayerPosZ - loadDistance; z < previousPlayerPosZ + loadDistance; z++)
+            for (int z = previousPlayerPosZ - extendedLoadDistance; z < previousPlayerPosZ + extendedLoadDistance; z++)
             {
                 GenerateCubeAtPosition(x, z);
             }
@@ -56,17 +58,19 @@ public class BlockyTerrain : MonoBehaviour
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
 
-        for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
+        int extendedLoadDistance = loadDistance * loadDistanceMultiplier;
+
+        for (int x = previousPlayerPosX - extendedLoadDistance; x < previousPlayerPosX + extendedLoadDistance; x++)
         {
-            if (Mathf.Abs(x - currentPlayerPosX) >= loadDistance)
+            if (Mathf.Abs(x - currentPlayerPosX) >= extendedLoadDistance)
             {
                 // Do not regenerate cubes within the visible area
                 continue;
             }
 
-            for (int z = previousPlayerPosZ - loadDistance; z < previousPlayerPosZ + loadDistance; z++)
+            for (int z = previousPlayerPosZ - extendedLoadDistance; z < previousPlayerPosZ + extendedLoadDistance; z++)
             {
-                if (Mathf.Abs(z - currentPlayerPosZ) >= loadDistance)
+                if (Mathf.Abs(z - currentPlayerPosZ) >= extendedLoadDistance)
                 {
                     // Do not regenerate cubes within the visible area
                     continue;
@@ -79,6 +83,7 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosX = currentPlayerPosX;
         previousPlayerPosZ = currentPlayerPosZ;
     }
+
 
     void GenerateCubeAtPosition(int x, int z)
     {
@@ -115,12 +120,11 @@ public class BlockyTerrain : MonoBehaviour
             for (int i = 0; i < blockItem.Count; ++i)
             {
                 Block block = blockItem[i];
-                if (!block.isLoaded)
+                if (block.isLoaded)
                 {
                     GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                     cube.transform.parent = transform;
-                    block.isLoaded = true;
                 }
             }
         }
@@ -135,13 +139,13 @@ public class BlockyTerrain : MonoBehaviour
         foreach (GameObject cube in cubes)
         {
             Vector3 pos = cube.transform.position;
-
+            int extendedLoadDistance = loadDistance * loadDistanceMultiplier;
             // Remove cubes outside the visible area from the scene
-            if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
-                Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
+            if (Mathf.Abs(pos.x - playerTransform.position.x) >= extendedLoadDistance ||
+                Mathf.Abs(pos.z - playerTransform.position.z) >= extendedLoadDistance)
             {
                 Block block = FindBlock(pos);
-                block.isLoaded = false;
+                //block.isLoaded = false;
                 //place block in the dictionary
                 Vector2 pos2D = new Vector2(pos.x, pos.z);
                 var blockList = coordsToHeight[pos2D];

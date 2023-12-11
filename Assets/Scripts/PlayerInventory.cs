@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public struct InventoryItem<T>
 {
@@ -37,7 +38,13 @@ public class PlayerInventory : MonoBehaviour
     void Start()
     {
        // inventory = new GameObject[inventoryCapacity];
-       blockyTerrain = FindObjectOfType<BlockyTerrain>(); // Will only be one instance of BlockyTerrain, hopefully
+       var blockyTerrains = FindObjectsOfType<BlockyTerrain>();
+        if (blockyTerrains.Length > 1)
+            Debug.LogError("There are multiple BlockyTerrain objects in the scene");
+        else if (blockyTerrains.Length == 0)
+            Debug.LogError("There are no BlockyTerrain objects in the scene");
+        else
+       blockyTerrain = blockyTerrains[0];
         
     }
 
@@ -57,7 +64,7 @@ public class PlayerInventory : MonoBehaviour
             {
                 _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
             }
-            if (hit.collider.gameObject.GetComponent<Renderer>() == null)
+            if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
                 return;
 
 
@@ -81,11 +88,10 @@ public class PlayerInventory : MonoBehaviour
                 var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
 
 
-                if (AddItem(block))
-                {
                     bool success = blockyTerrain.RemoveBlock(block.Location);
                     if (success)
                     {
+                        AddItem(block);
                         Destroy(_lookedAtObject);
 
                         // Make a list of all six blocks around the block that was just removed
@@ -111,8 +117,11 @@ public class PlayerInventory : MonoBehaviour
                                 }
                             }
                         }
+                    }else
+                    {
+                        Debug.LogError("Failed to remove block");
                     }
-                }
+                
             }
         }else if (Input.GetMouseButtonDown(1))
         {
@@ -136,6 +145,8 @@ public class PlayerInventory : MonoBehaviour
                 blockyTerrain.AddBlock(placePos, blockToAdd);
                 // Remove the block from the inventory
                 RemoveItem(selectedBlockIndex);
+ 
+
             }
         }   
 
