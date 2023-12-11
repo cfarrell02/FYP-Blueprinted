@@ -1,22 +1,24 @@
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
 
 public class BlockyTerrain : MonoBehaviour
 {
-    public int gridSizeX = 10;
-    public int gridSizeZ = 10;
+    //public int gridSizeX = 40;
+    //public int gridSizeZ = 40;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
     public GameObject cubePrefab;
     public Transform playerTransform; // Reference to the player's transform
 
+    int chunkSize = 40;
     int previousPlayerPosX;
     int previousPlayerPosZ;
     int loadDistance = 20; // Distance around the player to load new terrain
     int loadDistanceMultiplier = 2; // Multiplier for the load distance when generating terrain
 
     private Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
-    private List<string> ChunkNames = new List<string>();
+    private string currentChunk = "";
 
     void Start()
     {
@@ -40,6 +42,18 @@ public class BlockyTerrain : MonoBehaviour
             GenerateTerrain();
         }
         UnloadTerrain();
+
+         currentChunk = "(" + Mathf.Floor(playerTransform.position.x / chunkSize) + ".00, " + (float)Mathf.Floor(playerTransform.position.z / chunkSize) + ".00)";
+        //// Find the chunk the player is in
+        //GameObject chunk = GameObject.Find(currentChunk);
+        //if (chunk != null)
+        //{
+        //    // Find the NavMeshSurface component and build the NavMesh
+        //    NavMeshSurface surface = chunk.GetComponent<NavMeshSurface>();
+        //    surface.BuildNavMesh();
+        //    this.currentChunk = currentChunk;
+        //}
+
     }
 
     void GenerateInitialTerrain()
@@ -83,13 +97,22 @@ public class BlockyTerrain : MonoBehaviour
 
         previousPlayerPosX = currentPlayerPosX;
         previousPlayerPosZ = currentPlayerPosZ;
+
+        // Find the chunk the player is in
+        GameObject chunk = GameObject.Find(currentChunk);
+        if (chunk != null)
+        {
+            // Find the NavMeshSurface component and build the NavMesh
+            NavMeshSurface surface = chunk.GetComponent<NavMeshSurface>();
+            surface.BuildNavMesh();
+        }
     }
 
 
     void GenerateCubeAtPosition(int x, int z)
     {
         Vector2 currentPos = new Vector2(x, z);
-        Vector2 chunkPOS = new Vector2(x / gridSizeX, z / gridSizeZ);
+        Vector2 chunkPOS = new Vector2(x / chunkSize, z / chunkSize);
         var chunk = FindOrCreateChunk(chunkPOS);
 
         if (!coordsToHeight.ContainsKey(currentPos))
@@ -139,9 +162,14 @@ public class BlockyTerrain : MonoBehaviour
         if (chunk == null)
         {
             chunk = new GameObject(pos.ToString());
-            chunk.tag = "Chunk";
+            chunk.tag = "Chunk"; // Necessary for unloading
+
+            chunk.AddComponent<NavMeshSurface>();
+
             chunk.transform.parent = transform;
         }
+
+
         return chunk;
     }
 
@@ -151,7 +179,7 @@ public class BlockyTerrain : MonoBehaviour
     {
         GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
 
-        GameObject[] chunks = GameObject.FindGameObjectsWithTag("Chunk"); // Chunk prefab must be tagged as "Chunk"
+        GameObject[] chunks = GameObject.FindGameObjectsWithTag("Chunk"); // Chunk must be tagged as "Chunk"
         foreach (var c in chunks)
         {
             if (c.transform.childCount == 0)
@@ -212,7 +240,7 @@ public class BlockyTerrain : MonoBehaviour
     public bool AddBlock(Vector3 position, Block block)
     {
         Vector2 pos = new Vector2(position.x, position.z);
-        Vector2 chunkPOS = new Vector2(position.x / gridSizeX, position.z / gridSizeZ);
+        Vector2 chunkPOS = new Vector2(position.x / chunkSize, position.z / chunkSize);
         var chunk = FindOrCreateChunk(chunkPOS);
         if (coordsToHeight.ContainsKey(pos))
         {
