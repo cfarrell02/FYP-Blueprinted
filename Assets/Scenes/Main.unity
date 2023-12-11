@@ -632,12 +632,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ac955badd87bad4fa2b721581649548, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkSize: 20
+  gridSizeX: 10
+  gridSizeZ: 10
   scale: 1
   cubeHeight: 1
   cubePrefab: {fileID: 5763828162553407202, guid: f01bf10d1fcfdcb4f959f0aedaeb8460, type: 3}
   playerTransform: {fileID: 1357357804}
-  worldDepth: 50
 --- !u!4 &1549944878
 Transform:
   m_ObjectHideFlags: 0
@@ -705,6 +705,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Zombie
       objectReference: {fileID: 0}
+    - target: {fileID: 6567870887440459103, guid: 940bc12dcbcc2e94ebf2cb222e6802ee, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7309047824891127457, guid: 940bc12dcbcc2e94ebf2cb222e6802ee, type: 3}
       propertyPath: Playerpos
       value: 
@@ -716,9 +720,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6567870887440459103, guid: 940bc12dcbcc2e94ebf2cb222e6802ee, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1348972186}
-    - targetCorrespondingSourceObject: {fileID: 6559406645782613757, guid: 940bc12dcbcc2e94ebf2cb222e6802ee, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 940bc12dcbcc2e94ebf2cb222e6802ee, type: 3}
 --- !u!850595691 &1767165796
 LightingSettings:

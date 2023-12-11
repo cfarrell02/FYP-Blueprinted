@@ -16,6 +16,7 @@ public class BlockyTerrain : MonoBehaviour
     int loadDistanceMultiplier = 2; // Multiplier for the load distance when generating terrain
 
     private Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
+    private List<string> ChunkNames = new List<string>();
 
     void Start()
     {
@@ -88,6 +89,8 @@ public class BlockyTerrain : MonoBehaviour
     void GenerateCubeAtPosition(int x, int z)
     {
         Vector2 currentPos = new Vector2(x, z);
+        Vector2 chunkPOS = new Vector2(x / gridSizeX, z / gridSizeZ);
+        var chunk = FindOrCreateChunk(chunkPOS);
 
         if (!coordsToHeight.ContainsKey(currentPos))
         {
@@ -102,7 +105,7 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                    cube.transform.parent = transform;
+                    cube.transform.parent = chunk.transform;
                 }
 
                 var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one);
@@ -124,10 +127,22 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                    cube.transform.parent = transform;
+                    cube.transform.parent = chunk.transform;
                 }
             }
         }
+    }
+
+    private GameObject FindOrCreateChunk(Vector2 pos)
+    {
+        GameObject chunk = GameObject.Find(pos.ToString());
+        if (chunk == null)
+        {
+            chunk = new GameObject(pos.ToString());
+            chunk.tag = "Chunk";
+            chunk.transform.parent = transform;
+        }
+        return chunk;
     }
 
 
@@ -135,6 +150,15 @@ public class BlockyTerrain : MonoBehaviour
     void UnloadTerrain()
     {
         GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
+
+        GameObject[] chunks = GameObject.FindGameObjectsWithTag("Chunk"); // Chunk prefab must be tagged as "Chunk"
+        foreach (var c in chunks)
+        {
+            if (c.transform.childCount == 0)
+            {
+                Destroy(c);
+            }
+        }
 
         foreach (GameObject cube in cubes)
         {
@@ -188,6 +212,8 @@ public class BlockyTerrain : MonoBehaviour
     public bool AddBlock(Vector3 position, Block block)
     {
         Vector2 pos = new Vector2(position.x, position.z);
+        Vector2 chunkPOS = new Vector2(position.x / gridSizeX, position.z / gridSizeZ);
+        var chunk = FindOrCreateChunk(chunkPOS);
         if (coordsToHeight.ContainsKey(pos))
         {
             var blockList = coordsToHeight[pos];
@@ -208,7 +234,7 @@ public class BlockyTerrain : MonoBehaviour
                 }
                 var cube = Instantiate(cubePrefab, position, Quaternion.identity);
                 cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                cube.transform.parent = transform;
+                cube.transform.parent = chunk.transform;
                 return true;
             }
         }
