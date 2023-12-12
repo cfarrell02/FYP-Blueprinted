@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class BlockyTerrain : MonoBehaviour
 {
@@ -13,8 +15,10 @@ public class BlockyTerrain : MonoBehaviour
     int previousPlayerPosX;
     int previousPlayerPosZ;
     int loadDistance = 40; // Distance around the player to load new terrain
+    int loadDistanceMultiplier = 2; // Multiplier for the load distance when generating terrain
 
     private Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
+    private Dictionary<Vector2, bool> coordsLoaded = new Dictionary<Vector2, bool>();
 
     void Start()
     {
@@ -30,11 +34,11 @@ public class BlockyTerrain : MonoBehaviour
 
         //print(coordsToHeight.Keys.Count);
         // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistance / 2 ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistance / 2)
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistanceMultiplier ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistanceMultiplier)
         {
-            previousPlayerPosX = currentPlayerPosX;
-            previousPlayerPosZ = currentPlayerPosZ;
+            //previousPlayerPosX = currentPlayerPosX;
+            //previousPlayerPosZ = currentPlayerPosZ;
             GenerateTerrain();
         }
         UnloadTerrain();
@@ -49,36 +53,35 @@ public class BlockyTerrain : MonoBehaviour
                 GenerateCubeAtPosition(x, z);
             }
         }
+        var surface = GetComponent<NavMeshSurface>();
+        surface.BuildNavMesh();
     }
-
     void GenerateTerrain()
     {
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
 
-        for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
-        {
-            if (Mathf.Abs(x - currentPlayerPosX) >= loadDistance)
-            {
-                // Do not regenerate cubes within the visible area
-                continue;
-            }
 
-            for (int z = previousPlayerPosZ - loadDistance; z < previousPlayerPosZ + loadDistance; z++)
+        for (int x = currentPlayerPosX - loadDistance; x < currentPlayerPosX + loadDistance; x++)
+        {
+
+
+            for (int z = currentPlayerPosZ - loadDistance; z < currentPlayerPosZ + loadDistance; z++)
             {
-                if (Mathf.Abs(z - currentPlayerPosZ) >= loadDistance)
+               
+                if (coordsLoaded.ContainsKey(new Vector2(x, z)) && coordsLoaded[new Vector2(x, z)])
                 {
-                    // Do not regenerate cubes within the visible area
                     continue;
                 }
-
                 GenerateCubeAtPosition(x, z);
             }
         }
-
         previousPlayerPosX = currentPlayerPosX;
         previousPlayerPosZ = currentPlayerPosZ;
+        var surface = GetComponent<NavMeshSurface>();
+        surface.BuildNavMesh();
     }
+
 
     void GenerateCubeAtPosition(int x, int z)
     {
@@ -96,7 +99,9 @@ public class BlockyTerrain : MonoBehaviour
                 if (i == y)
                 {
                     GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
+                    coordsLoaded[currentPos]= true;
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                    cube.tag = "Cube";
                     cube.transform.parent = transform;
                 }
 
@@ -115,12 +120,13 @@ public class BlockyTerrain : MonoBehaviour
             for (int i = 0; i < blockItem.Count; ++i)
             {
                 Block block = blockItem[i];
-                if (!block.isLoaded)
+                if (block.isLoaded)
                 {
                     GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
+                    coordsLoaded[currentPos] = true;
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                    cube.tag = "Cube";
                     cube.transform.parent = transform;
-                    block.isLoaded = true;
                 }
             }
         }
@@ -135,17 +141,16 @@ public class BlockyTerrain : MonoBehaviour
         foreach (GameObject cube in cubes)
         {
             Vector3 pos = cube.transform.position;
-
             // Remove cubes outside the visible area from the scene
             if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
                 Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
             {
                 Block block = FindBlock(pos);
-                block.isLoaded = false;
+                //block.isLoaded = false;
                 //place block in the dictionary
                 Vector2 pos2D = new Vector2(pos.x, pos.z);
                 var blockList = coordsToHeight[pos2D];
-                for (int i = 0;i < blockList.Count; ++i)
+                for (int i = 0; i < blockList.Count; ++i)
                 {
                     if (blockList[i].Location == pos)
                     {
@@ -153,6 +158,7 @@ public class BlockyTerrain : MonoBehaviour
                         break;
                     }
                 }
+                coordsLoaded[pos2D] = false;
                 Destroy(cube); // Remove cube from the scene
             }
         }
@@ -203,13 +209,15 @@ public class BlockyTerrain : MonoBehaviour
                     blockList.Add(block);
                 }
                 var cube = Instantiate(cubePrefab, position, Quaternion.identity);
+                coordsLoaded[pos] = true;
                 cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                cube.tag = "Cube";
                 cube.transform.parent = transform;
                 return true;
             }
         }
         return false;
-    }   
+    }
 
 
     public Block FindBlock(Vector3 position)
@@ -236,5 +244,5 @@ public class BlockyTerrain : MonoBehaviour
             }
         }
         return new Block();
-    }   
+    }
 }

@@ -57,7 +57,7 @@ public class PlayerInventory : MonoBehaviour
             {
                 _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
             }
-            if (hit.collider.gameObject.GetComponent<Renderer>() == null)
+            if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
                 return;
 
 
