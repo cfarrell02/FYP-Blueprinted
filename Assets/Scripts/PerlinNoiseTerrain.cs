@@ -3,6 +3,7 @@ using Unity.AI.Navigation;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
+
 public class BlockyTerrain : MonoBehaviour
 {
     public int gridSizeX = 10;
@@ -17,8 +18,7 @@ public class BlockyTerrain : MonoBehaviour
     int loadDistance = 40; // Distance around the player to load new terrain
     int loadDistanceMultiplier = 2; // Multiplier for the load distance when generating terrain
 
-    private Dictionary<Vector2, List<Block>> coordsToHeight = new Dictionary<Vector2, List<Block>>();
-    private Dictionary<Vector2, bool> coordsLoaded = new Dictionary<Vector2, bool>();
+    private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
 
     void Start()
     {
@@ -69,7 +69,7 @@ public class BlockyTerrain : MonoBehaviour
             for (int z = currentPlayerPosZ - loadDistance; z < currentPlayerPosZ + loadDistance; z++)
             {
                
-                if (coordsLoaded.ContainsKey(new Vector2(x, z)) && coordsLoaded[new Vector2(x, z)])
+                if (coordsToHeight.ContainsKey(new Vector2(x, z)) && coordsToHeight[new Vector2(x, z)].isLoaded)
                 {
                     continue;
                 }
@@ -99,7 +99,9 @@ public class BlockyTerrain : MonoBehaviour
                 if (i == y)
                 {
                     GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
-                    coordsLoaded[currentPos]= true;
+                    var a = coordsToHeight[currentPos];
+                    a.isLoaded = true;
+                    coordsToHeight[currentPos] = a;
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                     cube.tag = "Cube";
                     cube.transform.parent = transform;
@@ -111,11 +113,11 @@ public class BlockyTerrain : MonoBehaviour
             }
 
 
-            coordsToHeight.Add(currentPos, verticalBlocks);
+            coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true, navMeshBuilt = false });
         }
         else
         {
-            var blockItem = coordsToHeight[currentPos];
+            var blockItem = coordsToHeight[currentPos].blocks;
 
             for (int i = 0; i < blockItem.Count; ++i)
             {
@@ -123,7 +125,9 @@ public class BlockyTerrain : MonoBehaviour
                 if (block.isLoaded)
                 {
                     GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
-                    coordsLoaded[currentPos] = true;
+                    var a = coordsToHeight[currentPos];
+                    a.isLoaded = true;
+                    coordsToHeight[currentPos] = a;
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                     cube.tag = "Cube";
                     cube.transform.parent = transform;
@@ -149,7 +153,11 @@ public class BlockyTerrain : MonoBehaviour
                 //block.isLoaded = false;
                 //place block in the dictionary
                 Vector2 pos2D = new Vector2(pos.x, pos.z);
-                var blockList = coordsToHeight[pos2D];
+                var blockList = coordsToHeight.ContainsKey(pos2D) ? coordsToHeight[pos2D].blocks: new List<Block>();
+                if (blockList.Count == 0)
+                {
+                    continue;
+                }
                 for (int i = 0; i < blockList.Count; ++i)
                 {
                     if (blockList[i].Location == pos)
@@ -158,12 +166,14 @@ public class BlockyTerrain : MonoBehaviour
                         break;
                     }
                 }
-                coordsLoaded[pos2D] = false;
+                var a = coordsToHeight[pos2D];  
+                a.isLoaded = false;
+                coordsToHeight[pos2D] = a;
                 Destroy(cube); // Remove cube from the scene
             }
         }
     }
-    public Dictionary<Vector2, List<Block>> getHeightMap()
+    public Dictionary<Vector2, VerticalBlocks> getHeightMap()
     {
         return coordsToHeight;
     }
@@ -173,7 +183,7 @@ public class BlockyTerrain : MonoBehaviour
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
-            var blockList = coordsToHeight[pos];
+            var blockList = coordsToHeight[pos].blocks;
             if (blockList.Count > 0)
             {
                 Block block = FindBlock(position);
@@ -192,7 +202,7 @@ public class BlockyTerrain : MonoBehaviour
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
-            var blockList = coordsToHeight[pos];
+            var blockList = coordsToHeight.ContainsKey(pos) ? coordsToHeight[pos].blocks : new List<Block>();
             if (blockList.Count > 0)
             {
                 block.isLoaded = true;
@@ -209,7 +219,9 @@ public class BlockyTerrain : MonoBehaviour
                     blockList.Add(block);
                 }
                 var cube = Instantiate(cubePrefab, position, Quaternion.identity);
-                coordsLoaded[pos] = true;
+                var a = coordsToHeight[pos];
+                a.isLoaded = true;
+                coordsToHeight[pos] = a;
                 cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                 cube.tag = "Cube";
                 cube.transform.parent = transform;
@@ -225,7 +237,7 @@ public class BlockyTerrain : MonoBehaviour
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
-            var blockList = coordsToHeight[pos];
+            var blockList = coordsToHeight.ContainsKey(pos) ? coordsToHeight[pos].blocks : new List<Block>();
             if (blockList.Count > 0)
             {
                 Block block = new Block(); // Empty Search block
@@ -244,5 +256,19 @@ public class BlockyTerrain : MonoBehaviour
             }
         }
         return new Block();
+    }
+}
+
+public struct VerticalBlocks
+{
+    public List<Block> blocks { get; set; }
+    public bool isLoaded { get; set; }
+    public bool navMeshBuilt { get; set; }
+
+    public VerticalBlocks(List<Block> blocks, bool isLoaded, bool navMeshBuilt)
+    {
+        this.blocks = blocks;
+        this.isLoaded = isLoaded;
+        this.navMeshBuilt = navMeshBuilt;
     }
 }
