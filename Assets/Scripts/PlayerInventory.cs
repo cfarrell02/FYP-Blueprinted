@@ -41,106 +41,122 @@ public class PlayerInventory : MonoBehaviour
        // inventory = new GameObject[inventoryCapacity];
        blockyTerrain = FindObjectOfType<BlockyTerrain>(); // Will only be one instance of BlockyTerrain, hopefully
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+
+        // Temp add in items to inventory
+        var sword = new Sword("Sword", 100, 100, 1, 1, 10);
+        inventory[0] = new InventoryItem<Entity>(sword, 1);
+        inventorySize++;
+        var blueprint = new Blueprint("Blueprint", 1, 1, 1, 1);
+        inventory[1] = new InventoryItem<Entity>(blueprint, 1);
+        inventorySize++;
         
     }
 
     // Update is called once per frame
     void Update()
     {
+        var selectedItem = inventory[selectedBlockIndex];
 
-
-        // Raycast to see what block is in front of the player
-        RaycastHit hit;
-        Transform cameraTransform = Camera.main.transform;
-        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
-
-        if (Physics.Raycast(ray, out hit, 5f))
+        if (selectedItem.item != null && (selectedItem.item is Blueprint || selectedItem.item is Block))
         {
-            if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
+            // Raycast to see what block is in front of the player
+            RaycastHit hit;
+            Transform cameraTransform = Camera.main.transform;
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+
+            if (Physics.Raycast(ray, out hit, 5f))
             {
-                _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
-            }
-            if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
-                return;
-
-
-            _lookedAtObject = hit.collider.gameObject;
-            _lookedAtObject.GetComponent<Renderer>().material.color = Color.red;
-        }
-        else
-        {
-            if (_lookedAtObject != null)
-            {
-                _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
-                _lookedAtObject = null;
-            }
-        }
-
-        // on click, add the block to the inventory
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (_lookedAtObject != null)
-            {
-                var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
-
-
-                if (AddItem(block))
+                if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
                 {
-                    bool success = blockyTerrain.RemoveBlock(block.Location);
-                    if (success)
-                    {
-                        Destroy(_lookedAtObject);
+                    _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
+                }
+                if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
+                    return;
 
-                        // Make a list of all six blocks around the block that was just removed
-                        Vector3[] surroundingBlocks = new Vector3[6];
-                        surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
-                        surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
-                        surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
-                        surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
-                        surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
-                        surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
-                        foreach (Vector3 surroundingBlock in surroundingBlocks)
+
+                _lookedAtObject = hit.collider.gameObject;
+                _lookedAtObject.GetComponent<Renderer>().material.color = Color.red;
+            }
+            else
+            {
+                if (_lookedAtObject != null)
+                {
+                    _lookedAtObject.GetComponent<Renderer>().material.color = Color.white;
+                    _lookedAtObject = null;
+                }
+            }
+
+            // on click, add the block to the inventory
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (_lookedAtObject != null)
+                {
+                    var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
+
+
+                    if (AddItem(block))
+                    {
+                        bool success = blockyTerrain.RemoveBlock(block.Location);
+                        if (success)
                         {
-                            var surroundingBlockItem = blockyTerrain.FindBlock(surroundingBlock);
-                            // Instantiate the surrounding block if it exists
-                            if (surroundingBlockItem.Name != null)
+                            Destroy(_lookedAtObject);
+
+                            // Make a list of all six blocks around the block that was just removed
+                            Vector3[] surroundingBlocks = new Vector3[6];
+                            surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
+                            surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
+                            surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
+                            surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
+                            surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
+                            surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
+                            foreach (Vector3 surroundingBlock in surroundingBlocks)
                             {
-                                var foundBlock = blockyTerrain.FindBlock(surroundingBlock);
-                                if (foundBlock.Name != null && !foundBlock.isLoaded)
+                                var surroundingBlockItem = blockyTerrain.FindBlock(surroundingBlock);
+                                // Instantiate the surrounding block if it exists
+                                if (surroundingBlockItem.Name != null)
                                 {
-                                    //Add the block to the terrain, the method also instantiates the block
-                                    blockyTerrain.AddBlock(surroundingBlock, surroundingBlockItem);
-                                    //surroundingBlockPrefab.GetComponent<Renderer>().material.color = Color.red;
+                                    var foundBlock = blockyTerrain.FindBlock(surroundingBlock);
+                                    if (foundBlock.Name != null && !foundBlock.isLoaded)
+                                    {
+                                        //Add the block to the terrain, the method also instantiates the block
+                                        blockyTerrain.AddBlock(surroundingBlock, surroundingBlockItem);
+                                        //surroundingBlockPrefab.GetComponent<Renderer>().material.color = Color.red;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }else if (Input.GetMouseButtonDown(1))
-        {
-            var block = inventory[selectedBlockIndex];
-            if (block.count != 0 && _lookedAtObject != null && block.item.Name != null)
+            else if (Input.GetMouseButtonDown(1))
             {
+                var block = inventory[selectedBlockIndex];
+                if (block.count != 0 && _lookedAtObject != null && block.item.Name != null)
+                {
 
-                var blockPos = _lookedAtObject.transform.position;
-                //Determine which side the raycast hit the looked at object
-                Vector3 hitPoint = hit.point;
-                Vector3 hitNormal = hit.normal;
-                Vector3 hitDirection = hitPoint - blockPos;
-                // Place bloc one over from blockpos in the direction of the hit normal
-                Vector3 placePos = blockPos + hitNormal * blockyTerrain.cubePrefab.transform.localScale.y;
+                    var blockPos = _lookedAtObject.transform.position;
+                    //Determine which side the raycast hit the looked at object
+                    Vector3 hitPoint = hit.point;
+                    Vector3 hitNormal = hit.normal;
+                    Vector3 hitDirection = hitPoint - blockPos;
+                    // Place bloc one over from blockpos in the direction of the hit normal
+                    Vector3 placePos = blockPos + hitNormal * blockyTerrain.cubePrefab.transform.localScale.y;
 
-                //Assume the entity is a block -- REMOVE THIS LATER WHEN WE HAVE MORE ENTITIES
-                var blockItem = (Block) block.item;
+                    //Assume the entity is a block -- REMOVE THIS LATER WHEN WE HAVE MORE ENTITIES
+                    var blockItem = (Block)block.item;
 
-                // Add the block to the terrain
-                var blockToAdd = new Block(blockItem.Name, blockItem.ID, blockItem.Durability, blockItem.MaxDurability, blockItem.StackSize, blockItem.MaxStackSize, placePos, new Vector3(0, 0, 0), new Vector3(1, 1, 1));
-                blockyTerrain.AddBlock(placePos, blockToAdd);
-                // Remove the block from the inventory
-                RemoveItem(selectedBlockIndex);
+                    // Add the block to the terrain
+                    var blockToAdd = new Block(blockItem.Name, blockItem.ID, blockItem.Durability, blockItem.MaxDurability, blockItem.StackSize, blockItem.MaxStackSize, placePos, new Vector3(0, 0, 0), new Vector3(1, 1, 1));
+                    blockyTerrain.AddBlock(placePos, blockToAdd);
+                    // Remove the block from the inventory
+                    RemoveItem(selectedBlockIndex);
+                }
             }
-        }   
+
+        }
+
+        print(inventorySize + " " + inventoryCapacity);
+        print(selectedBlockIndex);
 
         // Scroll wheel to change selected block
         if (Input.GetAxis("Mouse ScrollWheel") > 0f) // forward
@@ -158,6 +174,7 @@ public class PlayerInventory : MonoBehaviour
 
 
         // This block renders the block like its being held in the player's hand, may need tweaking when new blocks or items are added
+        if (selectedItem.item is Block)
         {
 
             // Instantiate a prefab of the selected block childed to the camera
@@ -181,12 +198,33 @@ public class PlayerInventory : MonoBehaviour
                 renderedObject.GetComponent<Collider>().enabled = false;
                 renderedObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             }
+            
 
             if (renderedObject != null)
             {
                 // rotate same as camera
                 renderedObject.transform.rotation = mainCamera.transform.rotation;
             }
+        }
+        else
+        {
+            if (renderedObject != null)
+                Destroy(renderedObject);
+            renderedObject = null;
+        }
+
+        if (selectedItem.item is Tool)
+        {
+            var tool = (Tool) selectedItem.item;
+
+            tool.Update();
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                tool.Use();
+            }
+
+            
         }
 
 
