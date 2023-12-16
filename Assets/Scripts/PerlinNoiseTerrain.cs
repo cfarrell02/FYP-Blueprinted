@@ -78,8 +78,28 @@ public class BlockyTerrain : MonoBehaviour
         }
         previousPlayerPosX = currentPlayerPosX;
         previousPlayerPosZ = currentPlayerPosZ;
-        var surface = GetComponent<NavMeshSurface>();
-        surface.BuildNavMesh();
+
+        VerticalBlocks currentVerti = coordsToHeight[new Vector2(currentPlayerPosX, currentPlayerPosZ)];
+
+        if (!currentVerti.navMeshBuilt)
+        {
+            var surface = GetComponent<NavMeshSurface>();
+            surface.BuildNavMesh();
+            currentVerti.navMeshBuilt = true;
+            // For all loaded blocks, set navMeshBuilt to true
+            foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+            {
+                Vector3 pos = cube.transform.position;
+                Vector2 pos2D = new Vector2(pos.x, pos.z);
+                if (coordsToHeight.ContainsKey(pos2D))
+                {
+                    var selectedBlocks = coordsToHeight[pos2D];
+                    selectedBlocks.navMeshBuilt = true;
+                    coordsToHeight[pos2D] = selectedBlocks;
+                   
+                }
+            }
+        }
     }
 
 
@@ -99,9 +119,6 @@ public class BlockyTerrain : MonoBehaviour
                 if (i == y)
                 {
                     GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
-                    var a = coordsToHeight[currentPos];
-                    a.isLoaded = true;
-                    coordsToHeight[currentPos] = a;
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                     cube.tag = "Cube";
                     cube.transform.parent = transform;
