@@ -24,6 +24,8 @@ public class PlayerInventory : MonoBehaviour
     InventoryItem<Entity>[] inventory;
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
+    private GameObject mainCamera;
+    private GameObject renderedObject;
 
     int selectedBlockIndex = 0;
 
@@ -38,6 +40,7 @@ public class PlayerInventory : MonoBehaviour
     {
        // inventory = new GameObject[inventoryCapacity];
        blockyTerrain = FindObjectOfType<BlockyTerrain>(); // Will only be one instance of BlockyTerrain, hopefully
+        mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         
     }
 
@@ -152,6 +155,40 @@ public class PlayerInventory : MonoBehaviour
             if (selectedBlockIndex < 0)
                 selectedBlockIndex = inventorySize - 1;
         }
+
+
+        // This block renders the block like its being held in the player's hand, may need tweaking when new blocks or items are added
+        {
+
+            // Instantiate a prefab of the selected block childed to the camera
+            var selectedBlock = inventory[selectedBlockIndex];
+            if (selectedBlock.item != null)
+            {
+                if (renderedObject != null)
+                    Destroy(renderedObject);
+
+                var cubePrefab = blockyTerrain.cubePrefab; // Will need to be updated when new blocks are added
+
+                // Set the offset for block placement (down and to the right from the camera)
+                Vector3 placeOffset = mainCamera.transform.forward - mainCamera.transform.up * 0.5f + mainCamera.transform.right * 0.5f;
+
+                // Calculate the position to place the block
+                Vector3 newPosition = mainCamera.transform.position + placeOffset;
+
+                // Instantiate the block at the calculated position
+                renderedObject = Instantiate(cubePrefab, newPosition, Quaternion.identity);
+                // Turn off the collider so the raycast doesn't hit it
+                renderedObject.GetComponent<Collider>().enabled = false;
+                renderedObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            }
+
+            if (renderedObject != null)
+            {
+                // rotate same as camera
+                renderedObject.transform.rotation = mainCamera.transform.rotation;
+            }
+        }
+
 
     }
 
