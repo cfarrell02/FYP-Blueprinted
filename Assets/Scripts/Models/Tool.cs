@@ -48,7 +48,7 @@ public class Sword : Tool
     // Constructor for initialization
     public Sword(
                string name, int durability, int maxDurability,
-                      int stackSize, int maxStackSize, int damage)
+                      int stackSize, int maxStackSize, int damage, GameObject prefab)
     {
         Name = name;
         ID = 100;
@@ -58,6 +58,8 @@ public class Sword : Tool
         MaxStackSize = maxStackSize;
         Damage = damage;
         isLoaded = false;
+        this.prefab = prefab;
+        
 
     }
 
@@ -73,12 +75,15 @@ public class Sword : Tool
         Durability = 0;
         MaxDurability = 0;
         Damage = 0;
+        prefab = null;
     }
 
     public override void Use()
     {
+        Debug.Log("Sword used");
         // Find the enemy that the player is looking at
         RaycastHit hit;
+        //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward, Color.red, 10);
         if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit))
         {
             // If the player is looking at an enemy, damage it
@@ -98,7 +103,7 @@ public class Blueprint : Tool
     // Constructor for initialization
     public Blueprint(
                       string name, int durability, int maxDurability,
-                                           int stackSize, int maxStackSize)
+                                           int stackSize, int maxStackSize, GameObject prefab)
     {
         Name = name;
         ID = 101;
@@ -107,6 +112,7 @@ public class Blueprint : Tool
         StackSize = stackSize;
         MaxStackSize = maxStackSize;
         isLoaded = false;
+        this.prefab = prefab;
 
     }
 
