@@ -13,7 +13,7 @@ public class Block : Entity
     public Block(
         string name, int id, int durability, int maxDurability,
         int stackSize, int maxStackSize, Vector3 location,
-        Vector3 rotation, Vector3 scale)
+        Vector3 rotation, Vector3 scale, GameObject prefab)
     {
         Name = name;
         ID = id;
@@ -25,6 +25,7 @@ public class Block : Entity
         Rotation = rotation;
         Scale = scale;
         isLoaded = false;
+        this.prefab = prefab;
 
     }
 

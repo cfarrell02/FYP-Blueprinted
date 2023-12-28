@@ -124,7 +124,7 @@ public class BlockyTerrain : MonoBehaviour
                     cube.transform.parent = transform;
                 }
 
-                var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one);
+                var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one, cubePrefab);
                 blockItem.isLoaded = i == y;
                 verticalBlocks.Add(blockItem);
             }

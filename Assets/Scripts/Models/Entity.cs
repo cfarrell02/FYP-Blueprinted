@@ -10,4 +10,6 @@ public abstract class Entity
     public int StackSize { get; set; }
     public int MaxStackSize { get; set; }
 
+    public GameObject prefab { get; set; }
+
 }

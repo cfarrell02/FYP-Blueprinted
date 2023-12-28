@@ -144,7 +144,7 @@ GameObject:
   - component: {fileID: 680357216}
   m_Layer: 0
   m_Name: Zombie
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -162,6 +162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Playerpos: {fileID: 1357357804}
+  health: 100
 --- !u!195 &680357217
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -720,6 +721,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryCapacity: 10
+  swordPrefab: {fileID: 6378143962500262662, guid: c994a976ab44de94088e0249865b35dc, type: 3}
+  blueprintPrefab: {fileID: 9051786793774130827, guid: ccac116a2a9424e44984c9c74974ae9a, type: 3}
 --- !u!1 &1549944876
 GameObject:
   m_ObjectHideFlags: 0
