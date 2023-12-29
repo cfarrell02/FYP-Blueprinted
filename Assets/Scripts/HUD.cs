@@ -11,6 +11,7 @@ public class HUD : MonoBehaviour
     // Reference the text mesh pro text object
     public TextMeshProUGUI text;
     public TextMeshProUGUI inventoryText; // Will be replaced with a UI element
+    public TextMeshProUGUI healthText; // Will be replaced with a UI element
 
     public PlayerInventory playerInventoryObject;
 
@@ -49,6 +50,8 @@ public class HUD : MonoBehaviour
             }
         }
         inventoryText.text = inventoryString;
+
+        healthText.text = "Health: " + playerInventoryObject.GetCurrentHealth();
 
     }
 }

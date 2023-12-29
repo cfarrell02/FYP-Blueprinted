@@ -20,8 +20,15 @@ public class PlayerInventory : MonoBehaviour
 {
 
     public int inventoryCapacity = 10;
+    [SerializeField]
     public GameObject swordPrefab;
+    [SerializeField]
     public GameObject blueprintPrefab;
+
+    [SerializeField]
+    private int playerHealth = 100;
+
+    private int currentHealth;
 
     private int inventorySize = 0;
     InventoryItem<Entity>[] inventory;
@@ -46,12 +53,17 @@ public class PlayerInventory : MonoBehaviour
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 
         // Temp add in items to inventory
-        var sword = new Sword("Sword", 100, 100, 1, 1, 10, swordPrefab);
-        inventory[0] = new InventoryItem<Entity>(sword, 1);
-        inventorySize++;
+        //var sword = new Sword("Sword", 100, 100, 1, 1, 10, swordPrefab);
+        //inventory[0] = new InventoryItem<Entity>(sword, 1);
+        //inventorySize++;
         var blueprint = new Blueprint("Blueprint", 1, 1, 1, 1, blueprintPrefab);
-        inventory[1] = new InventoryItem<Entity>(blueprint, 1);
+        inventory[0] = new InventoryItem<Entity>(blueprint, 1);
         inventorySize++;
+
+     //   AddItem(new Sword("Blueprint", 100, 100, 1, 1, 10, blueprintPrefab));
+
+        selectedBlockIndex = 0;
+        currentHealth = playerHealth;
         
     }
 
@@ -62,6 +74,47 @@ public class PlayerInventory : MonoBehaviour
         HandleScrollWheel();
         RenderSelectedItem();
         UseSelectedTool();
+        HandleHealth();
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Pickup")
+        {
+            var pickup = other.gameObject.GetComponent<Pickup>();
+            if (pickup == null) // Pickup is not a pickup
+                return;
+                
+            var pickupItem = pickup.Item;
+
+
+            if (pickup.pickupType == Pickup.PickupType.Health && currentHealth<playerHealth)
+            {
+                currentHealth += pickup.GetValue();
+                if (currentHealth > playerHealth)
+                    currentHealth = playerHealth;
+
+                Destroy(other.gameObject);
+                return;
+            }
+            else
+            {
+                if (AddItem(pickupItem))
+                {
+                    Destroy(other.gameObject);
+                }
+            }
+        }
+
+        if (other.gameObject.tag == "Enemy")
+        {
+            currentHealth -= 10;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+
     }
 
     void CheckBlockInFront()
@@ -76,7 +129,7 @@ public class PlayerInventory : MonoBehaviour
         {
             if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
             {
-                ChangeBlockColor(_lookedAtObject, Color.white);
+                ChangeBlockColor(_lookedAtObject, new Color(.2703f,.6601f,.8773f,1));
             }
 
             if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
@@ -90,9 +143,18 @@ public class PlayerInventory : MonoBehaviour
         {
             if (_lookedAtObject != null)
             {
-                ChangeBlockColor(_lookedAtObject, Color.white);
+                ChangeBlockColor(_lookedAtObject, new Color(.2703f, .6601f, .8773f, 1));
                 _lookedAtObject = null;
             }
+        }
+    }
+
+    void HandleHealth()
+    {
+        if (currentHealth <= 0)
+        {
+            print("Player died!");
+            //TODO: Add death screen
         }
     }
 
@@ -129,10 +191,10 @@ public class PlayerInventory : MonoBehaviour
         var selectedItem = inventory[selectedBlockIndex];
 
         //if (selectedItem.item is Block)
-        {
+        
             // Instantiate block as selected
             var selectedBlock = inventory[selectedBlockIndex];
-            if (selectedBlock.item != null)
+            if (selectedBlock.item != null && selectedBlock.item.prefab != null)
             {
                 if (renderedObject != null)
                     Destroy(renderedObject);
@@ -143,28 +205,34 @@ public class PlayerInventory : MonoBehaviour
 
 
                 //Temp fix for sword being weird
-                if (selectedItem.item is Sword) 
-                    placeOffset = Camera.main.transform.forward  + Camera.main.transform.right * 0.5f;
+                if (selectedItem.item is Sword)
+                    placeOffset = Camera.main.transform.forward + Camera.main.transform.right * 0.5f;
+                else if (selectedItem.item is Blueprint)
+                    placeOffset = Camera.main.transform.forward + Camera.main.transform.right * 0.5f;
 
                 Vector3 newPosition = Camera.main.transform.position + placeOffset;
 
                 renderedObject = Instantiate(selectedItem.item.prefab, newPosition, Quaternion.identity);
-                if (selectedItem.item is Block)
-                renderedObject.GetComponent<Collider>().enabled = false;
-                renderedObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+               
+                var collider = renderedObject.GetComponent<Collider>();
+                if (collider != null)
+                        collider.enabled = false;
+
+                renderedObject.transform.localScale *= 0.5f;
+
+
+                if (renderedObject != null)
+                {
+                    renderedObject.transform.rotation = Camera.main.transform.rotation;
+                }
             }
 
-            if (renderedObject != null)
+            else
             {
-                renderedObject.transform.rotation = Camera.main.transform.rotation;
+                if (renderedObject != null)
+                    Destroy(renderedObject);
+                renderedObject = null;
             }
-        }
-        //else
-        //{
-        //    if (renderedObject != null)
-        //        Destroy(renderedObject);
-        //    renderedObject = null;
-        //}
     }
 
     void UseSelectedTool()
@@ -281,24 +349,21 @@ public class PlayerInventory : MonoBehaviour
 
     }
 
-    bool AddItem(Block item)
+    bool AddItem(Entity item)
     {
         if (inventorySize >= inventoryCapacity)
             return false;
 
-        for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
+        for (int i = 0; i < inventoryCapacity; i++)
         {
-            if (inventory[freeIndex].item !=null && inventory[freeIndex].item.ID == item.ID)
+            if (inventory[i].item != null && inventory[i].item.ID == item.ID)
             {
-                inventory[freeIndex].count++;
+                inventory[i].count++;
                 return true;
             }
-        }
-        for (int freeIndex = 0; freeIndex < inventoryCapacity; freeIndex++)
-        {
-            if (inventory[freeIndex].item == null)
+            else if (inventory[i].item == null)
             {
-                inventory[freeIndex] = new InventoryItem<Entity>(item, 1);
+                inventory[i] = new InventoryItem<Entity>(item, 1);
                 inventorySize++;
                 return true;
             }
@@ -326,7 +391,7 @@ public class PlayerInventory : MonoBehaviour
         return inventory;
     }
 
-    bool RemoveItem(Block item)
+    bool RemoveItem(Entity item)
     {
         for(int itemIndex = 0; itemIndex< inventoryCapacity; ++itemIndex)
         {
@@ -343,6 +408,11 @@ public class PlayerInventory : MonoBehaviour
     public int GetSelectedBlockIndex()
     {
         return selectedBlockIndex;
+    }
+
+    public int GetCurrentHealth()
+    {
+        return currentHealth;
     }
 
 
