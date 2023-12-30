@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -28,6 +29,15 @@ public class Enemy : MonoBehaviour
         {
             Die();
         }
+        StartCoroutine(TurnCapsuleRed());
+    }
+
+    //coroutine method
+    IEnumerator TurnCapsuleRed()
+    {
+        GetComponent<Renderer>().material.color = Color.red;
+        yield return new WaitForSeconds(0.1f);
+        GetComponent<Renderer>().material.color = Color.white;
     }
 
     void Die()
