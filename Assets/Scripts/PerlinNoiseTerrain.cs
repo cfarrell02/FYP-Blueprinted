@@ -83,23 +83,27 @@ public class BlockyTerrain : MonoBehaviour
 
         if (!currentVerti.navMeshBuilt)
         {
-            var surface = GetComponent<NavMeshSurface>();
-            surface.BuildNavMesh();
-            currentVerti.navMeshBuilt = true;
-            // For all loaded blocks, set navMeshBuilt to true
-            foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+            BuildNavmesh();
+        }
+    }
+
+    private void BuildNavmesh()
+    {
+        var surface = GetComponent<NavMeshSurface>();
+        surface.BuildNavMesh();
+        // For all loaded blocks, set navMeshBuilt to true
+        foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+        {
+            Vector3 pos = cube.transform.position;
+            Vector2 pos2D = new Vector2(pos.x, pos.z);
+            if (coordsToHeight.ContainsKey(pos2D))
             {
-                Vector3 pos = cube.transform.position;
-                Vector2 pos2D = new Vector2(pos.x, pos.z);
-                if (coordsToHeight.ContainsKey(pos2D))
-                {
-                    var selectedBlocks = coordsToHeight[pos2D];
-                    selectedBlocks.navMeshBuilt = true;
-                    coordsToHeight[pos2D] = selectedBlocks;
-                   
-                }
+                var selectedBlocks = coordsToHeight[pos2D];
+                selectedBlocks.navMeshBuilt = true;
+                coordsToHeight[pos2D] = selectedBlocks;
             }
         }
+        
     }
 
 
@@ -207,6 +211,7 @@ public class BlockyTerrain : MonoBehaviour
                 if (block.Name != null)
                 {
                     blockList.Remove(block);
+                    BuildNavmesh();
                     return true;
                 }
             }
@@ -242,6 +247,9 @@ public class BlockyTerrain : MonoBehaviour
                 cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
                 cube.tag = "Cube";
                 cube.transform.parent = transform;
+                
+                // Build the new block
+                BuildNavmesh();                
                 return true;
             }
         }

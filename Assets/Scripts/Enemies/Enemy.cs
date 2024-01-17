@@ -11,13 +11,13 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        agent.speed = 1f;
         currentHealth = health;
     }
     void Update()
     {
-
         agent.destination = Playerpos.position;
-
+        
     }
 
     public void TakeDamage(int damage)
