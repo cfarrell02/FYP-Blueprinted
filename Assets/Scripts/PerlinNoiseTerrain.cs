@@ -1,28 +1,43 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 using static UnityEditor.PlayerSettings;
 
 
 public class BlockyTerrain : MonoBehaviour
 {
-    public int gridSizeX = 10;
-    public int gridSizeZ = 10;
+    public int depth = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
     public float perlinNoiseHeight = 3f; // Set a fixed cube height
     public GameObject cubePrefab;
     public Transform playerTransform; // Reference to the player's transform
+    
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
+    [SerializeField]
     int loadDistance = 40; // Distance around the player to load new terrain
-    int loadDistanceMultiplier = 2; // Multiplier for the load distance when generating terrain
+    [SerializeField]
+    int navMeshDistance = 20; // Distance around the player to load new terrain
+    [SerializeField]
+    int newTerrainDistance = 2; // Multiplier for the load distance when generating terrain
+    [SerializeField]
+    int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
+    
 
     private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
+    private NavMeshSurface surface;
 
     void Start()
     {
+        //Get surface in child
+        surface = GetComponentInChildren<NavMeshSurface>();
+
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
         GenerateInitialTerrain();
@@ -32,17 +47,67 @@ public class BlockyTerrain : MonoBehaviour
     {
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
-
+        HandleNavmesh();
         //print(coordsToHeight.Keys.Count);
         // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= loadDistanceMultiplier ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= loadDistanceMultiplier)
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newTerrainDistance ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newTerrainDistance)
         {
             //previousPlayerPosX = currentPlayerPosX;
             //previousPlayerPosZ = currentPlayerPosZ;
             GenerateTerrain();
         }
         UnloadTerrain();
+    }
+
+    void HandleNavmesh()
+    {
+        // // Check if player is near enemies 
+        // var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        // bool enemiesNearby = false;
+        // foreach (var enemy in enemies)
+        // {
+        //     if (Vector3.Distance(enemy.transform.position, playerTransform.position) < navMeshDistance)
+        //     {
+        //         enemiesNearby = true;
+        //         break;
+        //     }
+        // }
+        // if (enemiesNearby)
+        // {
+        //     return;
+        // }
+        //
+        int currentPlayerPosX = (int)playerTransform.position.x;
+        int currentPlayerPosZ = (int)playerTransform.position.z;
+        
+        // Check if the player has moved to a new grid area
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newNavMeshDistance ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newNavMeshDistance)
+        {
+            print("Building navmesh");
+            //Ensure only blocks that are within the navmesh distance are parented to the navmesh
+            foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+            {
+                Vector3 pos = cube.transform.position;
+                print (pos);
+                // Remove cubes outside the visible area from the scene
+                if (Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
+                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance)
+                {
+                    cube.transform.parent = transform;
+                }
+                else
+                {
+                    cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
+                }
+            }
+            BuildNavmesh();
+            
+            previousPlayerPosX = currentPlayerPosX;
+            previousPlayerPosZ = currentPlayerPosZ;
+        }
+        
     }
 
     void GenerateInitialTerrain()
@@ -54,13 +119,13 @@ public class BlockyTerrain : MonoBehaviour
                 GenerateCubeAtPosition(x, z);
             }
         }
-        var surface = GetComponent<NavMeshSurface>();
         surface.BuildNavMesh();
     }
     void GenerateTerrain()
     {
-        int currentPlayerPosX = (int)playerTransform.position.x;
-        int currentPlayerPosZ = (int)playerTransform.position.z;
+        var position = playerTransform.position;
+        int currentPlayerPosX = (int)position.x;
+        int currentPlayerPosZ = (int)position.z;
 
 
         for (int x = currentPlayerPosX - loadDistance; x < currentPlayerPosX + loadDistance; x++)
@@ -77,33 +142,36 @@ public class BlockyTerrain : MonoBehaviour
                 GenerateCubeAtPosition(x, z);
             }
         }
-        previousPlayerPosX = currentPlayerPosX;
-        previousPlayerPosZ = currentPlayerPosZ;
-
-        VerticalBlocks currentVerti = coordsToHeight[new Vector2(currentPlayerPosX, currentPlayerPosZ)];
-
-        if (!currentVerti.navMeshBuilt)
-        {
-            BuildNavmesh();
-        }
+       
     }
 
     private void BuildNavmesh()
-    {
-        var surface = GetComponent<NavMeshSurface>();
-        surface.BuildNavMesh();
-        // For all loaded blocks, set navMeshBuilt to true
-        foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
-        {
-            Vector3 pos = cube.transform.position;
-            Vector2 pos2D = new Vector2(pos.x, pos.z);
-            if (coordsToHeight.ContainsKey(pos2D))
-            {
-                var selectedBlocks = coordsToHeight[pos2D];
-                selectedBlocks.navMeshBuilt = true;
-                coordsToHeight[pos2D] = selectedBlocks;
-            }
-        }
+    { 
+        // Would love to do this async but it doesn't work
+        // {
+        //     NavMeshData navMeshData = surface.navMeshData;
+        //     NavMeshBuildSettings buildSettings = surface.GetBuildSettings();
+        //     List<NavMeshBuildSource> sources = new List<NavMeshBuildSource>();
+        //     Bounds sourceBounds = navMeshData.sourceBounds;
+        //     NavMeshBuilder.CollectSources(sourceBounds, LayerMask.GetMask("NavMesh"), NavMeshCollectGeometry.RenderMeshes, 0, new List<NavMeshBuildMarkup>(), sources);
+        //
+        //     NavMeshBuilder.UpdateNavMeshDataAsync(navMeshData, buildSettings, sources, sourceBounds);
+        // }
+        
+        surface.BuildNavMesh(); // Does not scale well
+
+        // // For all loaded blocks, set navMeshBuilt to true
+        // foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+        // {
+        //     Vector3 pos = cube.transform.position;
+        //     Vector2 pos2D = new Vector2(pos.x, pos.z);
+        //     if (coordsToHeight.ContainsKey(pos2D))
+        //     {
+        //         var selectedBlocks = coordsToHeight[pos2D];
+        //         selectedBlocks.navMeshBuilt = true;
+        //         coordsToHeight[pos2D] = selectedBlocks;
+        //     }
+        // }
         
     }
 
@@ -112,55 +180,71 @@ public class BlockyTerrain : MonoBehaviour
     {
         Vector2 currentPos = new Vector2(x, z);
 
-        if (!coordsToHeight.ContainsKey(currentPos))
+        if (coordsToHeight.ContainsKey(currentPos))
+        {
+            var blockItem = coordsToHeight[currentPos].blocks;
+
+            foreach (var block in blockItem)
+            {
+                if (block.isLoaded)
+                {
+                    InstantiateCube(block.Location);
+                }
+            }
+        }
+        else
         {
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinNoiseHeight;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
+
             List<Block> verticalBlocks = new List<Block>();
-            for (int i = -5; i <= y; ++i)
+
+            for (int i = -depth; i <= y; ++i)
             {
                 Vector3 cubePos = new Vector3(x, i, z);
 
                 bool toBeLoaded = i == y;
                 
-                
-                
+                var cube = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one, cubePrefab);
 
-                if (i == y) // Need better check to ensure blocks that arent the top but are seen are loaded
+                // This is too laggy
+                // if (!toBeLoaded)
+                // { 
+                //     // Checking not top layer blocks to see if they need to be loaded
+                //     var surroundingBlocks = GetSurroundingBlocks(cube);
+                //     toBeLoaded = surroundingBlocks.Any(surroundingBlock => FindBlock(surroundingBlock).Name == null);
+                // }
+
+                if (toBeLoaded)
                 {
-                    GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
-                    cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                    cube.tag = "Cube";
-                    cube.transform.parent = transform;
+                    InstantiateCube(cubePos);
                 }
+                cube.isLoaded = toBeLoaded;
 
-                var blockItem = new Block("Cube", 1, 100, 100, 1, 64, cubePos, Vector3.zero, Vector3.one, cubePrefab);
-                blockItem.isLoaded = i == y;
-                verticalBlocks.Add(blockItem);
+                verticalBlocks.Add(cube);
             }
-
 
             coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true, navMeshBuilt = false });
         }
+    }
+
+    void InstantiateCube(Vector3 position)
+    {
+        GameObject cube = Instantiate(cubePrefab, position, Quaternion.identity);
+        cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+        cube.tag = "Cube";
+        cube.name = "Cube: " + position;
+        cube.isStatic = true;
+        float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
+        if (distanceToPlayer < navMeshDistance)
+        {
+            cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
+        }
         else
         {
-            var blockItem = coordsToHeight[currentPos].blocks;
-
-            for (int i = 0; i < blockItem.Count; ++i)
-            {
-                Block block = blockItem[i];
-                if (block.isLoaded)
-                {
-                    GameObject cube = Instantiate(cubePrefab, block.Location, Quaternion.identity);
-                    var a = coordsToHeight[currentPos];
-                    a.isLoaded = true;
-                    coordsToHeight[currentPos] = a;
-                    cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                    cube.tag = "Cube";
-                    cube.transform.parent = transform;
-                }
-            }
+            cube.transform.parent = transform;
         }
+
     }
 
 
@@ -218,25 +302,10 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     blockList.Remove(block);
 
-                    var allCubes = GameObject.FindGameObjectsWithTag("Cube");
-                    
-                    foreach (GameObject cube in allCubes)
-                    {
-                        if (cube.transform.position == position)
-                        {
-                            Destroy(cube);
-                        }
-                    }
-                    // Destroy(GameObject.Find("Cube(Clone)"));
-                    // TODO Find a way to destroy the cube at the position
+                    var cubeToRemove = GameObject.Find("Cube: " + position);
+                    Destroy(cubeToRemove);
 
-                    Vector3[] surroundingBlocks = new Vector3[6];
-                    surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
-                    surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
-                    surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
-                    surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
-                    surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
-                    surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
+                    var surroundingBlocks = GetSurroundingBlocks(block);
 
 
                     foreach (Vector3 surroundingBlock in surroundingBlocks)
@@ -259,6 +328,19 @@ public class BlockyTerrain : MonoBehaviour
         return false;
     }
 
+    private Vector3[] GetSurroundingBlocks(Block block)
+    {
+        Vector3[] surroundingBlocks = new Vector3[6];
+        surroundingBlocks[0] = new Vector3(block.Location.x + cubeHeight, block.Location.y, block.Location.z);
+        surroundingBlocks[1] = new Vector3(block.Location.x - cubeHeight, block.Location.y, block.Location.z);
+        surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + cubeHeight, block.Location.z);
+        surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - cubeHeight, block.Location.z);
+        surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + cubeHeight);
+        surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - cubeHeight);
+        return surroundingBlocks;
+    }
+
+
     public bool AddBlock(Vector3 position, Block block)
     {
         Vector2 pos = new Vector2(position.x, position.z);
@@ -280,13 +362,11 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     blockList.Add(block);
                 }
-                var cube = Instantiate(cubePrefab, position, Quaternion.identity);
+                InstantiateCube(position);
                 var a = coordsToHeight[pos];
                 a.isLoaded = true;
                 coordsToHeight[pos] = a;
-                cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                cube.tag = "Cube";
-                cube.transform.parent = transform;
+
                 
                 // Build the new block
                 BuildNavmesh();                

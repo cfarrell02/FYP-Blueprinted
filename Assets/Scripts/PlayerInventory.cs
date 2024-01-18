@@ -194,9 +194,9 @@ public class PlayerInventory : MonoBehaviour
         
             // Instantiate block as selected
             var selectedBlock = inventory[selectedBlockIndex];
-            if (selectedBlock.item != null && selectedBlock.item.prefab != null)
+            if (selectedBlock.item != null && selectedBlock.item.prefab)
             {
-                if (renderedObject != null)
+                if (renderedObject)
                     Destroy(renderedObject);
 
                 //var cubePrefab = blockyTerrain.cubePrefab;
@@ -215,13 +215,13 @@ public class PlayerInventory : MonoBehaviour
                 renderedObject = Instantiate(selectedItem.item.prefab, newPosition, Quaternion.identity);
                
                 var collider = renderedObject.GetComponent<Collider>();
-                if (collider != null)
+                if (collider)
                         collider.enabled = false;
 
                 renderedObject.transform.localScale *= 0.5f;
 
 
-                if (renderedObject != null)
+                if (renderedObject)
                 {
                     renderedObject.transform.rotation = Camera.main.transform.rotation;
                 }
@@ -229,7 +229,7 @@ public class PlayerInventory : MonoBehaviour
 
             else
             {
-                if (renderedObject != null)
+                if (renderedObject)
                     Destroy(renderedObject);
                 renderedObject = null;
             }
@@ -255,7 +255,7 @@ public class PlayerInventory : MonoBehaviour
     {
         var selectedItem = inventory[selectedBlockIndex];
 
-        if (_lookedAtObject != null)
+        if (_lookedAtObject)
         {
             var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
 
