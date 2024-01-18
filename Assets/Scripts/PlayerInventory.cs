@@ -261,37 +261,15 @@ public class PlayerInventory : MonoBehaviour
 
             if (AddItem(block))
             {
-                bool success = blockyTerrain.RemoveBlock(block.Location);
-                if (success)
-                {
-                    Destroy(_lookedAtObject);
+                blockyTerrain.RemoveBlock(block.Location);
+                // {
+                //     Destroy(_lookedAtObject); //TODO Move this to the blockyTerrain class
+                // }
 
-                    Vector3[] surroundingBlocks = new Vector3[6];
-                    surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
-                    surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
-                    surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
-                    surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
-                    surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
-                    surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
-
-
-                    foreach (Vector3 surroundingBlock in surroundingBlocks)
-                    {
-                        var surroundingBlockItem = blockyTerrain.FindBlock(surroundingBlock);
-                        if (surroundingBlockItem.Name != null)
-                        {
-                            var foundBlock = blockyTerrain.FindBlock(surroundingBlock);
-                            if (foundBlock.Name != null && !foundBlock.isLoaded)
-                            {
-                                blockyTerrain.AddBlock(surroundingBlock, surroundingBlockItem);
-                            }
-                        }
-                    }
-                }
             }
         }
     }
-
+    
     void PlaceBlockFromInventory()
     {
         // Raycast from the camera to the block in front of the player

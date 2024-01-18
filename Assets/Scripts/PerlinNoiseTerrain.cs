@@ -10,6 +10,7 @@ public class BlockyTerrain : MonoBehaviour
     public int gridSizeZ = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
+    public float perlinNoiseHeight = 3f; // Set a fixed cube height
     public GameObject cubePrefab;
     public Transform playerTransform; // Reference to the player's transform
 
@@ -113,14 +114,19 @@ public class BlockyTerrain : MonoBehaviour
 
         if (!coordsToHeight.ContainsKey(currentPos))
         {
-            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * 3f;
+            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinNoiseHeight;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
             List<Block> verticalBlocks = new List<Block>();
             for (int i = -5; i <= y; ++i)
             {
                 Vector3 cubePos = new Vector3(x, i, z);
 
-                if (i == y)
+                bool toBeLoaded = i == y;
+                
+                
+                
+
+                if (i == y) // Need better check to ensure blocks that arent the top but are seen are loaded
                 {
                     GameObject cube = Instantiate(cubePrefab, cubePos, Quaternion.identity);
                     cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
@@ -211,6 +217,40 @@ public class BlockyTerrain : MonoBehaviour
                 if (block.Name != null)
                 {
                     blockList.Remove(block);
+
+                    var allCubes = GameObject.FindGameObjectsWithTag("Cube");
+                    
+                    foreach (GameObject cube in allCubes)
+                    {
+                        if (cube.transform.position == position)
+                        {
+                            Destroy(cube);
+                        }
+                    }
+                    // Destroy(GameObject.Find("Cube(Clone)"));
+                    // TODO Find a way to destroy the cube at the position
+
+                    Vector3[] surroundingBlocks = new Vector3[6];
+                    surroundingBlocks[0] = new Vector3(block.Location.x + 1, block.Location.y, block.Location.z);
+                    surroundingBlocks[1] = new Vector3(block.Location.x - 1, block.Location.y, block.Location.z);
+                    surroundingBlocks[2] = new Vector3(block.Location.x, block.Location.y + 1, block.Location.z);
+                    surroundingBlocks[3] = new Vector3(block.Location.x, block.Location.y - 1, block.Location.z);
+                    surroundingBlocks[4] = new Vector3(block.Location.x, block.Location.y, block.Location.z + 1);
+                    surroundingBlocks[5] = new Vector3(block.Location.x, block.Location.y, block.Location.z - 1);
+
+
+                    foreach (Vector3 surroundingBlock in surroundingBlocks)
+                    {
+                        var surroundingBlockItem = FindBlock(surroundingBlock);
+                        if (surroundingBlockItem.Name != null)
+                        {
+                            var foundBlock = FindBlock(surroundingBlock);
+                            if (foundBlock.Name != null && !foundBlock.isLoaded)
+                            {
+                                AddBlock(surroundingBlock, surroundingBlockItem);
+                            }
+                        }
+                    }
                     BuildNavmesh();
                     return true;
                 }
