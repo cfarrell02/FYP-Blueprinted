@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.AI.Navigation;
@@ -7,37 +6,28 @@ using UnityEngine.AI;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using static UnityEditor.PlayerSettings;
-using Random = UnityEngine.Random;
 
 
-public class BlockyTerrain : MonoBehaviour
+public class ProceduralGenerator : MonoBehaviour
 {
     public int depth = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
     public float perlinNoiseHeight = 3f; // Set a fixed cube height
     public GameObject cubePrefab;
-    public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of blocks/enemies
     public Transform playerTransform; // Reference to the player's transform
     
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
-    [SerializeField]
-    int loadDistance = 40; // Distance around the player to load new terrain
-    [SerializeField]
-    int navMeshDistance = 20; // Distance around the player to load new terrain
-    [SerializeField]
-    int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
-    [SerializeField]
-    int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
-    
-    
+
+    [SerializeField] 
+    private int initialLoadDistance = 1000;
+
     
 
     private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
     private NavMeshSurface surface;
-    private float timer = 0f;
 
     void Start()
     {
@@ -46,111 +36,27 @@ public class BlockyTerrain : MonoBehaviour
 
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
-        GenerateInitialTerrain();
+        GenerateTerrain(); // Need to add loading screen while this is happening
     }
 
     void Update()
     {
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
-        HandleNavmesh();
-        //print(coordsToHeight.Keys.Count);
-        // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newTerrainDistance ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newTerrainDistance)
-        {
-            previousPlayerPosX = currentPlayerPosX;
-            previousPlayerPosZ = currentPlayerPosZ;
-            GenerateTerrain();
-            UnloadTerrain();
-
-        }
-        HandleEnemySpawn();
+        // HandleNavmesh();
+        // //print(coordsToHeight.Keys.Count);
+        // // Check if the player has moved to a new grid area
+        // if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newTerrainDistance ||
+        //     Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newTerrainDistance)
+        // {
+        //     //previousPlayerPosX = currentPlayerPosX;
+        //     //previousPlayerPosZ = currentPlayerPosZ;
+        //     GenerateTerrain();
+        // }
+        // UnloadTerrain();
     }
 
-    void HandleNavmesh()
-    {
-        int currentPlayerPosX = (int)playerTransform.position.x;
-        int currentPlayerPosZ = (int)playerTransform.position.z;
-        
-        // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newNavMeshDistance ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newNavMeshDistance)
-        {
-            print("Building navmesh");
-            //Ensure only blocks that are within the navmesh distance are parented to the navmesh
-            foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
-            {
-                Vector3 pos = cube.transform.position;
-                // print (pos);
-                // Remove cubes outside the visible area from the scene
-                if (Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
-                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance)
-                {
-                    cube.transform.parent = transform;
-                }
-                else
-                {
-                    cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
-                }
-            }
-            BuildNavmesh();
-            
 
-        }
-    }
-
-    void HandleEnemySpawn()
-    {
-        timer += Time.deltaTime;
-        
-        if (timer >= 5f && GameObject.FindGameObjectsWithTag("Enemy").Length < 10)
-        {
-            timer = 0f;
-            float distanceToSpawn = 10f;
-            for (int i = 0; i < 10; i++) // Attempt to find a block to spawn the enemy on 10 times, give up after that
-            {
-                //Pick a block to spawn the enemy on
-                Vector3 spawnPos = new Vector3(
-                    Random.Range(playerTransform.position.x - distanceToSpawn,
-                        playerTransform.position.x + distanceToSpawn), 0,
-                    Random.Range(playerTransform.position.z - distanceToSpawn,
-                        playerTransform.position.z + distanceToSpawn));
-                //Check if the block is loaded
-                Vector2 pos = new Vector2(Mathf.Floor(spawnPos.x), Mathf.Floor(spawnPos.z));
-                if (coordsToHeight.ContainsKey(pos))
-                {
-                    var blockList = coordsToHeight[pos].blocks;
-                    print("Found block list");
-                    if (blockList.Count > 0)
-                    {
-                        Block block = blockList.ElementAt(blockList.Count - 1);
-                        if (block.Name != null)
-                        {
-                            //Spawn the enemy
-                            GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                            var enemyScript = enemy.GetComponent<Enemy>();
-                            enemyScript.Playerpos = playerTransform;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-    }
-
-    void GenerateInitialTerrain()
-    {
-        for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
-        {
-            for (int z = previousPlayerPosZ - loadDistance; z < previousPlayerPosZ + loadDistance; z++)
-            {
-                GenerateCubeAtPosition(x, z);
-            }
-        }
-        surface.BuildNavMesh();
-    }
     void GenerateTerrain()
     {
         var position = playerTransform.position;
@@ -158,17 +64,19 @@ public class BlockyTerrain : MonoBehaviour
         int currentPlayerPosZ = (int)position.z;
 
 
-        for (int x = currentPlayerPosX - loadDistance; x < currentPlayerPosX + loadDistance; x++)
+        for (int x = currentPlayerPosX - initialLoadDistance; x < currentPlayerPosX + initialLoadDistance; x++)
         {
+            print("\n");
 
-
-            for (int z = currentPlayerPosZ - loadDistance; z < currentPlayerPosZ + loadDistance; z++)
+            for (int z = currentPlayerPosZ - initialLoadDistance; z < currentPlayerPosZ + initialLoadDistance; z++)
             {
                
                 if (coordsToHeight.ContainsKey(new Vector2(x, z)) && coordsToHeight[new Vector2(x, z)].isLoaded)
                 {
                     continue;
                 }
+
+                print("|");
                 GenerateCubeAtPosition(x, z);
             }
         }
@@ -265,55 +173,48 @@ public class BlockyTerrain : MonoBehaviour
         cube.tag = "Cube";
         cube.name = "Cube: " + position;
         cube.isStatic = true;
-        float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
-        if (distanceToPlayer < navMeshDistance)
-        {
-            cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
-        }
-        else
-        {
-            cube.transform.parent = transform;
-        }
+        cube.transform.parent = transform;
+
 
     }
 
 
 
-    void UnloadTerrain()
-    {
-        GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
-
-        foreach (GameObject cube in cubes)
-        {
-            Vector3 pos = cube.transform.position;
-            // Remove cubes outside the visible area from the scene
-            if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
-                Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
-            {
-                Block block = FindBlock(pos);
-                //block.isLoaded = false;
-                //place block in the dictionary
-                Vector2 pos2D = new Vector2(pos.x, pos.z);
-                var blockList = coordsToHeight.ContainsKey(pos2D) ? coordsToHeight[pos2D].blocks: new List<Block>();
-                if (blockList.Count == 0)
-                {
-                    continue;
-                }
-                for (int i = 0; i < blockList.Count; ++i)
-                {
-                    if (blockList[i].Location == pos)
-                    {
-                        blockList[i] = block;
-                        break;
-                    }
-                }
-                var a = coordsToHeight[pos2D];  
-                a.isLoaded = false;
-                coordsToHeight[pos2D] = a;
-                Destroy(cube); // Remove cube from the scene
-            }
-        }
-    }
+    // void UnloadTerrain()
+    // {
+    //     GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
+    //
+    //     foreach (GameObject cube in cubes)
+    //     {
+    //         Vector3 pos = cube.transform.position;
+    //         // Remove cubes outside the visible area from the scene
+    //         if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
+    //             Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
+    //         {
+    //             Block block = FindBlock(pos);
+    //             //block.isLoaded = false;
+    //             //place block in the dictionary
+    //             Vector2 pos2D = new Vector2(pos.x, pos.z);
+    //             var blockList = coordsToHeight.ContainsKey(pos2D) ? coordsToHeight[pos2D].blocks: new List<Block>();
+    //             if (blockList.Count == 0)
+    //             {
+    //                 continue;
+    //             }
+    //             for (int i = 0; i < blockList.Count; ++i)
+    //             {
+    //                 if (blockList[i].Location == pos)
+    //                 {
+    //                     blockList[i] = block;
+    //                     break;
+    //                 }
+    //             }
+    //             var a = coordsToHeight[pos2D];  
+    //             a.isLoaded = false;
+    //             coordsToHeight[pos2D] = a;
+    //             Destroy(cube); // Remove cube from the scene
+    //         }
+    //     }
+    // }
     public Dictionary<Vector2, VerticalBlocks> getHeightMap()
     {
         return coordsToHeight;
@@ -434,16 +335,4 @@ public class BlockyTerrain : MonoBehaviour
     }
 }
 
-public struct VerticalBlocks
-{
-    public List<Block> blocks { get; set; }
-    public bool isLoaded { get; set; }
-    public bool navMeshBuilt { get; set; }
 
-    public VerticalBlocks(List<Block> blocks, bool isLoaded, bool navMeshBuilt)
-    {
-        this.blocks = blocks;
-        this.isLoaded = isLoaded;
-        this.navMeshBuilt = navMeshBuilt;
-    }
-}
