@@ -7,12 +7,18 @@ public class Enemy : MonoBehaviour
     UnityEngine.AI.NavMeshAgent agent;
     public int health = 100;
     private int currentHealth;
+    private Renderer rend;
     // Start is called before the first frame update
     void Start()
     {
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         agent.speed = 1f;
         currentHealth = health;
+        rend = GetComponent<Renderer>();
+        if (rend == null)
+        {
+            rend = GetComponentInChildren<Renderer>();
+        }
     }
     void Update()
     {
@@ -35,9 +41,9 @@ public class Enemy : MonoBehaviour
     //coroutine method
     IEnumerator TurnCapsuleRed()
     {
-        GetComponent<Renderer>().material.color = Color.red;
+        rend.material.color = Color.red;
         yield return new WaitForSeconds(0.1f);
-        GetComponent<Renderer>().material.color = Color.white;
+        rend.material.color = Color.white;
     }
 
     void Die()

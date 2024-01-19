@@ -90,7 +90,7 @@ public class BlockyTerrain : MonoBehaviour
             foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
             {
                 Vector3 pos = cube.transform.position;
-                print (pos);
+                // print (pos);
                 // Remove cubes outside the visible area from the scene
                 if (Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
                     Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance)
