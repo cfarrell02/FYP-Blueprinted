@@ -18,7 +18,6 @@ public class BlockyTerrain : MonoBehaviour
     public float perlinNoiseHeight = 3f; // Set a fixed cube height
     public GameObject cubePrefab;
     public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of blocks/enemies
-    public Transform playerTransform; // Reference to the player's transform
     
 
     int previousPlayerPosX;
@@ -31,19 +30,29 @@ public class BlockyTerrain : MonoBehaviour
     int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField]
     int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
+    [SerializeField]
+    bool spawnEnemies = true;
     
     
-    
-
+    private Transform playerTransform;
     private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
     private NavMeshSurface surface;
     private float timer = 0f;
+
+    private void Awake()
+    {
+        var allCubes = GameObject.FindGameObjectsWithTag("Cube");
+        foreach (var cube in allCubes)
+        {
+            Destroy(cube);
+        }
+    }
 
     void Start()
     {
         //Get surface in child
         surface = GetComponentInChildren<NavMeshSurface>();
-
+        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
         GenerateInitialTerrain();
@@ -65,7 +74,8 @@ public class BlockyTerrain : MonoBehaviour
             UnloadTerrain();
 
         }
-        HandleEnemySpawn();
+        if (spawnEnemies)
+            HandleEnemySpawn();
     }
 
     void HandleNavmesh()
