@@ -8,6 +8,7 @@ public class LightingManager : MonoBehaviour
     [SerializeField] private LightingPreset preset;
     
     [SerializeField, Range(0, 24)] private float timeOfDay;
+
     // Start is called before the first frame update
     void Start()
     {

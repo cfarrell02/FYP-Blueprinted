@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caa93434261a23141b23cbee19f0526c, type: 3}
+  m_Name: Health
+  m_EditorClassIdentifier: 
+  maxDurability: 1
+  name: Health
+  id: 2000
+  maxStackSize: 20
+  prefab: {fileID: 2318069271948005009, guid: 92272f10c4a8c8d4ea82bd1847176a7c, type: 3}
+  renderOffset: {x: 0, y: 0, z: 0}
+  renderRotation: {x: 0, y: 0, z: 0}
+  itemType: 4
+  speed: 0
+  damage: 0
+  value: 20

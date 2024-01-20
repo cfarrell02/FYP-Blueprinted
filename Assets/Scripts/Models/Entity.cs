@@ -2,14 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Entity
+public abstract class Entity : ScriptableObject
 {
-    public string Name { get; set; }
-    public int ID { get; set; }
-    public bool isLoaded { get; set; }
-    public int StackSize { get; set; }
-    public int MaxStackSize { get; set; }
-
-    public GameObject prefab { get; set; }
+    protected int durability ;
+    public int maxDurability ;
+    public string name ;
+    public int id ;
+    protected int stackSize ;
+    public int maxStackSize ;
+    public GameObject prefab ;
+    public Vector3 renderOffset ;
+    public Vector3 renderRotation ;
 
 }

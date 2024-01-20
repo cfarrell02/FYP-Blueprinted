@@ -6,7 +6,7 @@ using System;
 
 public class HUD : MonoBehaviour
 {
-    private readonly String prototypeVersion = "prototype-1";
+    private readonly String prototypeVersion = "prototype-2";
 
     // Reference the text mesh pro text object
     public TextMeshProUGUI text;
@@ -32,7 +32,6 @@ public class HUD : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         string inventoryString = "Inventory: ";
         for (int i = 0; i < inventory.Length; i++)
         {
@@ -42,7 +41,7 @@ public class HUD : MonoBehaviour
                 {
                     inventoryString += "<color=red>";
                 }
-                inventoryString += inventory[i].item.Name + "(" + inventory[i].count + ") ";
+                inventoryString += inventory[i].item.name + "(" + inventory[i].count + ") ";
                 if (playerInventoryObject.GetSelectedBlockIndex() == i)
                 {
                     inventoryString += "</color>";
