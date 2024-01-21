@@ -6,7 +6,7 @@ Project Blueprinted is an open-world survival game that blends tower defense ele
 ## Branches
 
 - **[Prototype-1](https://github.com/cfarrell02/FYP-Blueprinted/tree/prototype-1)** Includes initial development with low-level implementations for procedural generation, AI, and resource management.
-- **Prototype-2:** Expands features with a mix of low to medium level implementations for key game aspects.
+- **[Prototype-2](https://github.com/cfarrell02/FYP-Blueprinted/tree/prototype-2)** Expands features with a mix of low to medium level implementations for key game aspects.
 - **Prototype-3:** Focuses on advanced gameplay and immersion, integrating medium to advanced implementations for procedural generation, AI, and resource management.
 - **Prototype-4:** Represents the refined stage with advanced implementations, aiming for a polished game experience.
 
