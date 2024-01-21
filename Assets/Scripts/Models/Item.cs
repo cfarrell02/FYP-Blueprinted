@@ -21,10 +21,38 @@ public class Item : Entity
     public float speed;
     public float damage;
     public float value;
+    
+    private GameObject player;
+    
 
-    public void Use()
+    public bool Use()
     {
+        player = GameObject.FindWithTag("Player");
         durability--;
+        switch (itemType)
+        {
+            case ItemType.Sword:
+                Debug.Log("You used a sword");
+                break;
+            case ItemType.Blueprint:
+                Debug.Log("You used a blueprint");
+                break;
+            case ItemType.Food:
+                Debug.Log("You used food");
+                break;
+            case ItemType.Key:
+                Debug.Log("You used a key");
+                break;
+            case ItemType.Health:
+                Debug.Log("You used health");
+                var playerInventory = player.GetComponent<PlayerInventory>();
+                return playerInventory.AddHealth((int)value);
+                
+                break;
+            
+        }
+
+        return false;
     }
 
     public void Break()

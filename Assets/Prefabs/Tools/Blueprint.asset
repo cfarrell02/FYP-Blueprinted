@@ -18,7 +18,7 @@ MonoBehaviour:
   maxStackSize: 1
   prefab: {fileID: 9051786793774130827, guid: ccac116a2a9424e44984c9c74974ae9a, type: 3}
   renderOffset: {x: 0.5, y: -0.2, z: 1}
-  renderRotation: {x: 0, y: 0, z: 0}
+  renderRotation: {x: 1, y: 1}
   itemType: 1
   speed: 2
   damage: 0

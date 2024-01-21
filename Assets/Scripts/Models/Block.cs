@@ -17,14 +17,13 @@ public class Block : Entity
     // Constructor for initialization
     public Block(
         string name, int id, int durability, int maxDurability,
-        int stackSize, int maxStackSize, Vector3 location,
+         int maxStackSize, Vector3 location,
         Vector3 rotation, Vector3 scale, GameObject prefab)
     {
         this.name = name;
         this.id = id;
         this.durability = durability;
         this.maxDurability = maxDurability;
-        this.stackSize = stackSize;
         this.maxDurability = maxStackSize;
         this.location = location;
         this.rotation = rotation;
@@ -39,7 +38,6 @@ public class Block : Entity
         id = 0;
         durability = 0;
         maxDurability = 0;
-        stackSize = 0;
         maxStackSize = 0;
         location = new Vector3(0, 0, 0);
         rotation = new Vector3(0, 0, 0);
@@ -54,13 +52,13 @@ public class Block : Entity
         id = block.id;
         durability = block.durability;
         maxDurability = block.maxDurability;
-        stackSize = block.stackSize;
         maxStackSize = block.maxStackSize;
         location = block.location;
         rotation = block.rotation;
         scale = block.scale;
         isLoaded = block.isLoaded;
         prefab = block.prefab;
+        renderOffset = block.renderOffset;
     }
 
 

@@ -61,7 +61,6 @@ public class PlayerInventory : MonoBehaviour
             AddItem(startingItems[i]);
         }
         
-        RenderSelectedItem();
 
         
     }
@@ -69,10 +68,11 @@ public class PlayerInventory : MonoBehaviour
     void Update()
     {
         CheckBlockInFront();
-        HandleMouseClicks();
         HandleScrollWheel();
         UseSelectedTool();
         HandleHealth();
+        RenderSelectedItem();
+
     }
 
     void OnTriggerEnter(Collider other)
@@ -82,20 +82,6 @@ public class PlayerInventory : MonoBehaviour
             var pickup = other.gameObject.GetComponent<Pickup>();
             if (pickup == null) // Pickup is not a pickup
                 return;
-
-            if (pickup.item is Item)
-            {
-                var item = (Item)pickup.item; // Special case for health / will need other like this for any consumables
-                if (item.itemType == Item.ItemType.Health)
-                {
-                    if (currentHealth == playerHealth)
-                        return;
-                    
-                    currentHealth += (int)item.value;
-                    if (currentHealth > playerHealth)
-                        currentHealth = playerHealth;
-                }
-            }
             
             AddItem(pickup.item);
             Destroy(other.gameObject);
@@ -151,20 +137,7 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
-    void HandleMouseClicks()
-    {
-        if (Input.GetMouseButtonDown(0)) 
-        {
-            
-            AddBlockToInventory();
-        }
-        else if (Input.GetMouseButtonDown(1) && inventory[selectedBlockIndex].item is Block)
-        {
-            PlaceBlockFromInventory();
-        }
 
-
-    }
 
     void HandleScrollWheel()
     {
@@ -173,14 +146,12 @@ public class PlayerInventory : MonoBehaviour
             selectedBlockIndex++;
             if (selectedBlockIndex >= inventorySize)
                 selectedBlockIndex = 0;
-            RenderSelectedItem();
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
         {
             selectedBlockIndex--;
             if (selectedBlockIndex < 0)
                 selectedBlockIndex = inventorySize - 1;
-            RenderSelectedItem();
         }
     }
 
@@ -197,16 +168,23 @@ public class PlayerInventory : MonoBehaviour
             if (renderedObject)
                 Destroy(renderedObject);
 
-            //var cubePrefab = blockyTerrain.cubePrefab;
-            Vector3 offset = selectedItem.item.renderOffset;
+        // Assuming selectedItem.item.prefab is the prefab you want to instantiate
 
-            Vector3 placeOffset = Camera.main.transform.forward *offset.z + Camera.main.transform.up * offset.y + Camera.main.transform.right * offset.x;
-            
-            Vector3 newPosition = Camera.main.transform.position + placeOffset;
+        Vector3 offset = selectedItem.item.renderOffset;
 
-            renderedObject = Instantiate(selectedItem.item.prefab, newPosition, Quaternion.identity);
-            renderedObject.transform.parent = mainCamera.transform;
-            renderedObject.layer = 7;
+        // Calculate the position based on the camera's position and orientation
+        Vector3 placeOffset = Camera.main.transform.forward * offset.z + Camera.main.transform.up * offset.y + Camera.main.transform.right * offset.x;
+        Vector3 newPosition = Camera.main.transform.position + placeOffset;
+
+        // Instantiate the object at the calculated position and face it towards the camera
+        renderedObject = Instantiate(selectedItem.item.prefab, newPosition, Quaternion.LookRotation(Camera.main.transform.forward));
+
+        // Set the object as a child of the camera
+        renderedObject.transform.parent = mainCamera.transform;
+
+        // Set the layer (if needed)
+        renderedObject.layer = 7;
+
                
             var collider = renderedObject.GetComponent<Collider>();
             if (collider)
@@ -228,17 +206,29 @@ public class PlayerInventory : MonoBehaviour
 
     void UseSelectedTool()
     {
-        var selectedItem = inventory[selectedBlockIndex];
-
-        if (selectedItem.item is Item)
+        if (Input.GetMouseButtonDown(0))
         {
-            var tool = (Item)selectedItem.item;
-            tool.Update();
 
-            if (Input.GetMouseButtonDown(0))
+            var selectedItem = inventory[selectedBlockIndex];
+
+            if (selectedItem.item is Item)
             {
-                tool.Use();
+                var tool = (Item)selectedItem.item;
+                tool.Update();
+
+                if (tool.itemType == Item.ItemType.Blueprint)
+                {
+                    AddBlockToInventory(); // Blueprint is a tool that adds blocks to the inventory
+                    return;
+                }
+                bool toDelete = tool.Use(); // Other tools are used when the player clicks
+                if (toDelete)
+                {
+                    RemoveItem(selectedBlockIndex);
+                }
             }
+            else if (inventory[selectedBlockIndex].item is Block)
+                PlaceBlockFromInventory(); // Blocks are placed when the player clicks
         }
     }
 
@@ -257,9 +247,6 @@ public class PlayerInventory : MonoBehaviour
             {
                 print(block.location);
                 blockyTerrain.RemoveBlock(block.location);
-                // {
-                //     Destroy(_lookedAtObject); //TODO Move this to the blockyTerrain class
-                // }
     
             }
         }
@@ -288,7 +275,7 @@ public class PlayerInventory : MonoBehaviour
             // Place bloc one over from blockpos in the direction of the hit normal
             Vector3 placePos = blockPos + hitNormal * blockyTerrain.cubeObject.prefab.transform.localScale.x;
     
-            //Assume the entity is a block -- REMOVE THIS LATER WHEN WE HAVE MORE ENTITIES
+            //Assume the entity is a block -- Should be fine since we are checking for this in the if statement
             var blockItem = (Block)block.item;
     
             // Add the block to the terrain
@@ -332,12 +319,13 @@ public class PlayerInventory : MonoBehaviour
 
     bool AddItem(Entity item)
     {
+        int stackSize = item.maxStackSize;
         if (inventorySize >= inventoryCapacity)
             return false;
     
         for (int i = 0; i < inventoryCapacity; i++)
         {
-            if (inventory[i].item != null && inventory[i].item.id == item.id)
+            if (inventory[i].item != null && inventory[i].item.id == item.id && inventory[i].count < stackSize)
             {
                 inventory[i].count++;
                 return true;
@@ -394,6 +382,22 @@ public class PlayerInventory : MonoBehaviour
     public int GetCurrentHealth()
     {
         return currentHealth;
+    }
+    
+    public bool AddHealth(int health)
+    {
+        if (currentHealth >= playerHealth)
+        {
+            return false;
+        }
+        
+        if (currentHealth + health > playerHealth)
+        {
+            currentHealth = playerHealth;
+            return true;
+        }
+        currentHealth += health;
+        return true;
     }
 
 

@@ -8,10 +8,9 @@ public abstract class Entity : ScriptableObject
     public int maxDurability ;
     public string name ;
     public int id ;
-    protected int stackSize ;
     public int maxStackSize ;
     public GameObject prefab ;
     public Vector3 renderOffset ;
-    public Vector3 renderRotation ;
+    // public Vector3 renderRotation ;
 
 }
