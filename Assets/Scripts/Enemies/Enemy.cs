@@ -26,7 +26,7 @@ public class Enemy : MonoBehaviour
         
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Vector3 hitPoint)
     {
         print("Enemy took " + damage + " damage");
         // Reduce the enemy's health by the damage amount.
@@ -35,8 +35,15 @@ public class Enemy : MonoBehaviour
         {
             Die();
         }
+        
+        //Knockback
+        transform.position = Vector3.MoveTowards(transform.position, hitPoint, -1f);
+        
+            
         StartCoroutine(TurnCapsuleRed());
     }
+    
+    
 
     //coroutine method
     IEnumerator TurnCapsuleRed()

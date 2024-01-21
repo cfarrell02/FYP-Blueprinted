@@ -33,6 +33,18 @@ public class Item : Entity
         {
             case ItemType.Sword:
                 Debug.Log("You used a sword");
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 100))
+                {
+                    Debug.Log(hit.transform.name);
+                    if (hit.transform.tag == "Enemy")
+                    {
+                        Debug.Log("You hit an enemy");
+                        var enemy = hit.transform.GetComponent<Enemy>();
+                        enemy.TakeDamage((int)damage, hit.point);
+                    }
+                }
                 break;
             case ItemType.Blueprint:
                 Debug.Log("You used a blueprint");

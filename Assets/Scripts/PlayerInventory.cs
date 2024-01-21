@@ -238,6 +238,7 @@ public class PlayerInventory : MonoBehaviour
         {
             var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
             
+            
             if(!(inventory[selectedBlockIndex].item is Item && ((Item)inventory[selectedBlockIndex].item).itemType == Item.ItemType.Blueprint))
             {
                 return;
@@ -286,6 +287,9 @@ public class PlayerInventory : MonoBehaviour
             blockToAdd.rotation = blockItem.rotation;
             blockToAdd.scale = blockItem.scale;
             blockToAdd.prefab = blockItem.prefab;
+            blockToAdd.renderOffset = blockItem.renderOffset;
+            blockToAdd.isLoaded = true;
+            blockToAdd.maxStackSize = blockItem.maxStackSize;
             blockyTerrain.AddBlock(placePos, blockToAdd);
             // Remove the block from the inventory
             RemoveItem(selectedBlockIndex);
@@ -320,6 +324,8 @@ public class PlayerInventory : MonoBehaviour
     bool AddItem(Entity item)
     {
         int stackSize = item.maxStackSize;
+        
+        print(item.name + " " +stackSize);
         if (inventorySize >= inventoryCapacity)
             return false;
     

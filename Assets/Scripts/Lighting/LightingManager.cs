@@ -6,6 +6,7 @@ public class LightingManager : MonoBehaviour
 {
     [SerializeField] private Light directionalLight;
     [SerializeField] private LightingPreset preset;
+    [SerializeField, Header("Multiplier to control speed of time of day")] private float timeMultiplier = 0.1f;
     
     [SerializeField, Range(0, 24)] private float timeOfDay;
 
@@ -25,7 +26,7 @@ public class LightingManager : MonoBehaviour
         }
         if (Application.isPlaying)
         {
-            timeOfDay += Time.deltaTime;
+            timeOfDay += Time.deltaTime * timeMultiplier;
             timeOfDay %= 24; //Modulus to ensure always between 0-24
             UpdateLighting(timeOfDay / 24f);
         }

@@ -17,8 +17,7 @@ MonoBehaviour:
   id: 1
   maxStackSize: 100
   prefab: {fileID: 5763828162553407202, guid: f01bf10d1fcfdcb4f959f0aedaeb8460, type: 3}
-  renderOffset: {x: 0, y: 0, z: 0}
-  renderRotation: {x: 0, y: 0, z: 0}
+  renderOffset: {x: 0.46, y: -0.42, z: 0.71}
   location: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   scale: {x: 0, y: 0, z: 0}

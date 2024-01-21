@@ -354,10 +354,8 @@ public class BlockyTerrain : MonoBehaviour
                     foreach (Vector3 surroundingBlock in surroundingBlocks)
                     {
                             var foundBlock = FindBlock(surroundingBlock);
-                            print("Found block " + foundBlock.location + " " + surroundingBlock);
                             if (foundBlock && !foundBlock.isLoaded)
                             {
-                                print("Removing surrounding block " + foundBlock.location + " " + surroundingBlock);
                                 AddBlock(surroundingBlock, foundBlock);
                             }
                         
