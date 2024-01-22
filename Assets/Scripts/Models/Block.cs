@@ -10,6 +10,7 @@ public class Block : Entity
     public Vector3 rotation ;
     public Vector3 scale ;
     public bool isLoaded ;
+    public Color color ;
 
 
     
@@ -30,6 +31,7 @@ public class Block : Entity
         this.scale = scale;
         isLoaded = false;
         this.prefab = prefab;
+        color = prefab.GetComponent<Renderer>().material.color;
     }
     
     public Block()
@@ -44,6 +46,7 @@ public class Block : Entity
         scale = new Vector3(0, 0, 0);
         isLoaded = true;
         prefab = null;
+        color = new Color(0, 0, 0);
     }
     
     public void InstantiateBlock(Block block)
@@ -59,6 +62,7 @@ public class Block : Entity
         isLoaded = block.isLoaded;
         prefab = block.prefab;
         renderOffset = block.renderOffset;
+        color = block.color;
     }
 
 

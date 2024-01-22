@@ -113,20 +113,20 @@ public class PlayerInventory : MonoBehaviour
         {
             if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
             {
-                ChangeBlockColor(_lookedAtObject, new Color(.2703f,.6601f,.8773f,1));
+                ChangeBlockColor(_lookedAtObject, false);
             }
     
             if (hit.collider.gameObject.GetComponent<Renderer>() == null || !hit.collider.gameObject.CompareTag("Cube"))
                 return;
     
             _lookedAtObject = hit.collider.gameObject;
-            ChangeBlockColor(_lookedAtObject, Color.red);
+            ChangeBlockColor(_lookedAtObject, true);
         }
         else
         {
             if (_lookedAtObject != null)
             {
-                ChangeBlockColor(_lookedAtObject, new Color(.2703f, .6601f, .8773f, 1));
+                ChangeBlockColor(_lookedAtObject, false);
                 _lookedAtObject = null;
             }
         }
@@ -328,9 +328,24 @@ public class PlayerInventory : MonoBehaviour
     }
     }
 
-    void ChangeBlockColor(GameObject blockObject, Color color)
+    void ChangeBlockColor(GameObject blockObject, bool newColor)
     {
-        blockObject.GetComponent<Renderer>().material.color = color;
+        
+        if (blockObject != null)
+        {
+            var block = blockyTerrain.FindBlock(blockObject.transform.position);
+            if (block != null)
+            {
+                if (newColor)
+                {
+                    blockObject.GetComponent<Renderer>().material.color = Color.red;
+                }
+                else
+                {
+                    blockObject.GetComponent<Renderer>().material.color = block.color;
+                }
+            }
+        }
     }
 
 

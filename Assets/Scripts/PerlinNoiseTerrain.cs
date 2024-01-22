@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 public class BlockyTerrain : MonoBehaviour
 {
     public int depth = 10;
-    [Header("Perlin noise scale")] public float scale = 1f;
+    public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
     public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
     public Block cubeObject; // This needs to be changed to a list or dictionary for different types of blocks
@@ -74,7 +74,7 @@ public class BlockyTerrain : MonoBehaviour
             UnloadTerrain();
 
         }
-        if (lightingManager.isNight())
+        if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
     }
 
@@ -433,7 +433,7 @@ public class BlockyTerrain : MonoBehaviour
                 Block block = ScriptableObject.CreateInstance<Block>(); // Empty Search block
                 foreach (Block b in blockList)
                 {
-                    if (b.location == position)
+                    if (b.location.Equals(position))
                     {
                         block = b;
                         break;
