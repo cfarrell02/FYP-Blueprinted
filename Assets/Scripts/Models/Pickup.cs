@@ -7,7 +7,7 @@ public class Pickup: MonoBehaviour
 {
 
 
-
+    [Tooltip("This is the item that will be picked up.")]
     public Entity item;
 
 

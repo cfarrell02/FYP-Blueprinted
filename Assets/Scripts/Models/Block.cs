@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -6,11 +7,26 @@ using UnityEngine.Serialization;
 public class Block : Entity
 {
 
+    [Tooltip("This is the location of the block.")]
     public Vector3 location ;
+    [Tooltip("This is the rotation of the block.")]
     public Vector3 rotation ;
+    [Tooltip("This is the scale of the block.")]
     public Vector3 scale ;
+    [Tooltip("This is a bool for if the block is loaded.")]
     public bool isLoaded ;
+    [Tooltip("This is the color of the block.")]
     public Color color ;
+    [SerializeField, Tooltip("This is a value that depends on the block type.")]
+    public int value;
+    [SerializeField, Tooltip("This is the type of block, that determines how it behaves.")]
+    public BlockType blockType;
+
+    public enum BlockType
+    {
+        Normal,
+        AntiSpawn,
+    }
 
 
     

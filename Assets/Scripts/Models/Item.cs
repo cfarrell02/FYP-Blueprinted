@@ -17,9 +17,13 @@ public class Item : Entity
     }
     
     public ItemType itemType;
-
+    
+    [Header("Item Properties")]
+    [Tooltip("Speed of which this tool can be used")]
     public float speed;
+    [Tooltip("How much damage this tool does")]
     public float damage;
+    [Tooltip("Only if tool is consumable, how much x it gives")]
     public float value;
     
     private GameObject player;
