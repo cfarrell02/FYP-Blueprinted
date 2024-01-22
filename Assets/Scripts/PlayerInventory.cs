@@ -91,7 +91,7 @@ public class PlayerInventory : MonoBehaviour
             Destroy(other.gameObject);
         }
     
-        if (other.gameObject.tag == "Enemy")
+        if (other.gameObject.CompareTag("Enemy"))
         {
             currentHealth -= 10;
         }
@@ -116,7 +116,7 @@ public class PlayerInventory : MonoBehaviour
                 ChangeBlockColor(_lookedAtObject, new Color(.2703f,.6601f,.8773f,1));
             }
     
-            if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
+            if (hit.collider.gameObject.GetComponent<Renderer>() == null || !hit.collider.gameObject.CompareTag("Cube"))
                 return;
     
             _lookedAtObject = hit.collider.gameObject;
@@ -263,7 +263,7 @@ public class PlayerInventory : MonoBehaviour
         if(!(inventory[selectedBlockIndex].item is Item))
             return;
         
-        Vector3 spawnPos = transform.position + Vector3.up*.77f + Vector3.forward*1.5f;
+        Vector3 spawnPos = transform.position + Vector3.up*.77f + transform.forward*1.5f;
         
         var item = (Item)inventory[selectedBlockIndex].item;
         var itemObject = Instantiate(item.prefab, spawnPos, Quaternion.identity);
@@ -294,7 +294,7 @@ public class PlayerInventory : MonoBehaviour
     
         if (Physics.Raycast(ray, out hit, 5f))
         {
-            if (hit.collider.gameObject.GetComponent<Renderer>() == null || hit.collider.gameObject.tag != "Cube")
+            if (hit.collider.gameObject.GetComponent<Renderer>() == null || !hit.collider.gameObject.CompareTag("Cube"))
                 return;
         }
     

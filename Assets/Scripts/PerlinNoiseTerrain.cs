@@ -9,11 +9,11 @@ using Random = UnityEngine.Random;
 public class BlockyTerrain : MonoBehaviour
 {
     public int depth = 10;
-    public float scale = 1f;
+    [Header("Perlin noise scale")] public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
-    public float perlinNoiseHeight = 3f; // Set a fixed cube height
     public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
     public Block cubeObject; // This needs to be changed to a list or dictionary for different types of blocks
+    
     
 
     int previousPlayerPosX;
@@ -27,13 +27,15 @@ public class BlockyTerrain : MonoBehaviour
     [SerializeField]
     int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField]
-    bool spawnEnemies = true;
+    int perlinScale = 10; // Multiplier for the perlin noise scale
+    
     
     
     private Transform playerTransform;
     private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
     private NavMeshSurface surface;
     private float timer = 0f;
+    private LightingManager lightingManager;
 
     private void Awake()
     {
@@ -52,6 +54,8 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
         GenerateInitialTerrain();
+        lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
+        
     }
 
     void Update()
@@ -70,7 +74,7 @@ public class BlockyTerrain : MonoBehaviour
             UnloadTerrain();
 
         }
-        if (spawnEnemies)
+        if (lightingManager.isNight())
             HandleEnemySpawn();
     }
 
@@ -230,7 +234,8 @@ public class BlockyTerrain : MonoBehaviour
         }
         else
         {
-            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinNoiseHeight;
+            
+            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
 
             List<Block> verticalBlocks = new List<Block>();

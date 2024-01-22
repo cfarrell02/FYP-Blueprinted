@@ -36,6 +36,11 @@ public class LightingManager : MonoBehaviour
         }
     }
     
+    public bool isNight()
+    {
+        return timeOfDay > 19 || timeOfDay < 6;
+    }
+    
     private void UpdateLighting(float timePercent)
     {
         RenderSettings.ambientLight = preset.AmbientColor.Evaluate(timePercent);
@@ -45,6 +50,12 @@ public class LightingManager : MonoBehaviour
             directionalLight.color = preset.DirectionalColor.Evaluate(timePercent);
             directionalLight.transform.localRotation = Quaternion.Euler(new Vector3((timePercent * 360f) - 90f, 170f, 0));
         }
+    }
+    
+    private void UpdateFog(float timePercent)
+    {
+        RenderSettings.fogColor = preset.FogColor.Evaluate(timePercent);
+        RenderSettings.fogDensity = preset.FogDensity.Evaluate(timePercent);
     }
     
     private void OnValidate()
