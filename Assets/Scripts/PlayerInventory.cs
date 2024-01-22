@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -72,6 +73,11 @@ public class PlayerInventory : MonoBehaviour
         UseSelectedTool();
         HandleHealth();
         RenderSelectedItem();
+        
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            DropHeldItem();
+        }
 
     }
 
@@ -80,8 +86,6 @@ public class PlayerInventory : MonoBehaviour
         if (other.gameObject.CompareTag("Pickup"))
         {
             var pickup = other.gameObject.GetComponent<Pickup>();
-            if (pickup == null) // Pickup is not a pickup
-                return;
             
             AddItem(pickup.item);
             Destroy(other.gameObject);
@@ -251,6 +255,33 @@ public class PlayerInventory : MonoBehaviour
     
             }
         }
+    }
+    
+    void DropHeldItem()
+    {
+        //Only drop the item if it is an item
+        if(!(inventory[selectedBlockIndex].item is Item))
+            return;
+        
+        Vector3 spawnPos = transform.position + Vector3.up*.77f + Vector3.forward*1.5f;
+        
+        var item = (Item)inventory[selectedBlockIndex].item;
+        var itemObject = Instantiate(item.prefab, spawnPos, Quaternion.identity);
+        var pickup = itemObject.AddComponent<Pickup>();
+        pickup.item = item;
+        
+        itemObject.tag = "Pickup";
+        itemObject.AddComponent<Rigidbody>();
+        
+        var triggerCollider = itemObject.AddComponent<SphereCollider>();
+        triggerCollider.isTrigger = true;
+        triggerCollider.radius = 0.5f;  
+
+        
+        
+        RemoveItem(selectedBlockIndex);
+        
+        
     }
     
     void PlaceBlockFromInventory()
