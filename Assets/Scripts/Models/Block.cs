@@ -62,7 +62,7 @@ public class Block : Entity
         scale = new Vector3(0, 0, 0);
         isLoaded = true;
         prefab = null;
-        color = new Color(0, 0, 0);
+        color = new Color(1, 1, 1);
     }
     
     public void InstantiateBlock(Block block)

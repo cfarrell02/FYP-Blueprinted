@@ -117,6 +117,9 @@ public class BlockyTerrain : MonoBehaviour
         if (timer >= 5f && GameObject.FindGameObjectsWithTag("Enemy").Length < 10)
         {
             timer = 0f;
+            
+            var noSpawnBlocks = GameObject.FindGameObjectsWithTag("NoSpawn");
+            
             float distanceToSpawn = 10f;
             for (int i = 0; i < 10; i++) // Attempt to find a block to spawn the enemy on 10 times, give up after that
             {
@@ -131,16 +134,25 @@ public class BlockyTerrain : MonoBehaviour
                 if (coordsToHeight.ContainsKey(pos))
                 {
                     var blockList = coordsToHeight[pos].blocks;
-                    print("Found block list");
                     if (blockList.Count > 0)
                     {
                         Block block = blockList.ElementAt(blockList.Count - 1);
                         if (block.name != null)
                         {
                             //Spawn the enemy
+                            foreach (GameObject noSpawnBlock in noSpawnBlocks)
+                            {
+                                if(Vector3.Distance(noSpawnBlock.transform.position, spawnPos) < 5f) //TODO, Use the value of the block instead of 5f   
+                                {
+                                    return;
+                                }
+                                
+                            }
+
                             GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
                             var enemyScript = enemy.GetComponent<Enemy>();
                             enemyScript.Playerpos = playerTransform;
+
                             break;
                         }
                     }

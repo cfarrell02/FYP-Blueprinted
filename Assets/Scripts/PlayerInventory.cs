@@ -321,6 +321,8 @@ public class PlayerInventory : MonoBehaviour
             blockToAdd.renderOffset = blockItem.renderOffset;
             blockToAdd.isLoaded = true;
             blockToAdd.maxStackSize = blockItem.maxStackSize;
+            blockToAdd.color = blockItem.color;
+            
             blockyTerrain.AddBlock(placePos, blockToAdd);
             // Remove the block from the inventory
             RemoveItem(selectedBlockIndex);

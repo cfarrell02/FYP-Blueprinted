@@ -8,6 +8,7 @@ TagManager:
   - Cube
   - Enemy
   - Pickup
+  - NoSpawn
   layers:
   - Default
   - TransparentFX

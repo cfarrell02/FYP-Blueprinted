@@ -10,16 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7af0d71f3f769a04282201578b5aaf9d, type: 3}
-  m_Name: Dirt
+  m_Name: SafeBlock
   m_EditorClassIdentifier: 
   maxDurability: 100
-  name: Dirt
-  id: 1
-  maxStackSize: 100
-  prefab: {fileID: 5763828162553407202, guid: f01bf10d1fcfdcb4f959f0aedaeb8460, type: 3}
+  name: SafetyBlock
+  id: 50
+  maxStackSize: 10
+  prefab: {fileID: 5763828162553407202, guid: 89ab46e21f01a4ca9bf19f8d8f433fbe, type: 3}
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}
   location: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   scale: {x: 0, y: 0, z: 0}
   isLoaded: 1
-  color: {r: 0.25882354, g: 0.7254902, b: 0, a: 1}
+  color: {r: 1, g: 0.8980392, b: 0, a: 1}
+  value: 10
+  blockType: 1
