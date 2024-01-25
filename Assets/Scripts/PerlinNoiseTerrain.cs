@@ -149,9 +149,7 @@ public class BlockyTerrain : MonoBehaviour
                                 
                             }
 
-                            GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                            var enemyScript = enemy.GetComponent<Enemy>();
-                            enemyScript.Playerpos = playerTransform;
+                            Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
 
                             break;
                         }

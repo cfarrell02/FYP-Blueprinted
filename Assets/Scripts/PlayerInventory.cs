@@ -90,15 +90,6 @@ public class PlayerInventory : MonoBehaviour
             AddItem(pickup.item);
             Destroy(other.gameObject);
         }
-    
-        if (other.gameObject.CompareTag("Enemy"))
-        {
-            currentHealth -= 10;
-        }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
 
     }
 
@@ -451,6 +442,22 @@ public class PlayerInventory : MonoBehaviour
             return true;
         }
         currentHealth += health;
+        return true;
+    }
+    
+    public bool RemoveHealth(int health)
+    {
+        if (currentHealth <= 0)
+        {
+            return false;
+        }
+        
+        if (currentHealth - health < 0)
+        {
+            currentHealth = 0;
+            return true;
+        }
+        currentHealth -= health;
         return true;
     }
 

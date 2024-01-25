@@ -11,9 +11,11 @@ GameObject:
   - component: {fileID: 2709257068976105614}
   - component: {fileID: 4546060065439571373}
   - component: {fileID: 5539385707449554430}
+  - component: {fileID: 2389226757265930654}
   - component: {fileID: 4556332453962291782}
   - component: {fileID: 5126175358455050155}
   - component: {fileID: 6056641248102965325}
+  - component: {fileID: 8945141336835598202}
   m_Layer: 0
   m_Name: Skeleton
   m_TagString: Enemy
@@ -69,6 +71,33 @@ CapsuleCollider:
   m_Height: 1.3060405
   m_Direction: 1
   m_Center: {x: 0, y: -0.34697974, z: 0}
+--- !u!54 &2389226757265930654
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225661646640385875}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!195 &4556332453962291782
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -103,8 +132,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2743b5127846d9e49b66a91c7962688d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Playerpos: {fileID: 0}
   health: 100
+  behaviour: 0
+  lookDistance: 20
 --- !u!136 &6056641248102965325
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -128,6 +158,27 @@ CapsuleCollider:
   m_Height: 1.46
   m_Direction: 1
   m_Center: {x: 0, y: -0.4, z: 0}
+--- !u!95 &8945141336835598202
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225661646640385875}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ceebf4880362b854cae15a450c6ddbc1, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &8392204778800602970
 GameObject:
   m_ObjectHideFlags: 0
