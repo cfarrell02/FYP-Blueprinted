@@ -429,6 +429,12 @@ public class PlayerInventory : MonoBehaviour
         return currentHealth;
     }
     
+    public int GetMaxHealth()
+    {
+        return playerHealth;
+    }
+    
+    
     public bool AddHealth(int health)
     {
         if (currentHealth >= playerHealth)
