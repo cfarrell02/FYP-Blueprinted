@@ -13,13 +13,18 @@ public class HUD : MonoBehaviour
     public TextMeshProUGUI inventoryText; // Will be replaced with a UI element
     public Image healthBar;
     public Color fullHealthColor, lowHealthColor;
+    public GameObject inventorySlotPrefab;
 
     [Header("Inventory")]
     public PlayerInventory playerInventoryObject;
     public GameObject inventoryIconContainer;
+    
+    [Header("Rendering")]
+    public Camera cam;
 
     private Canvas canvas;
     private InventoryItem<Entity>[] inventory;
+    private GameObject[] inventoryIcons;
 
     private void Start()
     {
@@ -27,7 +32,33 @@ public class HUD : MonoBehaviour
         inventory = playerInventoryObject.getInventory();
 
         UpdateBuildInfoText();
+
+        float containerWidth = Screen.width;
+        float iconWidth = containerWidth / inventory.Length * 0.6f;
+        float iconGap = 20;
+
+        float totalLength = (iconWidth +iconGap)* inventory.Length;
+        float startX = (containerWidth - totalLength) / 2 + iconWidth / 2; // Corrected
+        
+        inventoryIcons = new GameObject[inventory.Length];
+
+        for (int i = 0; i < inventory.Length; i++)
+        {
+            // Instantiate inventory slot prefab
+            GameObject slotObject = Instantiate(inventorySlotPrefab, canvas.transform);
+
+            slotObject.GetComponent<RectTransform>().sizeDelta = new Vector2(iconWidth, iconWidth);
+
+            float slotPositionX = startX + iconWidth * i + iconGap * i;
+            float slotPositionY = iconWidth;
+
+            slotObject.transform.position = new Vector3(slotPositionX, slotPositionY, 0);
+            inventoryIcons[i] = slotObject;
+
+            // Optionally, you can customize the appearance or behavior of each slot here
+        }
     }
+
 
     private void Update()
     {
@@ -61,44 +92,72 @@ public class HUD : MonoBehaviour
                 continue;
             }
 
-            CreateInventoryIcon(i + 1, iconWidth, inventoryItem.item, playerInventoryObject.GetSelectedBlockIndex() == i);
+            CreateInventoryIcon(i, iconWidth, inventoryItem.item, playerInventoryObject.GetSelectedBlockIndex() == i);
         }
     }
 
     private void CreateInventoryIcon(int index, float iconWidth, Entity entity,bool selected = false)
     {
-        if (entity.icon == null)
-        {
-            CreatePlaceholderText(index, iconWidth, entity, selected);
-        }
-        else
-        {
-            CreateIconObject(index, iconWidth, entity, selected);
-        }
-    }
 
-    private void CreatePlaceholderText(int index, float iconWidth, Entity entity, bool selected = false)
+        var selectedSlot = inventoryIcons[index];
+        selectedSlot.GetComponent<Image>().color = selected ? Color.gray : Color.white;
+        
+        
+        //TODO - Fix this
+        // Sprite icon = GetIcon(cam, entity.prefab);
+        // GameObject iconObject = new GameObject(entity.name + " Icon");
+        // Image image = iconObject.AddComponent<Image>();
+        // image.sprite = icon;
+        // image.preserveAspect = true;
+        // iconObject.transform.SetParent(selectedSlot.transform);
+        
+        
+
+    }
+    
+    public Sprite GetIcon(Camera cam, GameObject item)
     {
-        TextMeshProUGUI placeholderText = GetPlaceholderText(entity);
-        placeholderText.rectTransform.sizeDelta = new Vector2(iconWidth, iconWidth);
-        placeholderText.rectTransform.SetParent(inventoryIconContainer.transform);
-        placeholderText.transform.position = new Vector3(index * iconWidth, inventoryIconContainer.transform.position.y, 0);
-        placeholderText.color = selected ? Color.red : Color.black;
+        //Instantiate item
+        var pos = cam.transform.position + cam.transform.forward * 2;
+        GameObject itemObject = Instantiate(item, pos, Quaternion.identity);
+        
+        cam.orthographicSize = itemObject.GetComponent<Renderer>().bounds.extents.y + 0.1f;
+        
+        //Get dimensions 
+        int resX = cam.pixelWidth;
+        int resY = cam.pixelHeight;
+
+        int clipX = 0;
+        int clipY = 0;
+        
+        if(resX > resY)
+        {
+            clipX = resX - resY ;
+        }
+        else if (resY > resX)
+        {
+            clipY = resY - resX ;
+        }
+        
+        
+        //Initialize everything
+        Texture2D tex = new Texture2D(resX - clipX, resY -clipY, TextureFormat.RGBA32, false);
+        RenderTexture rt = new RenderTexture(resX, resY, 24);
+        cam.targetTexture = rt;
+        RenderTexture.active = rt;
+        
+        cam.Render();
+        tex.ReadPixels(new Rect(clipX/2, clipY/2, resX, resY), 0, 0);
+        tex.Apply();
+        
+        cam.targetTexture = null;
+        RenderTexture.active = null;
+        Destroy(itemObject);
+        
+        return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
     }
 
-    private void CreateIconObject(int index, float iconWidth, Entity entity, bool selected = false)
-    {
-        GameObject iconObject = new GameObject(entity.name + " Icon");
 
-        Image image = iconObject.AddComponent<Image>();
-        image.sprite = entity.icon;
-        image.preserveAspect = true;
-        image.rectTransform.sizeDelta = new Vector2(iconWidth, iconWidth);
-        image.rectTransform.SetParent(inventoryIconContainer.transform);
-        image.transform.position = new Vector3(index * iconWidth, inventoryIconContainer.transform.position.y, 0);
-        image.transform.localScale = new Vector3(.5f, .5f, .5f);
-        image.color = selected ? Color.red : Color.white;
-    }
 
     private void UpdateHealthBar()
     {
