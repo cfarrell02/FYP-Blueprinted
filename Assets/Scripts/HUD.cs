@@ -2,95 +2,121 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using System;
 using UnityEngine.UI;
 
 public class HUD : MonoBehaviour
 {
-    private readonly String prototypeVersion = "prototype-2";
+    private readonly string prototypeVersion = "prototype-2";
 
-    // Reference the text mesh pro text object
+    [Header("UI Elements")]
     public TextMeshProUGUI text;
     public TextMeshProUGUI inventoryText; // Will be replaced with a UI element
     public Image healthBar;
     public Color fullHealthColor, lowHealthColor;
 
+    [Header("Inventory")]
     public PlayerInventory playerInventoryObject;
+    public GameObject inventoryIconContainer;
 
-
-
-    InventoryItem<Entity>[] inventory;
     private Canvas canvas;
+    private InventoryItem<Entity>[] inventory;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         canvas = GetComponent<Canvas>();
         inventory = playerInventoryObject.getInventory();
-        string buildInfo = "Build: " + Application.version + " Platform: " + Application.platform + " Unity: " + Application.unityVersion + " OS: " + SystemInfo.operatingSystem;
-        buildInfo += "\n" + Application.productName + ", " + Application.companyName + ", " + prototypeVersion;
-        text.text = buildInfo;
 
+        UpdateBuildInfoText();
     }
 
-// Update is called once per frame
-    void Update()
+    private void Update()
     {
-        string inventoryString = "Inventory: ";
-    
-        // Clear existing icons in the canvas
-        foreach (Transform child in canvas.transform)
+        UpdateInventoryIcons();
+        UpdateHealthBar();
+    }
+
+    private void UpdateBuildInfoText()
+    {
+        string buildInfo = $"Build: {Application.version} Platform: {Application.platform} Unity: {Application.unityVersion} OS: {SystemInfo.operatingSystem}";
+        buildInfo += $"\n{Application.productName}, {Application.companyName}, {prototypeVersion}";
+        text.text = buildInfo;
+    }
+
+    private void UpdateInventoryIcons()
+    {
+        float iconWidth = inventoryIconContainer.GetComponent<RectTransform>().rect.width / inventory.Length;
+
+        // Clear existing icons in inventoryIconContainer
+        foreach (Transform child in inventoryIconContainer.transform)
         {
             Destroy(child.gameObject);
         }
 
         for (int i = 0; i < inventory.Length; i++)
         {
-            if (inventory[i].item != null)
-            {
-                var name = inventory[i].item.name;
-                bool hasBeenRendered = false;
-                var images = canvas.GetComponentsInChildren<Image>();
-                foreach (var image in images)
-                {
-                    if (image.name == name)
-                    {
-                        hasBeenRendered = true;
-                    }
-                }
-                if (hasBeenRendered)
-                {
-                    continue;
-                }
-                
-                var icon = CreateGameObjectIcon(inventory[i].item.prefab, name);
-                // Add the icon to the canvas
-                icon.transform.SetParent(canvas.transform);
-                icon.transform.position = new Vector3(100 + (i * 100), 100, 0);
-                icon.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            }
-        }
-        inventoryText.text = inventoryString;
+            var inventoryItem = inventory[i];
 
-        // Rest of your code...
+            if (inventoryItem.item == null)
+            {
+                continue;
+            }
+
+            CreateInventoryIcon(i + 1, iconWidth, inventoryItem.item, playerInventoryObject.GetSelectedBlockIndex() == i);
+        }
     }
 
-    Image CreateGameObjectIcon(GameObject item, string iconName)
+    private void CreateInventoryIcon(int index, float iconWidth, Entity entity,bool selected = false)
     {
-        Image image = new GameObject(iconName).AddComponent<Image>();
-        var renderer = item.GetComponent<Renderer>();
-    
-        if (renderer != null)
+        if (entity.icon == null)
         {
-            image.sprite = Sprite.Create(renderer.material.mainTexture as Texture2D, new Rect(0, 0, renderer.material.mainTexture.width, renderer.material.mainTexture.height), new Vector2(0.5f, 0.5f));
+            CreatePlaceholderText(index, iconWidth, entity, selected);
         }
         else
         {
-            var childRenderer = item.GetComponentInChildren<Renderer>();
-            image.sprite = Sprite.Create(childRenderer.material.mainTexture as Texture2D, new Rect(0, 0, childRenderer.material.mainTexture.width, childRenderer.material.mainTexture.height), new Vector2(0.5f, 0.5f));
+            CreateIconObject(index, iconWidth, entity, selected);
         }
-    
-        return image;
     }
 
+    private void CreatePlaceholderText(int index, float iconWidth, Entity entity, bool selected = false)
+    {
+        TextMeshProUGUI placeholderText = GetPlaceholderText(entity);
+        placeholderText.rectTransform.sizeDelta = new Vector2(iconWidth, iconWidth);
+        placeholderText.rectTransform.SetParent(inventoryIconContainer.transform);
+        placeholderText.transform.position = new Vector3(index * iconWidth, inventoryIconContainer.transform.position.y, 0);
+        placeholderText.color = selected ? Color.red : Color.black;
+    }
+
+    private void CreateIconObject(int index, float iconWidth, Entity entity, bool selected = false)
+    {
+        GameObject iconObject = new GameObject(entity.name + " Icon");
+
+        Image image = iconObject.AddComponent<Image>();
+        image.sprite = entity.icon;
+        image.preserveAspect = true;
+        image.rectTransform.sizeDelta = new Vector2(iconWidth, iconWidth);
+        image.rectTransform.SetParent(inventoryIconContainer.transform);
+        image.transform.position = new Vector3(index * iconWidth, inventoryIconContainer.transform.position.y, 0);
+        image.transform.localScale = new Vector3(.5f, .5f, .5f);
+        image.color = selected ? Color.red : Color.white;
+    }
+
+    private void UpdateHealthBar()
+    {
+        float normalizedHealth = (float)playerInventoryObject.GetCurrentHealth() / playerInventoryObject.GetMaxHealth();
+
+        healthBar.transform.localScale = new Vector3(normalizedHealth, 1, 1);
+        healthBar.color = Color.Lerp(lowHealthColor, fullHealthColor, normalizedHealth);
+    }
+
+    private TextMeshProUGUI GetPlaceholderText(Entity entity)
+    {
+        GameObject textObject = new GameObject(entity.name + " Text");
+        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+
+        text.text = entity.name;
+        text.fontSize = 20;
+        text.color = Color.black;
+
+        return text;
+    }
 }
