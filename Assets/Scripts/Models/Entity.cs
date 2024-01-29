@@ -15,6 +15,8 @@ public abstract class Entity : ScriptableObject
     public int maxStackSize ;
     [Tooltip("This is the prefab of the item.")]
     public GameObject prefab ;
+    [Tooltip("This is the icon of the item.")]
+    public Sprite icon ;
     [Tooltip("This is an offset used for rendering the item.")]
     public Vector3 renderOffset ;
     // public Vector3 renderRotation ;

@@ -69,7 +69,7 @@ public class PlayerInventory : MonoBehaviour
     void Update()
     {
         CheckBlockInFront();
-        HandleScrollWheel();
+        HandleInput();
         UseSelectedTool();
         HandleHealth();
         RenderSelectedItem();
@@ -134,7 +134,7 @@ public class PlayerInventory : MonoBehaviour
 
 
 
-    void HandleScrollWheel()
+    void HandleInput()
     {
         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
         {
@@ -147,6 +147,14 @@ public class PlayerInventory : MonoBehaviour
             selectedBlockIndex--;
             if (selectedBlockIndex < 0)
                 selectedBlockIndex = inventorySize - 1;
+        }
+        //Check if num key is pressed
+        for (int i = 1; i <= inventorySize; ++i)
+        {
+            if(Input.GetKeyDown(i.ToString()))
+            {
+                selectedBlockIndex = i-1;
+            }
         }
     }
 

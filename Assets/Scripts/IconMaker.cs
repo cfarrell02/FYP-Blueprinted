@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
+//Run in edit mode
+[ExecuteInEditMode]
 public class IconMaker : MonoBehaviour
 {
-    public Image icon;
+    public Sprite icon;
 
     public Camera cam;
     public GameObject item;
@@ -50,11 +53,12 @@ public class IconMaker : MonoBehaviour
 
     void Start()
     {
-        icon.sprite = GetIcon();
+        icon = GetIcon();
     }
     
     void Update()
     {
-        
+        icon = GetIcon();
+
     }
 }

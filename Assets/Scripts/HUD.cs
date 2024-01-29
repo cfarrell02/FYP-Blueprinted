@@ -54,8 +54,6 @@ public class HUD : MonoBehaviour
 
             slotObject.transform.position = new Vector3(slotPositionX, slotPositionY, 0);
             inventoryIcons[i] = slotObject;
-
-            // Optionally, you can customize the appearance or behavior of each slot here
         }
     }
 
@@ -92,36 +90,48 @@ public class HUD : MonoBehaviour
                 continue;
             }
 
-            CreateInventoryIcon(i, iconWidth, inventoryItem.item, playerInventoryObject.GetSelectedBlockIndex() == i);
+            RetrieveIcon(i, iconWidth, inventoryItem.item, inventoryItem.count,playerInventoryObject.GetSelectedBlockIndex() == i);
         }
     }
 
-    private void CreateInventoryIcon(int index, float iconWidth, Entity entity,bool selected = false)
+    private void RetrieveIcon(int index, float iconWidth, Entity entity,int quantity,bool selected = false)
     {
 
         var selectedSlot = inventoryIcons[index];
-        selectedSlot.GetComponent<Image>().color = selected ? Color.gray : Color.white;
+        selectedSlot.GetComponent<Image>().color = selected ? Color.red : Color.white;
+
+        var iconImage = selectedSlot.transform.GetChild(0);
+        var text = selectedSlot.transform.GetChild(1);
+
+        Sprite icon = entity.icon;
+        var image = iconImage.GetComponent<Image>();
+        image.sprite = icon;
         
+        if (icon == null)
+        {
+            icon = GenerateIcon(entity, index);
+            entity.icon = icon;
+        }
         
-        //TODO - Fix this
-        // Sprite icon = GetIcon(cam, entity.prefab);
-        // GameObject iconObject = new GameObject(entity.name + " Icon");
-        // Image image = iconObject.AddComponent<Image>();
-        // image.sprite = icon;
-        // image.preserveAspect = true;
-        // iconObject.transform.SetParent(selectedSlot.transform);
+        text.GetComponent<TextMeshProUGUI>().text = "("+quantity+")";
         
-        
+        inventoryIcons[index] = selectedSlot;
 
     }
     
-    public Sprite GetIcon(Camera cam, GameObject item)
+    
+    private Sprite GenerateIcon(Entity entity, int index)
     {
-        //Instantiate item
-        var pos = cam.transform.position + cam.transform.forward * 2;
-        GameObject itemObject = Instantiate(item, pos, Quaternion.identity);
+        cam.transform.position = new Vector3(index*100,-500,0);
+
+        GameObject item = Instantiate(entity.prefab, cam.transform.position + cam.transform.forward * 2, Quaternion.identity);
+        //Rotate to be angled in icon
+        item.transform.Rotate(new Vector3(-20, 45, -20));
+        var renderer = item.GetComponent<Renderer>();
         
-        cam.orthographicSize = itemObject.GetComponent<Renderer>().bounds.extents.y + 0.1f;
+        
+        
+        cam.orthographicSize = renderer != null ? renderer.bounds.extents.y + 0.1f : 1;
         
         //Get dimensions 
         int resX = cam.pixelWidth;
@@ -152,10 +162,17 @@ public class HUD : MonoBehaviour
         
         cam.targetTexture = null;
         RenderTexture.active = null;
-        Destroy(itemObject);
+        
+        Destroy(item);
+        
+        WaitForSeconds wait = new WaitForSeconds(1f);
+        
         
         return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
     }
+
+    
+   
 
 
 
