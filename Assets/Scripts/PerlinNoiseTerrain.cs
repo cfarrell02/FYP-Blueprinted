@@ -76,6 +76,8 @@ public class BlockyTerrain : MonoBehaviour
         }
         if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
+        
+
     }
 
     void HandleNavmesh()

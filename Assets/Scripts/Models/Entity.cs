@@ -22,7 +22,7 @@ public abstract class Entity : ScriptableObject
     [Tooltip("Is this craftable?")] 
     public bool craftable;
     [Tooltip("This is the recipe for crafting the item. Only applicable if craftable is true.")]
-    public Entity[] recipe;
+    public InventoryItem<Entity>[] recipe;
     
     // public Vector3 renderRotation ;
 

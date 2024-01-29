@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -20,11 +21,13 @@ public class HUD : MonoBehaviour
     public GameObject inventoryIconContainer;
     
     [Header("Rendering")]
-    public Camera cam;
+    public Camera camera;
 
     private Canvas canvas;
     private InventoryItem<Entity>[] inventory;
     private GameObject[] inventoryIcons;
+    private GameObject[] craftableIcons;
+    private bool craftingOpen = false;
 
     private void Start()
     {
@@ -33,6 +36,11 @@ public class HUD : MonoBehaviour
 
         UpdateBuildInfoText();
 
+        CreateIcons(ref inventoryIcons, inventory);
+    }
+
+    private void CreateIcons(ref GameObject[] inventoryIcons, InventoryItem<Entity>[] inventory, int y = 0)
+    {
         float containerWidth = Screen.width;
         float iconWidth = containerWidth / inventory.Length * 0.6f;
         float iconGap = 20;
@@ -50,7 +58,7 @@ public class HUD : MonoBehaviour
             slotObject.GetComponent<RectTransform>().sizeDelta = new Vector2(iconWidth, iconWidth);
 
             float slotPositionX = startX + iconWidth * i + iconGap * i;
-            float slotPositionY = iconWidth;
+            float slotPositionY = iconWidth + y;
 
             slotObject.transform.position = new Vector3(slotPositionX, slotPositionY, 0);
             inventoryIcons[i] = slotObject;
@@ -62,6 +70,23 @@ public class HUD : MonoBehaviour
     {
         UpdateInventoryIcons();
         UpdateHealthBar();
+        
+        if (craftingOpen)
+        {
+            ShowCraftableItems();
+        }
+        else if (craftableIcons != null)
+        {
+            for(int i = 0; i < craftableIcons.Length; i++)
+            {
+                Destroy(craftableIcons[i]);
+            }
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            craftingOpen = !craftingOpen;
+        }
     }
 
     private void UpdateBuildInfoText()
@@ -111,15 +136,10 @@ public class HUD : MonoBehaviour
             return;
         }
 
-        Sprite icon = entity.icon;
+        Sprite icon = GenerateIcon(entity, index);
         image.sprite = icon;
         image.color = Color.white;
         
-        if (icon == null)
-        {
-            icon = GenerateIcon(entity, index);
-            entity.icon = icon;
-        }
         
         text.GetComponent<TextMeshProUGUI>().text = "("+quantity+")";
         
@@ -130,6 +150,14 @@ public class HUD : MonoBehaviour
     
     private Sprite GenerateIcon(Entity entity, int index)
     {
+        if(entity.icon != null)
+        {
+            return entity.icon;
+        }
+        
+        var camObject = Instantiate(this.camera , new Vector3(0,0,0), Quaternion.identity);
+        var cam = camObject.GetComponent<Camera>();
+        cam.name = "IconMakerCamera " + index;
         cam.transform.position = new Vector3(index*100,500,0);
 
         GameObject item = Instantiate(entity.prefab, cam.transform.position + cam.transform.forward * 2, Quaternion.identity);
@@ -170,15 +198,32 @@ public class HUD : MonoBehaviour
         
         cam.targetTexture = null;
         RenderTexture.active = null;
-        
+
+        foreach (Transform child in camObject.transform)
+        {
+            Destroy(child.gameObject);
+            
+        }
+        Destroy(camObject);
         Destroy(item);
-        
-        return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
+        var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
+        entity.icon = sprite;
+        return sprite;
     }
 
-    
-   
 
+    private void ShowCraftableItems()
+    {
+        //TODO Fix this menu
+        
+        var allCraftableItems = playerInventoryObject.GetAllCraftableItems();
+        var craftableItems = allCraftableItems.Select(item => new InventoryItem<Entity>(item.Item1, item.Item2)).ToArray();
+        craftableItems = new List<InventoryItem<Entity>>(craftableItems).GetRange(0, 5).ToArray();
+        
+        
+        CreateIcons(ref craftableIcons, craftableItems, 100);
+
+    }
 
 
     private void UpdateHealthBar()
