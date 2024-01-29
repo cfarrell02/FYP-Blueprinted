@@ -106,6 +106,7 @@ public class HUD : MonoBehaviour
         Sprite icon = entity.icon;
         var image = iconImage.GetComponent<Image>();
         image.sprite = icon;
+        image.color = Color.white;
         
         if (icon == null)
         {
@@ -122,7 +123,7 @@ public class HUD : MonoBehaviour
     
     private Sprite GenerateIcon(Entity entity, int index)
     {
-        cam.transform.position = new Vector3(index*100,-500,0);
+        cam.transform.position = new Vector3(index*100,500,0);
 
         GameObject item = Instantiate(entity.prefab, cam.transform.position + cam.transform.forward * 2, Quaternion.identity);
         //Rotate to be angled in icon
@@ -164,9 +165,6 @@ public class HUD : MonoBehaviour
         RenderTexture.active = null;
         
         Destroy(item);
-        
-        WaitForSeconds wait = new WaitForSeconds(1f);
-        
         
         return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
     }
