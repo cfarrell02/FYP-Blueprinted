@@ -73,7 +73,8 @@ public class HUD : MonoBehaviour
 
     private void UpdateInventoryIcons()
     {
-        float iconWidth = inventoryIconContainer.GetComponent<RectTransform>().rect.width / inventory.Length;
+        float iconWidth = inventoryIconContainer.GetComponent<RectTransform>().rect.width /
+                          playerInventoryObject.inventoryCapacity;
 
         // Clear existing icons in inventoryIconContainer
         foreach (Transform child in inventoryIconContainer.transform)
@@ -84,11 +85,7 @@ public class HUD : MonoBehaviour
         for (int i = 0; i < inventory.Length; i++)
         {
             var inventoryItem = inventory[i];
-
-            if (inventoryItem.item == null)
-            {
-                continue;
-            }
+            
 
             RetrieveIcon(i, iconWidth, inventoryItem.item, inventoryItem.count,playerInventoryObject.GetSelectedBlockIndex() == i);
         }
@@ -96,15 +93,25 @@ public class HUD : MonoBehaviour
 
     private void RetrieveIcon(int index, float iconWidth, Entity entity,int quantity,bool selected = false)
     {
+        
 
         var selectedSlot = inventoryIcons[index];
         selectedSlot.GetComponent<Image>().color = selected ? Color.red : Color.white;
 
         var iconImage = selectedSlot.transform.GetChild(0);
         var text = selectedSlot.transform.GetChild(1);
+        
+        var image = iconImage.GetComponent<Image>();
+
+        if (entity == null)
+        {
+            image.sprite = null;
+            image.color = Color.clear;
+            text.GetComponent<TextMeshProUGUI>().text = "(0)";
+            return;
+        }
 
         Sprite icon = entity.icon;
-        var image = iconImage.GetComponent<Image>();
         image.sprite = icon;
         image.color = Color.white;
         
@@ -181,16 +188,5 @@ public class HUD : MonoBehaviour
         healthBar.transform.localScale = new Vector3(normalizedHealth, 1, 1);
         healthBar.color = Color.Lerp(lowHealthColor, fullHealthColor, normalizedHealth);
     }
-
-    private TextMeshProUGUI GetPlaceholderText(Entity entity)
-    {
-        GameObject textObject = new GameObject(entity.name + " Text");
-        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
-
-        text.text = entity.name;
-        text.fontSize = 20;
-        text.color = Color.black;
-
-        return text;
-    }
+    
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -21,24 +22,26 @@ public struct InventoryItem<T>
 
 public class PlayerInventory : MonoBehaviour
 {
-
+    
     public int inventoryCapacity = 10;
-    [SerializeField] 
+    [SerializeField, Tooltip("This is the starting items of the player.")]
     private Entity[] startingItems;
 
-    [SerializeField]
+    [SerializeField, Tooltip("This is the maximum health of the player.")]
     private int playerHealth = 100;
-
+    
     private int currentHealth;
 
-    private int inventorySize = 0;
     private InventoryItem<Entity>[] inventory;
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
     private GameObject mainCamera;
     private GameObject renderedObject;
+    private int inventorySize;
+    private GameManager gameManager;
 
-    int selectedBlockIndex = 0;
+
+    private int selectedBlockIndex;
 
     private void Awake()
     {
@@ -62,7 +65,7 @@ public class PlayerInventory : MonoBehaviour
             AddItem(startingItems[i]);
         }
         
-
+        gameManager = GameManager.Instance;
         
     }
 
@@ -78,7 +81,47 @@ public class PlayerInventory : MonoBehaviour
         {
             DropHeldItem();
         }
+    }
 
+    private void GetAllCraftableItems()
+    {
+        Entity[] allItems = gameManager.allEntities;
+        List<Entity> craftableItems = new List<Entity>();
+
+        foreach (Entity item in allItems)
+        {
+            Dictionary<Entity, int> recipe = EntityArrayToDictionary(item.recipe);
+
+            foreach (KeyValuePair<Entity, int> ingredient in recipe)
+            {
+                if (inventory.AsReadOnlyList().Contains(ingredient.Key) && inventory[ingredient.Key].count >= ingredient.Value)
+                {
+                    craftableItems.Add(item);
+                    break;
+                }
+
+            }
+        }
+        
+
+    }
+    
+    static Dictionary<Entity,int> EntityArrayToDictionary(Entity[] array)
+    {
+        Dictionary<Entity,int> dictionary = new Dictionary<Entity, int>();
+        foreach (Entity entity in array)
+        {
+            if (dictionary.ContainsKey(entity))
+            {
+                dictionary[entity]++;
+            }
+            else
+            {
+                dictionary.Add(entity,1);
+            }
+        }
+
+        return dictionary;
     }
 
     void OnTriggerEnter(Collider other)
@@ -139,19 +182,21 @@ public class PlayerInventory : MonoBehaviour
         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
         {
             selectedBlockIndex++;
-            if (selectedBlockIndex >= inventorySize)
+            if (selectedBlockIndex >= inventoryCapacity)
                 selectedBlockIndex = 0;
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
         {
             selectedBlockIndex--;
             if (selectedBlockIndex < 0)
-                selectedBlockIndex = inventorySize - 1;
+                selectedBlockIndex = inventoryCapacity - 1;
         }
         //Check if num key is pressed
-        for (int i = 1; i <= inventorySize; ++i)
+        for (int i = 1; i <= inventoryCapacity; ++i)
         {
-            if(Input.GetKeyDown(i.ToString()))
+            string numKey = i.ToString();
+            numKey = numKey.Length > 1 ? numKey.Substring(1) : numKey;
+            if(Input.GetKeyDown(numKey))
             {
                 selectedBlockIndex = i-1;
             }
@@ -347,25 +392,6 @@ public class PlayerInventory : MonoBehaviour
                 }
             }
         }
-    }
-
-
-    string GetInventoryString()
-    {
-        string inventoryString = "Inventory: ";
-        for (int i = 0; i < inventory.Length; i++)
-        {
-            if (inventory[i].item is not Block)
-            {
-                throw new System.Exception("Inventory item is not a block");
-            }
-            if (inventory[i].item.name != null )
-            {
-                inventoryString += inventory[i].item.name + " ";
-            }
-        }
-        return inventoryString;
-    
     }
 
     bool AddItem(Entity item)
