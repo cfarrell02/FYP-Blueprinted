@@ -317,7 +317,6 @@ public class PlayerInventory : MonoBehaviour
     
             if (AddItem(block))
             {
-                print(block.location);
                 blockyTerrain.RemoveBlock(block.location);
     
             }
@@ -419,9 +418,11 @@ public class PlayerInventory : MonoBehaviour
 
     bool AddItem(Entity item)
     {
+        if(item == null)
+            return false;
+        
         int stackSize = item.maxStackSize;
         
-        print(item.name + " " +stackSize);
         if (inventorySize >= inventoryCapacity)
             return false;
     

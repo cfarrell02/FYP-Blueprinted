@@ -81,5 +81,4 @@ public class Block : Entity
         color = block.color;
     }
 
-
 }
