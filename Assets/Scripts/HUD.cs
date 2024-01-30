@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -20,11 +21,14 @@ public class HUD : MonoBehaviour
     public GameObject inventoryIconContainer;
     
     [Header("Rendering")]
-    public Camera cam;
+    public Camera camera;
 
     private Canvas canvas;
     private InventoryItem<Entity>[] inventory;
     private GameObject[] inventoryIcons;
+    private GameObject[] craftableIcons;
+    private bool craftingOpen = false;
+    private int craftingIndex = 0;
 
     private void Start()
     {
@@ -33,6 +37,11 @@ public class HUD : MonoBehaviour
 
         UpdateBuildInfoText();
 
+        CreateIcons(ref inventoryIcons, inventory);
+    }
+
+    private void CreateIcons(ref GameObject[] inventoryIcons, InventoryItem<Entity>[] inventory, int y = 0)
+    {
         float containerWidth = Screen.width;
         float iconWidth = containerWidth / inventory.Length * 0.6f;
         float iconGap = 20;
@@ -50,7 +59,7 @@ public class HUD : MonoBehaviour
             slotObject.GetComponent<RectTransform>().sizeDelta = new Vector2(iconWidth, iconWidth);
 
             float slotPositionX = startX + iconWidth * i + iconGap * i;
-            float slotPositionY = iconWidth;
+            float slotPositionY = iconWidth + y;
 
             slotObject.transform.position = new Vector3(slotPositionX, slotPositionY, 0);
             inventoryIcons[i] = slotObject;
@@ -60,8 +69,40 @@ public class HUD : MonoBehaviour
 
     private void Update()
     {
-        UpdateInventoryIcons();
+        if (!craftingOpen)
+            UpdateInventoryIcons();
+        else
+            UpdateCraftingIcons();
+        
+
         UpdateHealthBar();
+        
+        if (craftingOpen && craftableIcons == null)
+        {
+            ShowCraftableItems();
+        }
+        else if (!craftingOpen && craftableIcons != null)
+        {
+            for(int i = 0; i < craftableIcons.Length; i++)
+            {
+                Destroy(craftableIcons[i]);
+            }
+            craftableIcons = null;
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            
+            craftingOpen = !craftingOpen; 
+            GameManager.Instance.InputEnabled = !craftingOpen;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return) && craftingOpen)
+        {
+            playerInventoryObject.CraftItem(craftingIndex);
+            craftingOpen = false;
+            GameManager.Instance.InputEnabled = true;
+        }
     }
 
     private void UpdateBuildInfoText()
@@ -73,7 +114,8 @@ public class HUD : MonoBehaviour
 
     private void UpdateInventoryIcons()
     {
-        float iconWidth = inventoryIconContainer.GetComponent<RectTransform>().rect.width / inventory.Length;
+        float iconWidth = inventoryIconContainer.GetComponent<RectTransform>().rect.width /
+                          playerInventoryObject.inventoryCapacity;
 
         // Clear existing icons in inventoryIconContainer
         foreach (Transform child in inventoryIconContainer.transform)
@@ -84,35 +126,59 @@ public class HUD : MonoBehaviour
         for (int i = 0; i < inventory.Length; i++)
         {
             var inventoryItem = inventory[i];
-
-            if (inventoryItem.item == null)
-            {
-                continue;
-            }
+            
 
             RetrieveIcon(i, iconWidth, inventoryItem.item, inventoryItem.count,playerInventoryObject.GetSelectedBlockIndex() == i);
         }
     }
 
+    private void UpdateCraftingIcons()
+    {
+        if(craftableIcons == null)
+        {
+            ShowCraftableItems();
+            return;
+        }
+        for (int i = 0; i < craftableIcons.Length; ++i)
+        {
+            string num = i.ToString().Length == 1 ? i.ToString() : "0";
+            if(Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                craftingIndex = i;
+            }
+        }
+        for (int i = 0; i < craftableIcons.Length; ++i)
+        {
+            var icon = craftableIcons[i];
+            icon.GetComponent<Image>().color = i == craftingIndex ? Color.red : Color.white;
+        }
+        
+    }
+
     private void RetrieveIcon(int index, float iconWidth, Entity entity,int quantity,bool selected = false)
     {
+        
 
         var selectedSlot = inventoryIcons[index];
         selectedSlot.GetComponent<Image>().color = selected ? Color.red : Color.white;
 
         var iconImage = selectedSlot.transform.GetChild(0);
         var text = selectedSlot.transform.GetChild(1);
-
-        Sprite icon = entity.icon;
+        
         var image = iconImage.GetComponent<Image>();
+
+        if (entity == null)
+        {
+            image.sprite = null;
+            image.color = Color.clear;
+            text.GetComponent<TextMeshProUGUI>().text = "(0)";
+            return;
+        }
+
+        Sprite icon = GenerateIcon(entity, index);
         image.sprite = icon;
         image.color = Color.white;
         
-        if (icon == null)
-        {
-            icon = GenerateIcon(entity, index);
-            entity.icon = icon;
-        }
         
         text.GetComponent<TextMeshProUGUI>().text = "("+quantity+")";
         
@@ -123,6 +189,14 @@ public class HUD : MonoBehaviour
     
     private Sprite GenerateIcon(Entity entity, int index)
     {
+        if(entity.icon != null)
+        {
+            return entity.icon;
+        }
+        
+        var camObject = Instantiate(this.camera , new Vector3(0,0,0), Quaternion.identity);
+        var cam = camObject.GetComponent<Camera>();
+        cam.name = "IconMakerCamera " + index;
         cam.transform.position = new Vector3(index*100,500,0);
 
         GameObject item = Instantiate(entity.prefab, cam.transform.position + cam.transform.forward * 2, Quaternion.identity);
@@ -163,15 +237,57 @@ public class HUD : MonoBehaviour
         
         cam.targetTexture = null;
         RenderTexture.active = null;
-        
+
+        foreach (Transform child in camObject.transform)
+        {
+            Destroy(child.gameObject);
+            
+        }
+        Destroy(camObject);
         Destroy(item);
-        
-        return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
+        var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
+        entity.icon = sprite;
+        return sprite;
     }
 
-    
-   
 
+    private void ShowCraftableItems()
+    {
+        
+        var allCraftableItems = playerInventoryObject.GetAllCraftableItems();
+        var craftableItems = allCraftableItems.Select(item => new InventoryItem<Entity>(item.Item1, item.Item2)).ToArray();
+        //Convert to 10 length array
+        if (craftableItems.Length > 10)
+        {
+            craftableItems = craftableItems.Take(10).ToArray();
+        }
+        else
+        {
+            craftableItems = craftableItems.Concat(Enumerable.Repeat(new InventoryItem<Entity>(null, 0), 10 - craftableItems.Length)).ToArray();
+        }
+        
+        
+        CreateIcons(ref craftableIcons, craftableItems, Screen.height -200);
+
+        for (int i = 0; i < craftableIcons.Length; ++i)
+        {
+            var icon = craftableIcons[i];
+            var image = icon.transform.GetChild(0).GetComponent<Image>();
+            var text = icon.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+            var item = craftableItems[i];
+            if (item.item == null)
+            {
+                image.sprite = null;
+                image.color = Color.clear;
+                text.text = "";
+                continue;
+            }
+            image.sprite = GenerateIcon(item.item, i);
+            image.color = Color.white;
+            text.text = item.count.ToString(); 
+        }
+
+    }
 
 
     private void UpdateHealthBar()
@@ -181,16 +297,5 @@ public class HUD : MonoBehaviour
         healthBar.transform.localScale = new Vector3(normalizedHealth, 1, 1);
         healthBar.color = Color.Lerp(lowHealthColor, fullHealthColor, normalizedHealth);
     }
-
-    private TextMeshProUGUI GetPlaceholderText(Entity entity)
-    {
-        GameObject textObject = new GameObject(entity.name + " Text");
-        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
-
-        text.text = entity.name;
-        text.fontSize = 20;
-        text.color = Color.black;
-
-        return text;
-    }
+    
 }

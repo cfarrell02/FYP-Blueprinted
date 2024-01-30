@@ -1,15 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem.HID;
-
+[System.Serializable]
 public struct InventoryItem<T>
 {
-    public T item { get; set;}
-    public int count { get; set; }
+    public T item;
+    public int count;
 
     public InventoryItem(T item, int count)
     {
@@ -21,24 +22,26 @@ public struct InventoryItem<T>
 
 public class PlayerInventory : MonoBehaviour
 {
-
+    
     public int inventoryCapacity = 10;
-    [SerializeField] 
-    private Entity[] startingItems;
+    [SerializeField, Tooltip("This is the starting items of the player.")]
+    private InventoryItem<Entity>[] startingItems;
 
-    [SerializeField]
+    [SerializeField, Tooltip("This is the maximum health of the player.")]
     private int playerHealth = 100;
-
+    
     private int currentHealth;
 
-    private int inventorySize = 0;
     private InventoryItem<Entity>[] inventory;
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
     private GameObject mainCamera;
     private GameObject renderedObject;
+    private int inventorySize;
+    private GameManager gameManager;
 
-    int selectedBlockIndex = 0;
+
+    private int selectedBlockIndex;
 
     private void Awake()
     {
@@ -56,30 +59,93 @@ public class PlayerInventory : MonoBehaviour
         
         selectedBlockIndex = 0;
         currentHealth = playerHealth;
-        
-        for (int i = 0; i < startingItems.Length; i++)
-        {
-            AddItem(startingItems[i]);
-        }
-        
 
+        for(int i = 0; i < startingItems.Length; ++i)
+        {
+            inventory[i] = startingItems[i];
+            inventorySize++;
+        }
+
+        gameManager = GameManager.Instance;
         
     }
 
     void Update()
     {
         CheckBlockInFront();
-        HandleInput();
         UseSelectedTool();
         HandleHealth();
         RenderSelectedItem();
-        
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            DropHeldItem();
-        }
 
+        if (GameManager.Instance.InputEnabled)
+        {
+            HandleInput();
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                DropHeldItem();
+            }
+        }
     }
+
+    //This retrieves a list of all craftable items
+    //This method is quite expensive and should only be called when necessary.
+    public List<(Entity, int)> GetAllCraftableItems()
+    {
+        Entity[] allItems = gameManager.allEntities.Select(x => x.craftable ? x : null).Where(x => x != null).ToArray();
+        List<(Entity, int)> craftableItems = new List<(Entity, int)>();
+
+        foreach (Entity item in allItems)
+        {
+            List<(Entity, int)> recipeList = item.recipe.Select(x => x.item != null ? (x.item, x.count) : (null, 0)).ToList();
+            (bool, int)[] ingredientCheckList = new (bool, int)[recipeList.Count];
+            foreach (var ingredient in recipeList)
+            {
+                var (contains, count) = InventoryContains(ingredient.Item1);
+                if(contains && count >= ingredient.Item2)
+                    ingredientCheckList[recipeList.IndexOf(ingredient)] = (true, count/ingredient.Item2);
+                else
+                    ingredientCheckList[recipeList.IndexOf(ingredient)] = (false, 0);
+            }
+            if (ingredientCheckList.All(x => x.Item1))
+            {
+                int minCount = ingredientCheckList.Min(x => x.Item2);
+                craftableItems.Add((item, minCount));
+            }
+            
+        }
+        return craftableItems;
+    }
+    
+    public void CraftItem(int index)
+    {
+        var craftableItems = GetAllCraftableItems();
+        if (index >= craftableItems.Count || inventorySize >= inventoryCapacity) // Check if the index is valid or if the inventory is full
+            return;
+        var (item, count) = craftableItems[index];
+        if(count <= 0) return;
+        //Craft one of the item
+        for (int i = 0; i < item.recipe.Length; i++)
+        {
+            var ingredient = item.recipe[i];
+            RemoveItemById(ingredient.item.id, ingredient.count);
+        }
+        AddItem(item);
+    }
+
+    //Helper function to check if the inventory contains an entity and how many of that entity
+    (bool,int) InventoryContains(Entity entity)
+    {
+        for (int i = 0; i < inventory.Length; i++)
+        {
+            if (inventory[i].item && inventory[i].item.id == entity.id)
+            {
+                return (true,inventory[i].count);
+            }
+        }
+        return (false,-1);
+    }
+    
+
 
     void OnTriggerEnter(Collider other)
     {
@@ -139,19 +205,21 @@ public class PlayerInventory : MonoBehaviour
         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
         {
             selectedBlockIndex++;
-            if (selectedBlockIndex >= inventorySize)
+            if (selectedBlockIndex >= inventoryCapacity)
                 selectedBlockIndex = 0;
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
         {
             selectedBlockIndex--;
             if (selectedBlockIndex < 0)
-                selectedBlockIndex = inventorySize - 1;
+                selectedBlockIndex = inventoryCapacity - 1;
         }
         //Check if num key is pressed
-        for (int i = 1; i <= inventorySize; ++i)
+        for (int i = 1; i <= inventoryCapacity; ++i)
         {
-            if(Input.GetKeyDown(i.ToString()))
+            string numKey = i.ToString();
+            numKey = numKey.Length > 1 ? numKey.Substring(1) : numKey;
+            if(Input.GetKeyDown(numKey))
             {
                 selectedBlockIndex = i-1;
             }
@@ -349,25 +417,6 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
-
-    string GetInventoryString()
-    {
-        string inventoryString = "Inventory: ";
-        for (int i = 0; i < inventory.Length; i++)
-        {
-            if (inventory[i].item is not Block)
-            {
-                throw new System.Exception("Inventory item is not a block");
-            }
-            if (inventory[i].item.name != null )
-            {
-                inventoryString += inventory[i].item.name + " ";
-            }
-        }
-        return inventoryString;
-    
-    }
-
     bool AddItem(Entity item)
     {
         int stackSize = item.maxStackSize;
@@ -383,7 +432,10 @@ public class PlayerInventory : MonoBehaviour
                 inventory[i].count++;
                 return true;
             }
-            else if (inventory[i].item == null)
+        }
+        for (int i = 0; i < inventoryCapacity; i++)
+        {
+            if (inventory[i].item == null)
             {
                 inventory[i] = new InventoryItem<Entity>(item, 1);
                 inventorySize++;
@@ -413,18 +465,19 @@ public class PlayerInventory : MonoBehaviour
         return inventory;
     }
 
-    bool RemoveItem(Entity item)
+    bool RemoveItemById(int itemID, int amount = 1)
     {
-        for(int itemIndex = 0; itemIndex< inventoryCapacity; ++itemIndex)
+        int index = inventory.ToList().FindIndex(x => x.item != null && x.item.id == itemID);
+        if (index == -1)
+            return false;
+        if (inventory[index].count > amount)
         {
-            if (inventory[itemIndex].Equals(item))
-            {
-                inventory[itemIndex] = new InventoryItem<Entity>(new Block(), 0);
-                inventorySize--;
-                return true;
-            }
+            inventory[index].count -= amount;
+            return true;
         }
-        return false;
+        inventory[index] = new InventoryItem<Entity>(null, 0);
+        inventorySize--;
+        return true;
     }
 
     public int GetSelectedBlockIndex()

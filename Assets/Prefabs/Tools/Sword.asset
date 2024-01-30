@@ -17,8 +17,14 @@ MonoBehaviour:
   id: 1001
   maxStackSize: 1
   prefab: {fileID: 6378143962500262662, guid: c994a976ab44de94088e0249865b35dc, type: 3}
+  icon: {fileID: 0}
   renderOffset: {x: 0.5, y: 0.05, z: 1}
-  renderRotation: {x: 1, y: 1}
+  craftable: 1
+  recipe:
+  - item: {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
+    count: 1
   itemType: 0
   speed: 2
   damage: 10
