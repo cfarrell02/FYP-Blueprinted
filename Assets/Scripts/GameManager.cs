@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
     [Tooltip("All entities in the game.")]
     public Entity[] allEntities;
     
+    public bool InputEnabled = true;
+    
 
     // Awake is called when the script instance is being loaded
     private void Awake()

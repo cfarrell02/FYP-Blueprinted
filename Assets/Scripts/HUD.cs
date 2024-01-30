@@ -28,6 +28,7 @@ public class HUD : MonoBehaviour
     private GameObject[] inventoryIcons;
     private GameObject[] craftableIcons;
     private bool craftingOpen = false;
+    private int craftingIndex = 0;
 
     private void Start()
     {
@@ -68,24 +69,39 @@ public class HUD : MonoBehaviour
 
     private void Update()
     {
-        UpdateInventoryIcons();
+        if (!craftingOpen)
+            UpdateInventoryIcons();
+        else
+            UpdateCraftingIcons();
+        
+
         UpdateHealthBar();
         
-        if (craftingOpen)
+        if (craftingOpen && craftableIcons == null)
         {
             ShowCraftableItems();
         }
-        else if (craftableIcons != null)
+        else if (!craftingOpen && craftableIcons != null)
         {
             for(int i = 0; i < craftableIcons.Length; i++)
             {
                 Destroy(craftableIcons[i]);
             }
+            craftableIcons = null;
         }
         
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            craftingOpen = !craftingOpen;
+            
+            craftingOpen = !craftingOpen; 
+            GameManager.Instance.InputEnabled = !craftingOpen;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return) && craftingOpen)
+        {
+            playerInventoryObject.CraftItem(craftingIndex);
+            craftingOpen = false;
+            GameManager.Instance.InputEnabled = true;
         }
     }
 
@@ -114,6 +130,29 @@ public class HUD : MonoBehaviour
 
             RetrieveIcon(i, iconWidth, inventoryItem.item, inventoryItem.count,playerInventoryObject.GetSelectedBlockIndex() == i);
         }
+    }
+
+    private void UpdateCraftingIcons()
+    {
+        if(craftableIcons == null)
+        {
+            ShowCraftableItems();
+            return;
+        }
+        for (int i = 0; i < craftableIcons.Length; ++i)
+        {
+            string num = i.ToString().Length == 1 ? i.ToString() : "0";
+            if(Input.GetKeyDown(KeyCode.Alpha1 + i))
+            {
+                craftingIndex = i;
+            }
+        }
+        for (int i = 0; i < craftableIcons.Length; ++i)
+        {
+            var icon = craftableIcons[i];
+            icon.GetComponent<Image>().color = i == craftingIndex ? Color.red : Color.white;
+        }
+        
     }
 
     private void RetrieveIcon(int index, float iconWidth, Entity entity,int quantity,bool selected = false)
@@ -214,14 +253,39 @@ public class HUD : MonoBehaviour
 
     private void ShowCraftableItems()
     {
-        //TODO Fix this menu
         
         var allCraftableItems = playerInventoryObject.GetAllCraftableItems();
         var craftableItems = allCraftableItems.Select(item => new InventoryItem<Entity>(item.Item1, item.Item2)).ToArray();
-        craftableItems = new List<InventoryItem<Entity>>(craftableItems).GetRange(0, 5).ToArray();
+        //Convert to 10 length array
+        if (craftableItems.Length > 10)
+        {
+            craftableItems = craftableItems.Take(10).ToArray();
+        }
+        else
+        {
+            craftableItems = craftableItems.Concat(Enumerable.Repeat(new InventoryItem<Entity>(null, 0), 10 - craftableItems.Length)).ToArray();
+        }
         
         
-        CreateIcons(ref craftableIcons, craftableItems, 100);
+        CreateIcons(ref craftableIcons, craftableItems, Screen.height -200);
+
+        for (int i = 0; i < craftableIcons.Length; ++i)
+        {
+            var icon = craftableIcons[i];
+            var image = icon.transform.GetChild(0).GetComponent<Image>();
+            var text = icon.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+            var item = craftableItems[i];
+            if (item.item == null)
+            {
+                image.sprite = null;
+                image.color = Color.clear;
+                text.text = "";
+                continue;
+            }
+            image.sprite = GenerateIcon(item.item, i);
+            image.color = Color.white;
+            text.text = item.count.ToString(); 
+        }
 
     }
 
