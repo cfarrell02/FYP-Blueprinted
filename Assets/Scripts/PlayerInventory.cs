@@ -418,6 +418,9 @@ public class PlayerInventory : MonoBehaviour
 
     bool AddItem(Entity item)
     {
+        if(item == null)
+            return false;
+        
         int stackSize = item.maxStackSize;
         
         if (inventorySize >= inventoryCapacity)

@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Unity.AI.Navigation;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -89,7 +91,7 @@ public class BlockyTerrain : MonoBehaviour
         if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newNavMeshDistance ||
             Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newNavMeshDistance)
         {
-            print("Building navmesh");
+            //print("Building navmesh");
             //Ensure only blocks that are within the navmesh distance are parented to the navmesh
             foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
             {
@@ -197,35 +199,20 @@ public class BlockyTerrain : MonoBehaviour
        
     }
 
-    private void BuildNavmesh()
-    { 
-        // Would love to do this async but it doesn't work
-        // {
-        //     NavMeshData navMeshData = surface.navMeshData;
-        //     NavMeshBuildSettings buildSettings = surface.GetBuildSettings();
-        //     List<NavMeshBuildSource> sources = new List<NavMeshBuildSource>();
-        //     Bounds sourceBounds = navMeshData.sourceBounds;
-        //     NavMeshBuilder.CollectSources(sourceBounds, LayerMask.GetMask("NavMesh"), NavMeshCollectGeometry.RenderMeshes, 0, new List<NavMeshBuildMarkup>(), sources);
-        //
-        //     NavMeshBuilder.UpdateNavMeshDataAsync(navMeshData, buildSettings, sources, sourceBounds);
-        // }
-        
-        surface.BuildNavMesh(); // Does not scale well
-
-        // // For all loaded blocks, set navMeshBuilt to true
-        // foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
-        // {
-        //     Vector3 pos = cube.transform.position;
-        //     Vector2 pos2D = new Vector2(pos.x, pos.z);
-        //     if (coordsToHeight.ContainsKey(pos2D))
-        //     {
-        //         var selectedBlocks = coordsToHeight[pos2D];
-        //         selectedBlocks.navMeshBuilt = true;
-        //         coordsToHeight[pos2D] = selectedBlocks;
-        //     }
-        // }
-        
+    private async void BuildNavmesh()
+    {
+        await BuildNavmeshAsync(); // This works well... Not sure if this is the best way to do this
     }
+
+    private async Task BuildNavmeshAsync()
+    {
+        AsyncOperation operation = surface.UpdateNavMesh(surface.navMeshData);
+        while (!operation.isDone)
+        {
+            await Task.Yield();
+        }
+    }
+
 
 
     void GenerateCubeAtPosition(int x, int z)
@@ -270,7 +257,7 @@ public class BlockyTerrain : MonoBehaviour
 
                 if (toBeLoaded)
                 {
-                    InstantiateCube(cubePos);
+                    InstantiateCube(cubePos, cubeObject);
                     copyOfCubeObject.InstantiateBlock(cubeObject);
                 }
                 else
@@ -293,6 +280,26 @@ public class BlockyTerrain : MonoBehaviour
     void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = cubeObject;
+        
+        //Check if there are any spare cubes in the scene and if so we can move them to the new position
+        var spareCubes = GameObject.FindGameObjectsWithTag("Cube").Where(cube => cube.name.Contains(cube2.name));
+        if (spareCubes.Any())
+        {
+            foreach (var spareCube in spareCubes)
+            {
+                Block block = FindBlock(spareCube.transform.position);
+                if(block.isLoaded) continue;
+                
+                spareCube.transform.position = position;
+                spareCube.name = cube2.name + ": " + position;
+                spareCube.isStatic = true;
+                spareCube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                spareCube.transform.parent = transform;
+                return;
+            }
+        }
+        
+        
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
@@ -343,7 +350,7 @@ public class BlockyTerrain : MonoBehaviour
                 var a = coordsToHeight[pos2D];  
                 a.isLoaded = false;
                 coordsToHeight[pos2D] = a;
-                Destroy(cube); // Remove cube from the scene
+                //Destroy(cube); // Remove cube from the scene
             }
         }
     }
@@ -402,7 +409,7 @@ public class BlockyTerrain : MonoBehaviour
     }
 
 
-    public bool AddBlock(Vector3 position, Block block)
+    public bool AddBlock(Vector3 position, Block blockToAdd)
     {
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
@@ -410,20 +417,20 @@ public class BlockyTerrain : MonoBehaviour
             var blockList = coordsToHeight.ContainsKey(pos) ? coordsToHeight[pos].blocks : new List<Block>();
             if (blockList.Count > 0)
             {
-                block.isLoaded = true;
+                blockToAdd.isLoaded = true;
                 for (int i = 0; i < blockList.Count; ++i)
                 {
                     if (blockList[i].location == position)
                     {
-                        blockList[i] = block;
+                        blockList[i] = blockToAdd;
                         break;
                     }
                 }
-                if (!blockList.Contains(block))
+                if (!blockList.Contains(blockToAdd))
                 {
-                    blockList.Add(block);
+                    blockList.Add(blockToAdd);
                 }
-                InstantiateCube(position);
+                InstantiateCube(position, blockToAdd);
                 var a = coordsToHeight[pos];
                 a.isLoaded = true;
                 coordsToHeight[pos] = a;
