@@ -12,7 +12,7 @@ public class BlockyTerrain : MonoBehaviour
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
     public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
-    public Block cubeObject; // This needs to be changed to a list or dictionary for different types of blocks
+    public Block cubeObject, dirt; // This needs to be changed to a list or dictionary for different types of blocks
     
     
 
@@ -257,9 +257,7 @@ public class BlockyTerrain : MonoBehaviour
                 Vector3 cubePos = new Vector3(x, i, z);
 
                 bool toBeLoaded = i >= y;
-
                 
-
                 // This is too laggy
                 // if (!toBeLoaded)
                 // { 
@@ -267,14 +265,20 @@ public class BlockyTerrain : MonoBehaviour
                 //     var surroundingBlocks = GetSurroundingBlocks(cube);
                 //     toBeLoaded = surroundingBlocks.Any(surroundingBlock => FindBlock(surroundingBlock).Name == null);
                 // }
+                
+                Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
 
                 if (toBeLoaded)
                 {
                     InstantiateCube(cubePos);
+                    copyOfCubeObject.InstantiateBlock(cubeObject);
+                }
+                else
+                {
+                    copyOfCubeObject.InstantiateBlock(dirt);
                 }
                 
-                Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
-                copyOfCubeObject.InstantiateBlock(cubeObject);
+
                 copyOfCubeObject.location = cubePos;
                 copyOfCubeObject.isLoaded = toBeLoaded;
                 
@@ -286,12 +290,13 @@ public class BlockyTerrain : MonoBehaviour
         }
     }
 
-    void InstantiateCube(Vector3 position)
+    void InstantiateCube(Vector3 position, Block cube2 = null)
     {
-        GameObject cube = Instantiate(cubeObject.prefab, position, Quaternion.identity);
+        if (!cube2) cube2 = cubeObject;
+        GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
-        cube.name = "Cube: " + position;
+        cube.name = cube2.name + ": " + position;
         cube.isStatic = true;
         float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
         if (distanceToPlayer < navMeshDistance)
@@ -362,7 +367,7 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     blockList.Remove(block);
 
-                    var cubeToRemove = GameObject.Find("Cube: " + position);
+                    var cubeToRemove = GameObject.Find(block.name + ": " + position);
                     Destroy(cubeToRemove);
 
                     var surroundingBlocks = GetSurroundingBlocks(position);
@@ -375,7 +380,6 @@ public class BlockyTerrain : MonoBehaviour
                             {
                                 AddBlock(surroundingBlock, foundBlock);
                             }
-                        
                     }
                     BuildNavmesh();
                     return true;
@@ -437,21 +441,12 @@ public class BlockyTerrain : MonoBehaviour
     public Block FindBlock(Vector3 position)
     {
         Vector2 pos = new Vector2(position.x, position.z);
-        if (coordsToHeight.ContainsKey(pos))
+
+        if (coordsToHeight.TryGetValue(pos, out var heightData) && heightData.blocks.Count > 0)
         {
-            var blockList = coordsToHeight[pos].blocks;
-            if (blockList.Count > 0)
+            foreach (var block in heightData.blocks)
             {
-                Block block = ScriptableObject.CreateInstance<Block>(); // Empty Search block
-                foreach (Block b in blockList)
-                {
-                    if (b.location.Equals(position))
-                    {
-                        block = b;
-                        break;
-                    }
-                }
-                if (block.name != null)
+                if (block.location.Equals(position))
                 {
                     return block;
                 }
@@ -460,6 +455,7 @@ public class BlockyTerrain : MonoBehaviour
 
         return null;
     }
+
 }
 
 
