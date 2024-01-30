@@ -30,7 +30,9 @@ public class BlockyTerrain : MonoBehaviour
     int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField]
     int perlinScale = 10; // Multiplier for the perlin noise scale
-    
+
+
+    private List<(GameObject, Block, float)> pool = new List<(GameObject, Block, float)>();
     
     
     private Transform playerTransform;
@@ -78,6 +80,19 @@ public class BlockyTerrain : MonoBehaviour
         }
         if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
+        
+        
+        //Remove old blocks from the pool
+        for (int i = pool.Count - 1; i >= 0; i--)
+        {
+            if (Time.time - pool[i].Item3 > 5f)
+            {
+                Destroy(pool[i].Item1);
+                pool[i].Item2.isLoaded = false;
+                pool.RemoveAt(i);
+            }
+        }
+
         
 
     }
@@ -279,27 +294,38 @@ public class BlockyTerrain : MonoBehaviour
 
     void InstantiateCube(Vector3 position, Block cube2 = null)
     {
-        if (!cube2) cube2 = cubeObject;
+        if (!cube2) cube2 = cubeObject; // Grass is the default cube for now.
+
+        //TODO Fix pooling, its not placing blocks sometimes.
         
-        //Check if there are any spare cubes in the scene and if so we can move them to the new position
-        // var spareCubes = GameObject.FindGameObjectsWithTag("Cube").Where(cube => cube.name.Contains(cube2.name));
-        // if (spareCubes.Any())
-        // {
-        //     foreach (var spareCube in spareCubes)
-        //     {
-        //         Block block = FindBlock(spareCube.transform.position);
-        //         if(block.isLoaded) continue;
-        //         
-        //         spareCube.transform.position = position;
-        //         spareCube.name = cube2.name + ": " + position;
-        //         spareCube.isStatic = true;
-        //         spareCube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-        //         spareCube.transform.parent = transform;
-        //         return;
-        //     }
-        // }
-        
-        
+        if (pool.Count > 0)
+        {
+            var compatiblePool = pool.Where((cube) => cube.Item2.id == cube2.id).ToList();
+            var compatibleCube = compatiblePool.FirstOrDefault();
+            if (compatibleCube.Item2)
+            {
+                pool.Remove(compatibleCube);
+                compatibleCube.Item1.transform.position = position;
+                compatibleCube.Item1.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+                compatibleCube.Item1.tag = "Cube";
+                compatibleCube.Item1.name = cube2.name + ": " + position;
+                compatibleCube.Item1.isStatic = true;
+                float distanceToPlayer2 = Vector3.Distance(position, playerTransform.position);
+                if (distanceToPlayer2 < navMeshDistance)
+                {
+                    compatibleCube.Item1.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
+                }
+                else
+                {
+                    compatibleCube.Item1.transform.parent = transform;
+                }
+                return;
+                
+            }
+        }
+
+
+
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
@@ -350,7 +376,10 @@ public class BlockyTerrain : MonoBehaviour
                 var a = coordsToHeight[pos2D];  
                 a.isLoaded = false;
                 coordsToHeight[pos2D] = a;
-                Destroy(cube); // Remove cube from the scene
+                // Destroy(cube); // Remove cube from the scene
+                //Add to pool
+                pool.Add((cube, block, Time.time));
+
             }
         }
     }
