@@ -29,11 +29,21 @@ public class LightingManager : MonoBehaviour
             timeOfDay += Time.deltaTime * timeMultiplier;
             timeOfDay %= 24; //Modulus to ensure always between 0-24
             UpdateLighting(timeOfDay / 24f);
+            UpdateFog(timeOfDay / 24f);
+
         }
         else
         {
             UpdateLighting(timeOfDay / 24f);
         }
+        
+        //At end of day
+        if (timeOfDay > 23.9f)
+        {
+            GameManager.Instance.IncreaseNightsSurvived();
+            timeOfDay = 0;
+        }
+        
     }
     
     public bool isNight()

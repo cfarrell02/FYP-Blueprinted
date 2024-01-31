@@ -11,7 +11,7 @@ public class HUD : MonoBehaviour
 
     [Header("UI Elements")]
     public TextMeshProUGUI text;
-    public TextMeshProUGUI inventoryText; // Will be replaced with a UI element
+    public TextMeshProUGUI nightTextItem;
     public Image healthBar;
     public Color fullHealthColor, lowHealthColor;
     public GameObject inventorySlotPrefab;
@@ -76,6 +76,7 @@ public class HUD : MonoBehaviour
         
 
         UpdateHealthBar();
+        UpdateNightText();
         
         if (craftingOpen && craftableIcons == null)
         {
@@ -103,6 +104,12 @@ public class HUD : MonoBehaviour
             craftingOpen = false;
             GameManager.Instance.InputEnabled = true;
         }
+    }
+    
+    private void UpdateNightText()
+    {
+        string nightText = $"Night: {GameManager.Instance.nightsSurvived}";
+        nightTextItem.text = nightText;
     }
 
     private void UpdateBuildInfoText()

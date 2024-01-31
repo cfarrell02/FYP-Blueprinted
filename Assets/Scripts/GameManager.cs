@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
     public Entity[] allEntities;
     
     public bool InputEnabled = true;
+    public int nightsSurvived {get; set;} = 0;
     
 
     // Awake is called when the script instance is being loaded
@@ -43,5 +44,10 @@ public class GameManager : MonoBehaviour
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
+    }
+    
+    public void IncreaseNightsSurvived()
+    {
+        nightsSurvived++;
     }
 }
