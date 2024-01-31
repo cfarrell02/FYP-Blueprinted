@@ -82,7 +82,7 @@ public class BlockyTerrain : MonoBehaviour
             HandleEnemySpawn();
         
         
-        int maxPoolSize = 100;
+        int maxPoolSize = 200;
         
         if (pool.Count > maxPoolSize)
         {
@@ -246,7 +246,7 @@ public class BlockyTerrain : MonoBehaviour
         {
             
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
-            y = Mathf.Floor(y / cubeHeight) * cubeHeight;
+            y = Mathf.Floor(y / cubeHeight) * cubeHeight; // Round to nearest cube height for block effect
 
             List<Block> verticalBlocks = new List<Block>();
 
@@ -292,54 +292,49 @@ public class BlockyTerrain : MonoBehaviour
     {
         if (!cube2) cube2 = cubeObject; // Grass is the default cube for now.
 
-        //TODO Fix pooling, its not placing blocks sometimes.
-        
-        if (pool.Count > 0)
+        var compatibleCube = GetCompatibleCubeFromPool(cube2);
+
+        if (compatibleCube.Item1 != null)
         {
-            
-            print("Moving existing cube");
-            var compatiblePool = pool.Where((cube) => cube.Item2.id == cube2.id).ToList();
-            var compatibleCube = compatiblePool.Count >0 ? compatiblePool[0] : (null, null);
-            if (compatibleCube.Item2)
-            {
-                pool.Remove(compatibleCube);
-                compatibleCube.Item1.transform.position = position;
-                compatibleCube.Item1.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-                compatibleCube.Item1.tag = "Cube";
-                compatibleCube.Item1.name = cube2.name + ": " + position;
-                compatibleCube.Item1.isStatic = true;
-                float distanceToPlayer2 = Vector3.Distance(position, playerTransform.position);
-                if (distanceToPlayer2 < navMeshDistance)
-                {
-                    compatibleCube.Item1.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
-                }
-                else
-                {
-                    compatibleCube.Item1.transform.parent = transform;
-                }
-                return;
-                
-            }
+            // Reuse cube from the pool
+            pool.Remove(compatibleCube);
+            var (cube1, block) = compatibleCube;
+            cube1.transform.position = position;
+            cube1.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+            cube1.tag = "Cube";
+            cube1.name = cube2.name + ": " + position;
+            cube1.isStatic = true;
+
+            SetCubeParent(cube1, position);
+
+            return;
         }
 
-        print("Instantiating new cube");
-
-
+        // Instantiate a new cube
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
         cube.name = cube2.name + ": " + position;
         cube.isStatic = true;
-        float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
-        if (distanceToPlayer < navMeshDistance)
-        {
-            cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
-        }
-        else
-        {
-            cube.transform.parent = transform;
-        }
 
+        SetCubeParent(cube, position);
+
+        // Add to the pool
+        //pool.Add((cube, cube2));
+    }
+
+// Helper method to find a compatible cube in the pool
+    (GameObject, Block) GetCompatibleCubeFromPool(Block cube)
+    {
+        var compatiblePool = pool.Where(item => item.Item2.id == cube.id).ToList();
+        return compatiblePool.Count > 0 ? compatiblePool[0] : (null,null);
+    }
+
+// Helper method to set the parent of the cube based on its position
+    void SetCubeParent(GameObject cube, Vector3 position)
+    {
+        float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
+        cube.transform.parent = distanceToPlayer < navMeshDistance ? transform.GetChild(0) : transform;
     }
 
 

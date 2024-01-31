@@ -758,7 +758,7 @@ MonoBehaviour:
   enemyPrefab: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
   cubeObject: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
   dirt: {fileID: 11400000, guid: dd396c96daeee4778b0122fcfbd3f9e1, type: 2}
-  loadDistance: 40
+  loadDistance: 100
   navMeshDistance: 20
   newTerrainDistance: 10
   newNavMeshDistance: 10
