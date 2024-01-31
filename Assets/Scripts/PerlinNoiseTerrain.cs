@@ -32,7 +32,7 @@ public class BlockyTerrain : MonoBehaviour
     int perlinScale = 10; // Multiplier for the perlin noise scale
 
 
-    private List<(GameObject, Block, float)> pool = new List<(GameObject, Block, float)>();
+    private List<(GameObject, Block)> pool = new List<(GameObject, Block)>();
     
     
     private Transform playerTransform;
@@ -82,15 +82,11 @@ public class BlockyTerrain : MonoBehaviour
             HandleEnemySpawn();
         
         
-        //Remove old blocks from the pool
-        for (int i = pool.Count - 1; i >= 0; i--)
+        int maxPoolSize = 100;
+        
+        if (pool.Count > maxPoolSize)
         {
-            if (Time.time - pool[i].Item3 > 5f)
-            {
-                Destroy(pool[i].Item1);
-                pool[i].Item2.isLoaded = false;
-                pool.RemoveAt(i);
-            }
+            pool.RemoveRange(0, pool.Count - maxPoolSize);
         }
 
         
@@ -300,8 +296,10 @@ public class BlockyTerrain : MonoBehaviour
         
         if (pool.Count > 0)
         {
+            
+            print("Moving existing cube");
             var compatiblePool = pool.Where((cube) => cube.Item2.id == cube2.id).ToList();
-            var compatibleCube = compatiblePool.FirstOrDefault();
+            var compatibleCube = compatiblePool.Count >0 ? compatiblePool[0] : (null, null);
             if (compatibleCube.Item2)
             {
                 pool.Remove(compatibleCube);
@@ -324,6 +322,7 @@ public class BlockyTerrain : MonoBehaviour
             }
         }
 
+        print("Instantiating new cube");
 
 
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
@@ -378,7 +377,8 @@ public class BlockyTerrain : MonoBehaviour
                 coordsToHeight[pos2D] = a;
                 // Destroy(cube); // Remove cube from the scene
                 //Add to pool
-                pool.Add((cube, block, Time.time));
+                pool.Add((cube, block));
+                cube.transform.position = new Vector3(0,-200,0);
 
             }
         }
