@@ -29,6 +29,8 @@ public class PlayerInventory : MonoBehaviour
 
     [SerializeField, Tooltip("This is the maximum health of the player.")]
     private int playerHealth = 100;
+    [SerializeField, Tooltip("This is the color of the block when the player is looking at it.")]
+    Color blockHighlightColor = Color.red;
     
     private int currentHealth;
 
@@ -39,6 +41,7 @@ public class PlayerInventory : MonoBehaviour
     private GameObject renderedObject;
     private int inventorySize;
     private GameManager gameManager;
+    private float timer;
 
 
     private int selectedBlockIndex;
@@ -72,6 +75,8 @@ public class PlayerInventory : MonoBehaviour
 
     void Update()
     {
+        
+        timer += Time.deltaTime;
         CheckBlockInFront();
         UseSelectedTool();
         HandleHealth();
@@ -393,7 +398,7 @@ public class PlayerInventory : MonoBehaviour
             // Remove the block from the inventory
             RemoveItem(selectedBlockIndex);
         
-    }
+        }
     }
 
     void ChangeBlockColor(GameObject blockObject, bool newColor)
@@ -406,7 +411,7 @@ public class PlayerInventory : MonoBehaviour
             {
                 if (newColor)
                 {
-                    blockObject.GetComponent<Renderer>().material.color = Color.red;
+                    blockObject.GetComponent<Renderer>().material.color = blockHighlightColor;
                 }
                 else
                 {
@@ -415,6 +420,7 @@ public class PlayerInventory : MonoBehaviour
             }
         }
     }
+    
 
     bool AddItem(Entity item)
     {

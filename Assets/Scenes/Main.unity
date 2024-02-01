@@ -1779,8 +1779,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 154, y: -68}
-  m_SizeDelta: {x: -434, y: 39.99994}
+  m_AnchoredPosition: {x: 61, y: -56}
+  m_SizeDelta: {x: -270, y: 39.9999}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2028813008
 MonoBehaviour:
@@ -2007,6 +2007,22 @@ PrefabInstance:
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: inventory.Array.size
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: blockHighlightColor.a
+      value: 0.20784314
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: blockHighlightColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: blockHighlightColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: blockHighlightColor.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: allItems.Array.data[0]

@@ -30,6 +30,7 @@ public class BlockyTerrain : MonoBehaviour
     int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField]
     int perlinScale = 10; // Multiplier for the perlin noise scale
+
     
     
     
@@ -38,6 +39,7 @@ public class BlockyTerrain : MonoBehaviour
     private NavMeshSurface surface;
     private float timer = 0f;
     private LightingManager lightingManager;
+    private bool isFillInHolesRunning = false;    
 
     private void Awake()
     {
@@ -57,6 +59,9 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosZ = (int)playerTransform.position.z;
         GenerateInitialTerrain();
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
+        
+        if(!isFillInHolesRunning)
+            StartCoroutine(FillInHoles());
         
     }
 
@@ -219,17 +224,21 @@ public class BlockyTerrain : MonoBehaviour
     {
         Vector2 currentPos = new Vector2(x, z);
 
-        if (coordsToHeight.ContainsKey(currentPos))
+        if (coordsToHeight.ContainsKey(currentPos) && !coordsToHeight[currentPos].isLoaded)
         {
-            var blockItem = coordsToHeight[currentPos].blocks;
+            var verticalBlocks = coordsToHeight[currentPos];
+            var blockItem = verticalBlocks.blocks;
+            verticalBlocks.isLoaded = true;
+            
 
             foreach (var block in blockItem)
             {
                 if (block.isLoaded)
                 {
-                    InstantiateCube(block.location);
+                     InstantiateCube(block.location);
                 }
             }
+            coordsToHeight[currentPos] = verticalBlocks;
         }
         else
         {
@@ -245,13 +254,8 @@ public class BlockyTerrain : MonoBehaviour
 
                 bool toBeLoaded = i >= y;
                 
-                // This is too laggy
-                // if (!toBeLoaded)
-                // { 
-                //     // Checking not top layer blocks to see if they need to be loaded
-                //     var surroundingBlocks = GetSurroundingBlocks(cube);
-                //     toBeLoaded = surroundingBlocks.Any(surroundingBlock => FindBlock(surroundingBlock).Name == null);
-                // }
+                if(!isFillInHolesRunning)
+                    StartCoroutine(FillInHoles());
                 
                 Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
 
@@ -277,27 +281,43 @@ public class BlockyTerrain : MonoBehaviour
         }
     }
 
+    IEnumerator FillInHoles()
+    {
+        isFillInHolesRunning = true;
+        // var loadedBlocks = coordsToHeight.Where(x => x.Value.isLoaded).ToDictionary(x => x.Key, x => x.Value);
+        // foreach (var block in loadedBlocks)
+        // {
+        //     var blockList = block.Value.blocks;
+        //     if (blockList.Count > 0)
+        //     {
+        //         for (int i = 0; i < blockList.Count; ++i)
+        //         {
+        //             if (!blockList[i].isLoaded)
+        //             {
+        //                 var surroundingBlocks = GetSurroundingBlocks(blockList[i].location);
+        //                 foreach (Vector3 surroundingBlock in surroundingBlocks)
+        //                 {
+        //                     var foundBlock = FindBlock(surroundingBlock);
+        //                     if (!foundBlock)
+        //                     {
+        //                         InstantiateCube(blockList[i].location); //The block is touching air
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     yield return null;
+        // }
+        yield return null;
+
+        isFillInHolesRunning = false;
+    }
+
     void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = cubeObject;
         
-        //Check if there are any spare cubes in the scene and if so we can move them to the new position
-        // var spareCubes = GameObject.FindGameObjectsWithTag("Cube").Where(cube => cube.name.Contains(cube2.name));
-        // if (spareCubes.Any())
-        // {
-        //     foreach (var spareCube in spareCubes)
-        //     {
-        //         Block block = FindBlock(spareCube.transform.position);
-        //         if(block.isLoaded) continue;
-        //         
-        //         spareCube.transform.position = position;
-        //         spareCube.name = cube2.name + ": " + position;
-        //         spareCube.isStatic = true;
-        //         spareCube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-        //         spareCube.transform.parent = transform;
-        //         return;
-        //     }
-        // }
+        print("Instantiating cube at " + position);
         
         
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
@@ -321,7 +341,7 @@ public class BlockyTerrain : MonoBehaviour
 
     void UnloadTerrain()
     {
-        GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube"
+        GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube" 
 
         foreach (GameObject cube in cubes)
         {

@@ -17,11 +17,14 @@ MonoBehaviour:
   id: 50
   maxStackSize: 10
   prefab: {fileID: 5763828162553407202, guid: 89ab46e21f01a4ca9bf19f8d8f433fbe, type: 3}
+  icon: {fileID: 0}
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}
+  craftable: 0
+  recipe: []
   location: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   scale: {x: 0, y: 0, z: 0}
-  isLoaded: 1
+  isLoaded: 0
   color: {r: 1, g: 0.8980392, b: 0, a: 1}
   value: 10
   blockType: 1

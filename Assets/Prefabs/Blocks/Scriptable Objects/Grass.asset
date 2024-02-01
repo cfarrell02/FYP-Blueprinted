@@ -24,7 +24,7 @@ MonoBehaviour:
   location: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   scale: {x: 0, y: 0, z: 0}
-  isLoaded: 1
+  isLoaded: 0
   color: {r: 0.25882354, g: 0.7254902, b: 0, a: 1}
   value: 0
   blockType: 0
