@@ -13,6 +13,7 @@ public class Enemy : MonoBehaviour
         Idle,
         Wander,
         Chase,
+        Flee
     }
 
     private GameObject player;
@@ -21,6 +22,7 @@ public class Enemy : MonoBehaviour
     private Renderer rend;
     private float timer = 0f;
     private Animator anim;
+    private float fleeDistance = 5f;
     // Start is called before the first frame update
     void Start()
     {
@@ -49,10 +51,20 @@ public class Enemy : MonoBehaviour
             case Behaviour.Chase:
                 ChasePlayer();
                 break;
+            case Behaviour.Flee:
+                Flee();
+                break;
         }
         
         Look();
         Listen();
+        
+        if (currentHealth <= 20)
+        {
+            behaviour = Behaviour.Flee;
+            
+        }
+        //TODO Add in undoing flee when player is far enough away and increasing health
         
     }
 
@@ -150,6 +162,17 @@ public class Enemy : MonoBehaviour
             }
         }
         
+    }
+    
+    private void Flee()
+    {
+        float distance = Vector3.Distance(player.transform.position, transform.position);
+        if (distance < fleeDistance)
+        {
+            Vector3 towardsPlayer = (player.transform.position - transform.position).normalized;
+            agent.SetDestination(transform.position - towardsPlayer * fleeDistance);
+            agent.isStopped = false;
+        }
     }
     
     void Listen()
