@@ -12,6 +12,7 @@ public class HUD : MonoBehaviour
     [Header("UI Elements")]
     public TextMeshProUGUI text;
     public TextMeshProUGUI nightTextItem;
+    public TextMeshProUGUI currentItemText;
     public Image healthBar;
     public Color fullHealthColor, lowHealthColor;
     public GameObject inventorySlotPrefab;
@@ -29,6 +30,7 @@ public class HUD : MonoBehaviour
     private GameObject[] craftableIcons;
     private bool craftingOpen = false;
     private int craftingIndex = 0;
+    private int selectedBlockIndex = -100;
 
     private void Start()
     {
@@ -38,6 +40,7 @@ public class HUD : MonoBehaviour
         UpdateBuildInfoText();
 
         CreateIcons(ref inventoryIcons, inventory);
+        currentItemText.gameObject.SetActive(false);
     }
 
     private void CreateIcons(ref GameObject[] inventoryIcons, InventoryItem<Entity>[] inventory, int y = 0)
@@ -65,6 +68,28 @@ public class HUD : MonoBehaviour
             inventoryIcons[i] = slotObject;
         }
     }
+    
+    IEnumerator ShowCurrentItemLabel(string text, float duration = 2)
+    {
+        currentItemText.text = text;
+        currentItemText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(duration);
+        currentItemText.gameObject.SetActive(false);
+    }
+    
+    void OnInventoryIndexChanged(int index)
+    {
+        if (index < 0 || index >= inventory.Length)
+        {
+            return;
+        }
+        var item = inventory[index];
+        if (item.item == null)
+        {
+            return;
+        }
+        StartCoroutine(ShowCurrentItemLabel(item.item.name));
+    }
 
 
     private void Update()
@@ -77,6 +102,12 @@ public class HUD : MonoBehaviour
 
         UpdateHealthBar();
         UpdateNightText();
+        
+        if(selectedBlockIndex != playerInventoryObject.GetSelectedBlockIndex())
+        {
+            selectedBlockIndex = playerInventoryObject.GetSelectedBlockIndex();
+            OnInventoryIndexChanged(selectedBlockIndex);
+        }
         
         if (craftingOpen && craftableIcons == null)
         {
