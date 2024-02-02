@@ -6,6 +6,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem.HID;
+using UnityEngine.SceneManagement;
+
 [System.Serializable]
 public struct InventoryItem<T>
 {
@@ -198,8 +200,14 @@ public class PlayerInventory : MonoBehaviour
     {
         if (currentHealth <= 0)
         {
-            print("Player died!");
-            //TODO: Add death screen
+            // Get the current active scene index
+            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+
+            // Load the next scene by incrementing the current scene index
+            int nextSceneIndex = (currentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
+    
+            SceneManager.LoadScene(nextSceneIndex);
+            
         }
     }
 
