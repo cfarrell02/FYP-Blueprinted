@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class Entity : ScriptableObject
 {
-    protected int durability ;
+    public int durability ;
     [Tooltip("This is the maximum durability of the item.")]
     public int maxDurability ;
     [Tooltip("This is the name of the item.")]

@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Unity.AI.Navigation;
 using UnityEngine;
+using Utils;
 using Random = UnityEngine.Random;
 
 
@@ -13,33 +15,31 @@ public class BlockyTerrain : MonoBehaviour
     public int depth = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
-    public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
+
+    public GameObject
+        enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
+
     public Block cubeObject, dirt; // This needs to be changed to a list or dictionary for different types of blocks
-    
-    
+
+
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
-    [SerializeField]
-    int loadDistance = 40; // Distance around the player to load new terrain
-    [SerializeField]
-    int navMeshDistance = 20; // Distance around the player to load new terrain
-    [SerializeField]
-    int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
-    [SerializeField]
-    int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
-    [SerializeField]
-    int perlinScale = 10; // Multiplier for the perlin noise scale
+    [SerializeField] int loadDistance = 40; // Distance around the player to load new terrain
+    [SerializeField] int navMeshDistance = 20; // Distance around the player to load new terrain
+    [SerializeField] int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
+    [SerializeField] int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
+    [SerializeField] int perlinScale = 10; // Multiplier for the perlin noise scale
 
-    
-    
-    
+
+
+
     private Transform playerTransform;
     private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
     private NavMeshSurface surface;
     private float timer = 0f;
     private LightingManager lightingManager;
-    private bool isFillInHolesRunning = false;    
+    private bool isFillInHolesRunning = false;
 
     private void Awake()
     {
@@ -59,10 +59,10 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosZ = (int)playerTransform.position.z;
         GenerateInitialTerrain();
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
-        
-        if(!isFillInHolesRunning)
+
+        if (!isFillInHolesRunning)
             StartCoroutine(FillInHoles());
-        
+
     }
 
     void Update()
@@ -81,9 +81,22 @@ public class BlockyTerrain : MonoBehaviour
             UnloadTerrain();
 
         }
+
         if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
+
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+            print("Saving terrain");
+            SaveGame();
+        }
         
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            print("Loading terrain");
+            LoadGame();
+        }
+
 
     }
 
@@ -91,7 +104,7 @@ public class BlockyTerrain : MonoBehaviour
     {
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
-        
+
         // Check if the player has moved to a new grid area
         if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newNavMeshDistance ||
             Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newNavMeshDistance)
@@ -113,8 +126,9 @@ public class BlockyTerrain : MonoBehaviour
                     cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
                 }
             }
+
             BuildNavmesh();
-            
+
 
         }
     }
@@ -122,13 +136,13 @@ public class BlockyTerrain : MonoBehaviour
     void HandleEnemySpawn()
     {
         timer += Time.deltaTime;
-        
+
         if (timer >= 5f && GameObject.FindGameObjectsWithTag("Enemy").Length < 10)
         {
             timer = 0f;
-            
+
             var noSpawnBlocks = GameObject.FindGameObjectsWithTag("NoSpawn");
-            
+
             float distanceToSpawn = 10f;
             for (int i = 0; i < 10; i++) // Attempt to find a block to spawn the enemy on 10 times, give up after that
             {
@@ -151,11 +165,12 @@ public class BlockyTerrain : MonoBehaviour
                             //Spawn the enemy
                             foreach (GameObject noSpawnBlock in noSpawnBlocks)
                             {
-                                if(Vector3.Distance(noSpawnBlock.transform.position, spawnPos) < 5f) //TODO, Use the value of the block instead of 5f   
+                                if (Vector3.Distance(noSpawnBlock.transform.position, spawnPos) <
+                                    5f) //TODO, Use the value of the block instead of 5f   
                                 {
                                     return;
                                 }
-                                
+
                             }
 
                             Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
@@ -166,7 +181,7 @@ public class BlockyTerrain : MonoBehaviour
                 }
             }
         }
-        
+
     }
 
     void GenerateInitialTerrain()
@@ -178,8 +193,10 @@ public class BlockyTerrain : MonoBehaviour
                 GenerateCubeAtPosition(x, z);
             }
         }
+
         surface.BuildNavMesh();
     }
+
     void GenerateTerrain()
     {
         var position = playerTransform.position;
@@ -193,15 +210,16 @@ public class BlockyTerrain : MonoBehaviour
 
             for (int z = currentPlayerPosZ - loadDistance; z < currentPlayerPosZ + loadDistance; z++)
             {
-               
+
                 if (coordsToHeight.ContainsKey(new Vector2(x, z)) && coordsToHeight[new Vector2(x, z)].isLoaded)
                 {
                     continue;
                 }
+
                 GenerateCubeAtPosition(x, z);
             }
         }
-       
+
     }
 
     private async void BuildNavmesh()
@@ -223,26 +241,27 @@ public class BlockyTerrain : MonoBehaviour
     void GenerateCubeAtPosition(int x, int z)
     {
         Vector2 currentPos = new Vector2(x, z);
-
-        if (coordsToHeight.ContainsKey(currentPos) && !coordsToHeight[currentPos].isLoaded)
+        if (coordsToHeight.ContainsKey(currentPos) 
+            && !coordsToHeight[currentPos].isLoaded)
         {
             var verticalBlocks = coordsToHeight[currentPos];
             var blockItem = verticalBlocks.blocks;
             verticalBlocks.isLoaded = true;
-            
+
 
             foreach (var block in blockItem)
             {
                 if (block.isLoaded)
                 {
-                     InstantiateCube(block.location);
+                    InstantiateCube(block.location);
                 }
             }
+
             coordsToHeight[currentPos] = verticalBlocks;
         }
         else
         {
-            
+
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
 
@@ -253,10 +272,10 @@ public class BlockyTerrain : MonoBehaviour
                 Vector3 cubePos = new Vector3(x, i, z);
 
                 bool toBeLoaded = i >= y;
-                
-                if(!isFillInHolesRunning)
+
+                if (!isFillInHolesRunning)
                     StartCoroutine(FillInHoles());
-                
+
                 Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
 
                 if (toBeLoaded)
@@ -268,16 +287,17 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     copyOfCubeObject.InstantiateBlock(dirt);
                 }
-                
+
 
                 copyOfCubeObject.location = cubePos;
                 copyOfCubeObject.isLoaded = toBeLoaded;
-                
+
 
                 verticalBlocks.Add(copyOfCubeObject);
             }
 
-            coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true, navMeshBuilt = false });
+            coordsToHeight.Add(currentPos,
+                new VerticalBlocks { blocks = verticalBlocks, isLoaded = true, navMeshBuilt = false });
         }
     }
 
@@ -316,10 +336,10 @@ public class BlockyTerrain : MonoBehaviour
     void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = cubeObject;
-        
-        print("Instantiating cube at " + position);
-        
-        
+
+//        print("Instantiating cube at " + position);
+
+
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
@@ -354,11 +374,12 @@ public class BlockyTerrain : MonoBehaviour
                 //block.isLoaded = false;
                 //place block in the dictionary
                 Vector2 pos2D = new Vector2(pos.x, pos.z);
-                var blockList = coordsToHeight.ContainsKey(pos2D) ? coordsToHeight[pos2D].blocks: new List<Block>();
+                var blockList = coordsToHeight.ContainsKey(pos2D) ? coordsToHeight[pos2D].blocks : new List<Block>();
                 if (blockList.Count == 0)
                 {
                     continue;
                 }
+
                 for (int i = 0; i < blockList.Count; ++i)
                 {
                     if (blockList[i].location == pos)
@@ -367,13 +388,15 @@ public class BlockyTerrain : MonoBehaviour
                         break;
                     }
                 }
-                var a = coordsToHeight[pos2D];  
+
+                var a = coordsToHeight[pos2D];
                 a.isLoaded = false;
                 coordsToHeight[pos2D] = a;
                 Destroy(cube); // Remove cube from the scene
             }
         }
     }
+
     public Dictionary<Vector2, VerticalBlocks> GetHeightMap()
     {
         return coordsToHeight;
@@ -381,7 +404,7 @@ public class BlockyTerrain : MonoBehaviour
 
     public bool RemoveBlock(Vector3 position)
     {
-        
+
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
@@ -389,7 +412,7 @@ public class BlockyTerrain : MonoBehaviour
             if (blockList.Count > 0)
             {
                 Block block = FindBlock(position);
-                
+
                 if (block)
                 {
                     blockList.Remove(block);
@@ -402,17 +425,19 @@ public class BlockyTerrain : MonoBehaviour
 
                     foreach (Vector3 surroundingBlock in surroundingBlocks)
                     {
-                            var foundBlock = FindBlock(surroundingBlock);
-                            if (foundBlock && !foundBlock.isLoaded)
-                            {
-                                AddBlock(surroundingBlock, foundBlock);
-                            }
+                        var foundBlock = FindBlock(surroundingBlock);
+                        if (foundBlock && !foundBlock.isLoaded)
+                        {
+                            AddBlock(surroundingBlock, foundBlock);
+                        }
                     }
+
                     BuildNavmesh();
                     return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -446,21 +471,24 @@ public class BlockyTerrain : MonoBehaviour
                         break;
                     }
                 }
+
                 if (!blockList.Contains(blockToAdd))
                 {
                     blockList.Add(blockToAdd);
                 }
+
                 InstantiateCube(position, blockToAdd);
                 var a = coordsToHeight[pos];
                 a.isLoaded = true;
                 coordsToHeight[pos] = a;
 
-                
+
                 // Build the new block
-                BuildNavmesh();                
+                BuildNavmesh();
                 return true;
             }
         }
+
         return false;
     }
 
@@ -483,9 +511,78 @@ public class BlockyTerrain : MonoBehaviour
         return null;
     }
 
-}
+    public void SaveGame(string path = "Assets/SaveGame.json")
+    {
+        var pickups = GameObject.FindGameObjectsWithTag("Pickup");
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        var pickupsAndEnemies = new List<GameObject>();
+        pickupsAndEnemies.AddRange(pickups);
+        pickupsAndEnemies.AddRange(enemies);
+        
+        Vector3 playerPos = playerTransform.position;
+        var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
+        var playerInventory = playerInventoryItem.GetInventory();
+
+        
+        SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies, playerPos, playerInventory);
+
+        string json = JsonUtility.ToJson(saveData);
+
+        File.WriteAllText(path, json);
+    }
+    
+    public void LoadGame(string path = "Assets/SaveGame.json")
+    {
+        string json = File.ReadAllText(path);
+        SaveData saveData = JsonUtility.FromJson<SaveData>(json);
+        var coordsToHeightList = saveData.GetCoordsToHeightList();
+        
+        var allCubes = GameObject.FindGameObjectsWithTag("Cube");
+        // foreach (var cube in allCubes)
+        // {
+        //     Destroy(cube);
+        // }
+        coordsToHeight = coordsToHeightList;
+        
+        // foreach (var vblock in coordsToHeightList)
+        // {
+        //     foreach (var block in vblock.Value.blocks)
+        //     {
+        //         InstantiateCube(block.location, block);
+        //     }
+        // }
+
+        
+        foreach (var block in coordsToHeight.First().Value.blocks)
+        {
+            InstantiateCube(block.location, block);
+        }
+        
+        var entitiesInScene = saveData.GetEntitiesInScene();
+        var playerPos = saveData.GetPlayerPosition();
+        var playerInventory = saveData.GetInventory();
+        
+        foreach (var entity in entitiesInScene)
+        {
+            if (entity.Item3 == "Enemy")
+            {
+                Instantiate(enemyPrefab, entity.Item2, Quaternion.identity);
+            }
+            else if (entity.Item3 == "Item")
+            {
+                //TODO: Instantiate items
+            }
+        }
+        
+        playerTransform.position = playerPos;
+        var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
+        playerInventoryItem.SetInventory(playerInventory.ToArray());
+    }
 
 
+};
+
+[Serializable]
 public struct VerticalBlocks
 {
     public List<Block> blocks { get; set; }

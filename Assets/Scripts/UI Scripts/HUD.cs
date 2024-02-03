@@ -35,7 +35,7 @@ public class HUD : MonoBehaviour
     private void Start()
     {
         canvas = GetComponent<Canvas>();
-        inventory = playerInventoryObject.getInventory();
+        inventory = playerInventoryObject.GetInventory();
 
         UpdateBuildInfoText();
 
