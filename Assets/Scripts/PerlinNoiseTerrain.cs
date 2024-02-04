@@ -513,7 +513,7 @@ public class BlockyTerrain : MonoBehaviour
     
 // SAVE/LOAD Methods below
     
-public void SaveGame(string path = "Assets/SaveGame.json")
+public void SaveGame(string path = "SaveGame.json")
 {
     var pickups = GameObject.FindGameObjectsWithTag("Pickup");
     var enemies = GameObject.FindGameObjectsWithTag("Enemy");
@@ -525,13 +525,13 @@ public void SaveGame(string path = "Assets/SaveGame.json")
     var lightManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
 
     SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies.ToList(), playerPos, playerInventory,
-        lightManager.GetTimeOfDay(), GameManager.Instance.nightsSurvived, playerRot);
+        lightManager.GetTimeOfDay(), GameManager.Instance.NightsSurvived, playerRot);
 
     string json = JsonUtility.ToJson(saveData);
     File.WriteAllText(path, json);
 }
 
-public void LoadGame(string path = "Assets/SaveGame.json")
+public void LoadGame(string path = "SaveGame.json")
 {
     string json = File.ReadAllText(path);
     SaveData saveData = JsonUtility.FromJson<SaveData>(json);
@@ -604,7 +604,7 @@ private void LoadPlayerState(SaveData saveData)
     playerTransform.position = playerPos;
     playerTransform.rotation = playerRot;
     GameObject.Find("LightingManager").GetComponent<LightingManager>().SetTimeOfDay(timeOfDay);
-    GameManager.Instance.nightsSurvived = nightsSurvived;
+    GameManager.Instance.NightsSurvived = nightsSurvived;
 
     var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
     playerInventoryItem.SetInventory(playerInventory.ToArray());

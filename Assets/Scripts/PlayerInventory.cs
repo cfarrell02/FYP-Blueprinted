@@ -200,6 +200,8 @@ public class PlayerInventory : MonoBehaviour
     {
         if (currentHealth <= 0)
         {
+            GameManager.Instance.ResetGame();
+            
             // Get the current active scene index
             int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
 
