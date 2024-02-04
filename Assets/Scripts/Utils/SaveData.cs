@@ -53,51 +53,18 @@ namespace Utils
         {
             public bool isLoaded;
             public bool navMeshBuilt;
-            public List<SerializableIntTuple> blocks;
+            public List<SerializableBlockData> blocks;
             
             public SerializableVerticalBlocks(VerticalBlocks verticalBlocks)
             {
                 isLoaded = verticalBlocks.isLoaded;
                 navMeshBuilt = verticalBlocks.navMeshBuilt;
-                blocks = verticalBlocks.blocks.Select(block => new SerializableIntTuple((int) block.location.y, block.id)).ToList();
+                blocks = verticalBlocks.blocks.Select(block => new SerializableBlockData((int)block.location.y, block.id, block.isLoaded)).ToList();
                 
             }
         }
         
-        [Serializable]
-        public struct SerializableBlocks
-        {
-            public string name;
-            public int id;
-            public int durability;
-            public int maxDurability;
-            public int maxStackSize;
-            public SerializableVector3 location;
-            public SerializableVector3 rotation;
-            public SerializableVector3 scale;
-            public bool isLoaded;
-            public SerializableVector3 color;
-            public int value;
-            public Block.BlockType blockType;
-            public GameObject prefab;
-            
-            public SerializableBlocks(Block block)
-            {
-                name = block.name;
-                id = block.id;
-                durability = block.durability;
-                maxDurability = block.maxDurability;
-                maxStackSize = block.maxStackSize;
-                location = new SerializableVector3(block.location);
-                rotation = new SerializableVector3(block.rotation);
-                scale = new SerializableVector3(block.scale);
-                isLoaded = block.isLoaded;
-                color = new SerializableVector3(block.color.r, block.color.g, block.color.b);
-                value = block.value;
-                blockType = block.blockType;
-                prefab = block.prefab;
-            }
-        }
+
 
         [Serializable]
         public struct SerializableIntTuple
@@ -109,6 +76,21 @@ namespace Utils
             {
                 this.count = count;
                 this.blockId = blockId;
+            }
+        }
+        
+        [Serializable]
+        public struct SerializableBlockData
+        {
+            public int depth;
+            public int blockId;
+            public bool isLoaded;
+            
+            public SerializableBlockData(int depth, int blockId,bool isLoaded)
+            {
+                this.depth = depth;
+                this.blockId = blockId;
+                this.isLoaded = isLoaded;
             }
         }
         
@@ -234,17 +216,37 @@ namespace Utils
         
         public Dictionary<Vector2, VerticalBlocks> GetCoordsToHeightList()
         {
-            var allBlocks = GameManager.Instance.allEntities.Where(entity => entity is Block).ToList();
-            
-            return coordsToHeightList.ToDictionary(pair => new Vector2(pair.key.x, pair.key.y), pair => new VerticalBlocks(
-                pair.value.blocks.Select(
-                block =>
-                {
-                    return allBlocks.First(entity => entity.id == block.blockId) as Block; //The all blocks list is checked to be all blocks so this is fine
-                }
-            ).ToList(),pair.value.isLoaded, pair.value.navMeshBuilt));
+            var allBlocks = GameManager.Instance.allEntities.OfType<Block>().ToList();
+    
+            return coordsToHeightList.ToDictionary(
+                pair => new Vector2(pair.key.x, pair.key.y),
+                pair => new VerticalBlocks(
+                    pair.value.blocks.Select(
+                        block =>
+                        {
+                            var foundBlock = allBlocks.FirstOrDefault(entity => entity.id == block.blockId);
+                            if (foundBlock != null)
+                            {
+                                var newBlock = ScriptableObject.CreateInstance<Block>();
+                                newBlock.InstantiateBlock(foundBlock);
+                                newBlock.location = new Vector3(pair.key.x, block.depth, pair.key.y);
+                                newBlock.isLoaded = block.isLoaded;
+                                return newBlock;
+                            }
+                            else
+                            {
+                                // Handle the case where the block is not found
+                                Debug.LogError($"Block with ID {block.blockId} not found.");
+                                return null;
+                            }
+                        }
+                    ).Where(newBlock => newBlock != null).ToList(), 
+                    pair.value.isLoaded, 
+                    pair.value.navMeshBuilt
+                )
+            );
         }
-        
+
 
     }
 }

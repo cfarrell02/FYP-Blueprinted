@@ -85,13 +85,13 @@ public class BlockyTerrain : MonoBehaviour
         if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
 
-        if (Input.GetKeyDown(KeyCode.F5))
+        if (Input.GetKeyDown(KeyCode.O))
         {
             print("Saving terrain");
             SaveGame();
         }
         
-        if (Input.GetKeyDown(KeyCode.F9))
+        if (Input.GetKeyDown(KeyCode.P))
         {
             print("Loading terrain");
             LoadGame();
@@ -538,19 +538,28 @@ public class BlockyTerrain : MonoBehaviour
         var coordsToHeightList = saveData.GetCoordsToHeightList();
         
         var allCubes = GameObject.FindGameObjectsWithTag("Cube");
-        // foreach (var cube in allCubes)
-        // {
-        //     Destroy(cube);
-        // }
+        foreach (var cube in allCubes)
+        {
+            Destroy(cube);
+        }
+
         coordsToHeight = coordsToHeightList;
         
-        // foreach (var vblock in coordsToHeightList)
-        // {
-        //     foreach (var block in vblock.Value.blocks)
-        //     {
-        //         InstantiateCube(block.location, block);
-        //     }
-        // }
+        //Reload everything
+        foreach (var vb in coordsToHeight)
+        {
+            if (vb.Value.isLoaded)
+            {
+                foreach (var block in vb.Value.blocks)
+                {
+                    if (block.isLoaded)
+                    {
+                        InstantiateCube(block.location, block);
+                    }
+                }
+            }
+        }
+        
 
         
         foreach (var block in coordsToHeight.First().Value.blocks)
@@ -561,6 +570,7 @@ public class BlockyTerrain : MonoBehaviour
         var entitiesInScene = saveData.GetEntitiesInScene();
         var playerPos = saveData.GetPlayerPosition();
         var playerInventory = saveData.GetInventory();
+        
         
         foreach (var entity in entitiesInScene)
         {
@@ -577,6 +587,9 @@ public class BlockyTerrain : MonoBehaviour
         playerTransform.position = playerPos;
         var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
         playerInventoryItem.SetInventory(playerInventory.ToArray());
+        var canvas = GameObject.Find("Canvas");
+        var hud = canvas.GetComponent<HUD>();
+        hud.SetPlayerInventory(playerInventoryItem);
     }
 
 

@@ -42,6 +42,13 @@ public class HUD : MonoBehaviour
         CreateIcons(ref inventoryIcons, inventory);
         currentItemText.gameObject.SetActive(false);
     }
+    
+    public void SetPlayerInventory(PlayerInventory playerInventory)
+    {
+        playerInventoryObject = playerInventory;
+        inventory = playerInventoryObject.GetInventory();
+        CreateIcons(ref inventoryIcons, inventory); 
+    }
 
     private void CreateIcons(ref GameObject[] inventoryIcons, InventoryItem<Entity>[] inventory, int y = 0)
     {
