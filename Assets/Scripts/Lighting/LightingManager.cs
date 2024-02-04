@@ -51,6 +51,16 @@ public class LightingManager : MonoBehaviour
         return timeOfDay > 19 || timeOfDay < 6;
     }
     
+    public float GetTimeOfDay()
+    {
+        return timeOfDay;
+    }
+    
+    public void SetTimeOfDay(float time)
+    {
+        timeOfDay = time;
+    }
+    
     private void UpdateLighting(float timePercent)
     {
         RenderSettings.ambientLight = preset.AmbientColor.Evaluate(timePercent);

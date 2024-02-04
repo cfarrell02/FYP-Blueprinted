@@ -338,7 +338,7 @@ public class PlayerInventory : MonoBehaviour
     
     void DropHeldItem()
     {
-        //Only drop the item if it is an item
+        //Only drop the item if it is an item, might remove this to make blocks droppable, IDK???
         if(!(inventory[selectedBlockIndex].item is Item))
             return;
         
@@ -347,6 +347,7 @@ public class PlayerInventory : MonoBehaviour
         var item = (Item)inventory[selectedBlockIndex].item;
         var itemObject = Instantiate(item.prefab, spawnPos, Quaternion.identity);
         var pickup = itemObject.AddComponent<Pickup>();
+        itemObject.name = item.name;
         pickup.item = item;
         
         itemObject.tag = "Pickup";
@@ -475,9 +476,26 @@ public class PlayerInventory : MonoBehaviour
         return true;
     }
 
-    public InventoryItem<Entity>[] getInventory()
+    public InventoryItem<Entity>[] GetInventory()
     {
         return inventory;
+    }
+    
+    public void SetInventory(InventoryItem<Entity>[] newInventory)
+    {
+        if(newInventory.Length < inventoryCapacity)
+        {
+            var temp = new InventoryItem<Entity>[inventoryCapacity];
+            for (int i = 0; i < newInventory.Length; i++)
+            {
+                temp[i] = newInventory[i];
+            }
+            inventory = temp;
+        }else if (newInventory.Length == inventoryCapacity)
+        {
+            inventory = newInventory;
+        }
+        
     }
 
     bool RemoveItemById(int itemID, int amount = 1)

@@ -1071,6 +1071,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 22c9b4bdf88ceab4e9ef0eea0bab5e94, type: 2}
   - {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
   - {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
+  - {fileID: 11400000, guid: dd396c96daeee4778b0122fcfbd3f9e1, type: 2}
   InputEnabled: 1
 --- !u!4 &1624981279
 Transform:
@@ -1300,6 +1301,10 @@ PrefabInstance:
     - target: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_Name
       value: Skeleton
+      objectReference: {fileID: 0}
+    - target: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2709257068976105614, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_LocalPosition.x
