@@ -10,21 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: caa93434261a23141b23cbee19f0526c, type: 3}
-  m_Name: Health
+  m_Name: Lantern
   m_EditorClassIdentifier: 
-  durability: 0
+  durability: -1
   maxDurability: 1
   name: Health
-  id: 2000
-  maxStackSize: 20
-  prefab: {fileID: 2318069271948005009, guid: 92272f10c4a8c8d4ea82bd1847176a7c, type: 3}
+  id: 2001
+  maxStackSize: 50
+  prefab: {fileID: 6378143962500262662, guid: da5fdb115fd291e4581e689b3e3a553e, type: 3}
   icon: {fileID: 0}
-  renderOffset: {x: 0.33, y: -0.21, z: 0.52}
+  renderOffset: {x: 0.3, y: -0.18, z: 0.64}
   craftable: 1
   recipe:
-  - item: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
-    count: 5
-  itemType: 3
+  - item: {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
+    count: 1
+  itemType: 4
   speed: 0
   damage: 0
   value: 20

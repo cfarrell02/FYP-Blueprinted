@@ -1072,7 +1072,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
   - {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
   - {fileID: 11400000, guid: dd396c96daeee4778b0122fcfbd3f9e1, type: 2}
+  - {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
   InputEnabled: 1
+  leaderboard:
+    entries: []
 --- !u!4 &1624981279
 Transform:
   m_ObjectHideFlags: 0
@@ -2051,7 +2054,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[0]
@@ -2114,6 +2117,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: startingItems.Array.data[5].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 7a53f3b8382e0fc4e88353555800fbbf, type: 2}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[0].count
       value: 1
       objectReference: {fileID: 0}
@@ -2127,11 +2134,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[3].count
-      value: 60
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[4].count
-      value: 60
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: startingItems.Array.data[5].count
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8581938533461346998, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: m_LocalScale.x

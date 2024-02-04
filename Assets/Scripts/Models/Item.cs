@@ -12,8 +12,8 @@ public class Item : Entity
         Sword,
         Blueprint,
         Food,
-        Key,
-        Health
+        Health,
+        Light
     }
     
     public ItemType itemType;
@@ -56,8 +56,8 @@ public class Item : Entity
             case ItemType.Food:
                 Debug.Log("You used food");
                 break;
-            case ItemType.Key:
-                Debug.Log("You used a key");
+            case ItemType.Light:
+                Debug.Log("You used light");
                 break;
             case ItemType.Health:
                 Debug.Log("You used health");

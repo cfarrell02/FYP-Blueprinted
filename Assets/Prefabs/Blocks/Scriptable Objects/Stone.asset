@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7af0d71f3f769a04282201578b5aaf9d, type: 3}
   m_Name: Stone
   m_EditorClassIdentifier: 
+  durability: 10
   maxDurability: 100
   name: Stone
   id: 3
