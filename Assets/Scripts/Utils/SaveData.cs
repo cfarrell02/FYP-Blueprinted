@@ -95,9 +95,14 @@ namespace Utils
         }
         
         public SerializableVector3 playerPosition;
+        public SerializableVector3 playerRotation;
         public List<SerializableIntTuple> inventory;
         public List<SerializableEntity> entitiesInScene;
         public List<SerializableKeyValuePair> coordsToHeightList;
+        public float time;
+        public int nightsSurvived;
+        
+        
 
 
         [Serializable]
@@ -129,7 +134,8 @@ namespace Utils
 
         }
 
-        public SaveData(Dictionary<Vector2, VerticalBlocks> dictionary, List<GameObject> entitiesInScene, Vector3 playerPosition, InventoryItem<Entity>[] inventory)
+        public SaveData(Dictionary<Vector2, VerticalBlocks> dictionary, List<GameObject> entitiesInScene, Vector3 playerPosition, InventoryItem<Entity>[] inventory, 
+            float time, int nightsSurvived, Quaternion playerRotation)
         {
             // Converting entities to serializable entities, this will need to be changed as more enemies are added
 
@@ -174,6 +180,11 @@ namespace Utils
             var inventoryList = inventory.Where(item => item.item != null).ToList();
             
             this.inventory = inventoryList.Select(item => new SerializableIntTuple(item.count, item.item.id)).ToList();
+            this.time = time;
+            this.nightsSurvived = nightsSurvived;
+            this.playerRotation = new SerializableVector3(playerRotation.eulerAngles);
+            
+            
             
             coordsToHeightList = new List<SerializableKeyValuePair>();
             foreach (var kvp in dictionary)
@@ -245,8 +256,23 @@ namespace Utils
                     pair.value.navMeshBuilt
                 )
             );
+            
         }
-
+        
+        public float GetTime()
+        {
+            return time;
+        }
+        
+        public int GetNightsSurvived()
+        {
+            return nightsSurvived;
+        }
+        
+        public Quaternion GetPlayerRotation()
+        {
+            return Quaternion.Euler(playerRotation.x, playerRotation.y, playerRotation.z);
+        }
 
     }
 }

@@ -510,87 +510,108 @@ public class BlockyTerrain : MonoBehaviour
 
         return null;
     }
-
-    public void SaveGame(string path = "Assets/SaveGame.json")
-    {
-        var pickups = GameObject.FindGameObjectsWithTag("Pickup");
-        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        var pickupsAndEnemies = new List<GameObject>();
-        pickupsAndEnemies.AddRange(pickups);
-        pickupsAndEnemies.AddRange(enemies);
-        
-        Vector3 playerPos = playerTransform.position;
-        var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
-        var playerInventory = playerInventoryItem.GetInventory();
-
-        
-        SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies, playerPos, playerInventory);
-
-        string json = JsonUtility.ToJson(saveData);
-
-        File.WriteAllText(path, json);
-    }
     
-    public void LoadGame(string path = "Assets/SaveGame.json")
+// SAVE/LOAD Methods below
+    
+public void SaveGame(string path = "Assets/SaveGame.json")
+{
+    var pickups = GameObject.FindGameObjectsWithTag("Pickup");
+    var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+    var pickupsAndEnemies = pickups.Concat(enemies).ToArray();
+
+    Vector3 playerPos = playerTransform.position;
+    Quaternion playerRot = playerTransform.rotation;
+    var playerInventory = playerTransform.GetComponent<PlayerInventory>().GetInventory();
+    var lightManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
+
+    SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies.ToList(), playerPos, playerInventory,
+        lightManager.GetTimeOfDay(), GameManager.Instance.nightsSurvived, playerRot);
+
+    string json = JsonUtility.ToJson(saveData);
+    File.WriteAllText(path, json);
+}
+
+public void LoadGame(string path = "Assets/SaveGame.json")
+{
+    string json = File.ReadAllText(path);
+    SaveData saveData = JsonUtility.FromJson<SaveData>(json);
+    var coordsToHeightList = saveData.GetCoordsToHeightList();
+
+    DestroyAllCubes();
+
+    coordsToHeight = coordsToHeightList;
+
+    // Reload everything
+    foreach (var vb in coordsToHeight.Values.Where(vb => vb.isLoaded))
     {
-        string json = File.ReadAllText(path);
-        SaveData saveData = JsonUtility.FromJson<SaveData>(json);
-        var coordsToHeightList = saveData.GetCoordsToHeightList();
-        
-        var allCubes = GameObject.FindGameObjectsWithTag("Cube");
-        foreach (var cube in allCubes)
-        {
-            Destroy(cube);
-        }
-
-        coordsToHeight = coordsToHeightList;
-        
-        //Reload everything
-        foreach (var vb in coordsToHeight)
-        {
-            if (vb.Value.isLoaded)
-            {
-                foreach (var block in vb.Value.blocks)
-                {
-                    if (block.isLoaded)
-                    {
-                        InstantiateCube(block.location, block);
-                    }
-                }
-            }
-        }
-        
-
-        
-        foreach (var block in coordsToHeight.First().Value.blocks)
+        foreach (var block in vb.blocks.Where(b => b.isLoaded))
         {
             InstantiateCube(block.location, block);
         }
-        
-        var entitiesInScene = saveData.GetEntitiesInScene();
-        var playerPos = saveData.GetPlayerPosition();
-        var playerInventory = saveData.GetInventory();
-        
-        
-        foreach (var entity in entitiesInScene)
-        {
-            if (entity.Item3 == "Enemy")
-            {
-                Instantiate(enemyPrefab, entity.Item2, Quaternion.identity);
-            }
-            else if (entity.Item3 == "Item")
-            {
-                //TODO: Instantiate items
-            }
-        }
-        
-        playerTransform.position = playerPos;
-        var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
-        playerInventoryItem.SetInventory(playerInventory.ToArray());
-        var canvas = GameObject.Find("Canvas");
-        var hud = canvas.GetComponent<HUD>();
-        hud.SetPlayerInventory(playerInventoryItem);
     }
+
+    InstantiateInitialCubes();
+
+    LoadEntitiesInScene(saveData);
+
+    LoadPlayerState(saveData);
+}
+
+private void DestroyAllCubes()
+{
+    var allCubes = GameObject.FindGameObjectsWithTag("Cube");
+    foreach (var cube in allCubes)
+    {
+        Destroy(cube);
+    }
+}
+
+private void InstantiateInitialCubes()
+{
+    foreach (var block in coordsToHeight.First().Value.blocks)
+    {
+        InstantiateCube(block.location, block);
+    }
+}
+
+private void LoadEntitiesInScene(SaveData saveData)
+{
+    foreach (var entity in saveData.GetEntitiesInScene())
+    {
+        if (entity.Item3 == "Enemy")
+        {
+            Instantiate(enemyPrefab, entity.Item2, Quaternion.identity);
+        }
+        else if (entity.Item3 == "Item")
+        {
+            var item = GameManager.Instance.allEntities.First(e => e.name == entity.Item1);
+            GameObject pickup = Instantiate(item.prefab, entity.Item2, Quaternion.identity);
+            pickup.tag = "Pickup";
+            Pickup p = pickup.AddComponent<Pickup>();
+            p.item = item;
+        }
+    }
+}
+
+private void LoadPlayerState(SaveData saveData)
+{
+    var playerPos = saveData.GetPlayerPosition();
+    var playerRot = saveData.GetPlayerRotation();
+    var playerInventory = saveData.GetInventory();
+    var timeOfDay = saveData.GetTime();
+    var nightsSurvived = saveData.GetNightsSurvived();
+
+    playerTransform.position = playerPos;
+    playerTransform.rotation = playerRot;
+    GameObject.Find("LightingManager").GetComponent<LightingManager>().SetTimeOfDay(timeOfDay);
+    GameManager.Instance.nightsSurvived = nightsSurvived;
+
+    var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
+    playerInventoryItem.SetInventory(playerInventory.ToArray());
+
+    var canvas = GameObject.Find("Canvas");
+    canvas.GetComponent<HUD>().SetPlayerInventory(playerInventoryItem);
+}
 
 
 };
