@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Unity.AI.Navigation;
+using Unity.VisualScripting;
 using UnityEngine;
 using Utils;
 using Random = UnityEngine.Random;
@@ -12,6 +13,7 @@ using Random = UnityEngine.Random;
 
 public class BlockyTerrain : MonoBehaviour
 {
+    
     public int depth = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
@@ -57,13 +59,29 @@ public class BlockyTerrain : MonoBehaviour
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
-        GenerateInitialTerrain();
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
 
         if (!isFillInHolesRunning)
             StartCoroutine(FillInHoles());
+        
+        StartCoroutine(LateStart()); //Late start on the loading to ensure the player has been loaded
 
     }
+    
+    IEnumerator LateStart()
+    {
+        yield return new WaitForNextFrameUnit();
+        var file = File.Exists(GameManager.Instance.savePath + GameManager.Instance.currentSaveFile + ".json");
+        if (file)
+        {
+            GameManager.Instance.LoadGame(GameManager.Instance.currentSaveFile + ".json");
+        }
+        else
+        {
+            GenerateInitialTerrain();
+        }
+    }
+    
 
     void Update()
     {
@@ -84,20 +102,7 @@ public class BlockyTerrain : MonoBehaviour
 
         if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
-
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            print("Saving terrain");
-            SaveGame();
-        }
         
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            print("Loading terrain");
-            LoadGame();
-        }
-
-
     }
 
     void HandleNavmesh()
@@ -184,7 +189,7 @@ public class BlockyTerrain : MonoBehaviour
 
     }
 
-    void GenerateInitialTerrain()
+    internal void GenerateInitialTerrain()
     {
         for (int x = previousPlayerPosX - loadDistance; x < previousPlayerPosX + loadDistance; x++)
         {
@@ -229,6 +234,10 @@ public class BlockyTerrain : MonoBehaviour
 
     private async Task BuildNavmeshAsync()
     {
+        if (surface.navMeshData == null)
+        {
+            surface.BuildNavMesh();
+        }
         AsyncOperation operation = surface.UpdateNavMesh(surface.navMeshData);
         while (!operation.isDone)
         {
@@ -333,12 +342,10 @@ public class BlockyTerrain : MonoBehaviour
         isFillInHolesRunning = false;
     }
 
-    void InstantiateCube(Vector3 position, Block cube2 = null)
+    public void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = cubeObject;
-
-//        print("Instantiating cube at " + position);
-
+        
 
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
@@ -400,6 +407,11 @@ public class BlockyTerrain : MonoBehaviour
     public Dictionary<Vector2, VerticalBlocks> GetHeightMap()
     {
         return coordsToHeight;
+    }
+    
+    public void SetHeightMap(Dictionary<Vector2, VerticalBlocks> heightMap)
+    {
+        coordsToHeight = heightMap;
     }
 
     public bool RemoveBlock(Vector3 position)
@@ -511,53 +523,8 @@ public class BlockyTerrain : MonoBehaviour
         return null;
     }
     
-// SAVE/LOAD Methods below
-    
-public void SaveGame(string path = "SaveGame.json")
-{
-    var pickups = GameObject.FindGameObjectsWithTag("Pickup");
-    var enemies = GameObject.FindGameObjectsWithTag("Enemy");
-    var pickupsAndEnemies = pickups.Concat(enemies).ToArray();
 
-    Vector3 playerPos = playerTransform.position;
-    Quaternion playerRot = playerTransform.rotation;
-    var playerInventory = playerTransform.GetComponent<PlayerInventory>().GetInventory();
-    var lightManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
-
-    SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies.ToList(), playerPos, playerInventory,
-        lightManager.GetTimeOfDay(), GameManager.Instance.NightsSurvived, playerRot);
-
-    string json = JsonUtility.ToJson(saveData);
-    File.WriteAllText(path, json);
-}
-
-public void LoadGame(string path = "SaveGame.json")
-{
-    string json = File.ReadAllText(path);
-    SaveData saveData = JsonUtility.FromJson<SaveData>(json);
-    var coordsToHeightList = saveData.GetCoordsToHeightList();
-
-    DestroyAllCubes();
-
-    coordsToHeight = coordsToHeightList;
-
-    // Reload everything
-    foreach (var vb in coordsToHeight.Values.Where(vb => vb.isLoaded))
-    {
-        foreach (var block in vb.blocks.Where(b => b.isLoaded))
-        {
-            InstantiateCube(block.location, block);
-        }
-    }
-
-    InstantiateInitialCubes();
-
-    LoadEntitiesInScene(saveData);
-
-    LoadPlayerState(saveData);
-}
-
-private void DestroyAllCubes()
+public void DestroyAllCubes()
 {
     var allCubes = GameObject.FindGameObjectsWithTag("Cube");
     foreach (var cube in allCubes)
@@ -566,52 +533,8 @@ private void DestroyAllCubes()
     }
 }
 
-private void InstantiateInitialCubes()
-{
-    foreach (var block in coordsToHeight.First().Value.blocks)
-    {
-        InstantiateCube(block.location, block);
-    }
-}
 
-private void LoadEntitiesInScene(SaveData saveData)
-{
-    foreach (var entity in saveData.GetEntitiesInScene())
-    {
-        if (entity.Item3 == "Enemy")
-        {
-            Instantiate(enemyPrefab, entity.Item2, Quaternion.identity);
-        }
-        else if (entity.Item3 == "Item")
-        {
-            var item = GameManager.Instance.allEntities.First(e => e.name == entity.Item1);
-            GameObject pickup = Instantiate(item.prefab, entity.Item2, Quaternion.identity);
-            pickup.tag = "Pickup";
-            Pickup p = pickup.AddComponent<Pickup>();
-            p.item = item;
-        }
-    }
-}
 
-private void LoadPlayerState(SaveData saveData)
-{
-    var playerPos = saveData.GetPlayerPosition();
-    var playerRot = saveData.GetPlayerRotation();
-    var playerInventory = saveData.GetInventory();
-    var timeOfDay = saveData.GetTime();
-    var nightsSurvived = saveData.GetNightsSurvived();
-
-    playerTransform.position = playerPos;
-    playerTransform.rotation = playerRot;
-    GameObject.Find("LightingManager").GetComponent<LightingManager>().SetTimeOfDay(timeOfDay);
-    GameManager.Instance.NightsSurvived = nightsSurvived;
-
-    var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
-    playerInventoryItem.SetInventory(playerInventory.ToArray());
-
-    var canvas = GameObject.Find("Canvas");
-    canvas.GetComponent<HUD>().SetPlayerInventory(playerInventoryItem);
-}
 
 
 };

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   durability: -1
   maxDurability: 1
-  name: Health
+  name: Lantern
   id: 2001
   maxStackSize: 50
   prefab: {fileID: 6378143962500262662, guid: da5fdb115fd291e4581e689b3e3a553e, type: 3}
