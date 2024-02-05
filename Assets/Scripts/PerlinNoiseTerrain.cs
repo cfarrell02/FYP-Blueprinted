@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utils;
 using Random = UnityEngine.Random;
 
@@ -21,8 +22,10 @@ public class BlockyTerrain : MonoBehaviour
     public GameObject
         enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
 
-    public Block cubeObject, dirt; // This needs to be changed to a list or dictionary for different types of blocks
-
+    public Block grass, dirt, stone; 
+    
+    [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
+    public List<SerializableTuple<Block, float>> ore = new List<SerializableTuple<Block, float>>();
 
 
     int previousPlayerPosX;
@@ -32,6 +35,7 @@ public class BlockyTerrain : MonoBehaviour
     [SerializeField] int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField] int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField] int perlinScale = 10; // Multiplier for the perlin noise scale
+    [SerializeField] float stoneThreshold = 0.5f; // Threshold for stone generation
 
 
 
@@ -222,6 +226,7 @@ public class BlockyTerrain : MonoBehaviour
                 }
 
                 GenerateCubeAtPosition(x, z);
+
             }
         }
 
@@ -250,6 +255,7 @@ public class BlockyTerrain : MonoBehaviour
     void GenerateCubeAtPosition(int x, int z)
     {
         Vector2 currentPos = new Vector2(x, z);
+        
         if (coordsToHeight.ContainsKey(currentPos) 
             && !coordsToHeight[currentPos].isLoaded)
         {
@@ -267,76 +273,61 @@ public class BlockyTerrain : MonoBehaviour
             }
 
             coordsToHeight[currentPos] = verticalBlocks;
+            
         }
         else
         {
+            List<Block> verticalBlocks = new List<Block>();
+
+            List<Block> oreVerticalBlocks = ore
+                .SelectMany(oreBlock => GenerateOreList(x, z, depth, oreBlock.Item2, oreBlock.Item1))
+                .DistinctBy(block => block.location)
+                .ToList();
 
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
 
-            List<Block> verticalBlocks = new List<Block>();
+            int stoneThresholdHeight = (int)(stoneThreshold * depth);
 
             for (int i = -depth; i <= y; ++i)
             {
                 Vector3 cubePos = new Vector3(x, i, z);
-
                 bool toBeLoaded = i >= y;
 
                 if (!isFillInHolesRunning)
                     StartCoroutine(FillInHoles());
 
                 Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
+                var oreBlock = oreVerticalBlocks.FirstOrDefault(block => block.location == cubePos);
+
+                Block topBlock = (oreBlock ? oreBlock : grass);
+                Block block = (i <= stoneThresholdHeight) ? ((Random.Range(0, 10) < 5) ? dirt : stone ) : stone;
+                block = oreBlock ? oreBlock : block;
 
                 if (toBeLoaded)
                 {
-                    InstantiateCube(cubePos, cubeObject);
-                    copyOfCubeObject.InstantiateBlock(cubeObject);
+                    InstantiateCube(cubePos, topBlock);
+                    copyOfCubeObject.InstantiateBlock(topBlock);
                 }
                 else
                 {
-                    copyOfCubeObject.InstantiateBlock(dirt);
+                    copyOfCubeObject.InstantiateBlock(block);
                 }
-
 
                 copyOfCubeObject.location = cubePos;
                 copyOfCubeObject.isLoaded = toBeLoaded;
 
-
                 verticalBlocks.Add(copyOfCubeObject);
             }
 
-            coordsToHeight.Add(currentPos,
-                new VerticalBlocks { blocks = verticalBlocks, isLoaded = true, navMeshBuilt = false });
+            coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true });
+
         }
     }
 
     IEnumerator FillInHoles()
     {
         isFillInHolesRunning = true;
-        // var loadedBlocks = coordsToHeight.Where(x => x.Value.isLoaded).ToDictionary(x => x.Key, x => x.Value);
-        // foreach (var block in loadedBlocks)
-        // {
-        //     var blockList = block.Value.blocks;
-        //     if (blockList.Count > 0)
-        //     {
-        //         for (int i = 0; i < blockList.Count; ++i)
-        //         {
-        //             if (!blockList[i].isLoaded)
-        //             {
-        //                 var surroundingBlocks = GetSurroundingBlocks(blockList[i].location);
-        //                 foreach (Vector3 surroundingBlock in surroundingBlocks)
-        //                 {
-        //                     var foundBlock = FindBlock(surroundingBlock);
-        //                     if (!foundBlock)
-        //                     {
-        //                         InstantiateCube(blockList[i].location); //The block is touching air
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     yield return null;
-        // }
         yield return null;
 
         isFillInHolesRunning = false;
@@ -344,7 +335,7 @@ public class BlockyTerrain : MonoBehaviour
 
     public void InstantiateCube(Vector3 position, Block cube2 = null)
     {
-        if (!cube2) cube2 = cubeObject;
+        if (!cube2) cube2 = grass;
         
 
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
@@ -362,6 +353,34 @@ public class BlockyTerrain : MonoBehaviour
             cube.transform.parent = transform;
         }
 
+    }
+    
+    List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab)
+    {
+
+                var verticalBlock = new List<Block>();
+                for (int y = 0; y < height; y++)
+                {
+                    float xCoord = .1f * x * scale;
+                    float zCoord = .1f * z * scale;
+
+                    float oreValue = Mathf.PerlinNoise(xCoord, zCoord);
+                    float newThreshold = oreThreshold + (y / (float)height);
+                    
+                    if (oreValue > newThreshold)
+                    {
+                        Vector3 position = new Vector3(x, y, z);
+
+                        // Create a new Block object with the desired properties
+                        Block oreBlock = ScriptableObject.CreateInstance<Block>();
+                        oreBlock.InstantiateBlock(blockPrefab);
+                        oreBlock.location = position;
+
+                        // Add the Block object to the list
+                        verticalBlock.Add(oreBlock);
+                    }
+                }
+                return verticalBlock;
     }
 
 
@@ -544,12 +563,11 @@ public struct VerticalBlocks
 {
     public List<Block> blocks { get; set; }
     public bool isLoaded { get; set; }
-    public bool navMeshBuilt { get; set; }
 
-    public VerticalBlocks(List<Block> blocks, bool isLoaded, bool navMeshBuilt)
+    public VerticalBlocks(List<Block> blocks, bool isLoaded)
     {
         this.blocks = blocks;
         this.isLoaded = isLoaded;
-        this.navMeshBuilt = navMeshBuilt;
     }
+
 }

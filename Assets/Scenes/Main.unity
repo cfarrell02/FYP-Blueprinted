@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.031207476, g: 0.06706731, b: 0.12086046, a: 1}
+  m_IndirectSpecularColor: {r: 0.031207386, g: 0.06706706, b: 0.12085987, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -765,7 +765,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30.2
+  m_fontSize: 40.05
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1027,13 +1027,18 @@ MonoBehaviour:
   scale: 1
   cubeHeight: 1
   enemyPrefab: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-  cubeObject: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
+  grass: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
   dirt: {fileID: 11400000, guid: dd396c96daeee4778b0122fcfbd3f9e1, type: 2}
+  stone: {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
+  ore:
+  - Item1: {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
+    Item2: 0.5
   loadDistance: 40
   navMeshDistance: 20
   newTerrainDistance: 10
   newNavMeshDistance: 10
   perlinScale: 5
+  stoneThreshold: 0.5
 --- !u!1 &1668610341
 GameObject:
   m_ObjectHideFlags: 0

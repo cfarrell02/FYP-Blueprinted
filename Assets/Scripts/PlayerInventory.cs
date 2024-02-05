@@ -387,7 +387,7 @@ public class PlayerInventory : MonoBehaviour
             //Determine which side the raycast hit the looked at object
             Vector3 hitNormal = hit.normal;
             // Place bloc one over from blockpos in the direction of the hit normal
-            Vector3 placePos = blockPos + hitNormal * blockyTerrain.cubeObject.prefab.transform.localScale.x;
+            Vector3 placePos = blockPos + hitNormal * blockyTerrain.grass.prefab.transform.localScale.x;
     
             //Assume the entity is a block -- Should be fine since we are checking for this in the if statement
             var blockItem = (Block)block.item;
