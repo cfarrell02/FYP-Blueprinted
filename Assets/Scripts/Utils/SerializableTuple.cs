@@ -14,5 +14,23 @@ namespace Utils
             Item2 = item2;
         }
     }
+    
+    [Serializable]
+    public struct SerializableOreParameters
+    {
+        public Block oreBlock;
+        public float oreThreshold;
+        public float scale;
+        public int yUpperBound, yLowerBound;
+        
+        public SerializableOreParameters(Block oreBlock, float oreThreshold, float scale, int yUpperBound, int yLowerBound)
+        {
+            this.oreBlock = oreBlock;
+            this.oreThreshold = oreThreshold;
+            this.scale = scale;
+            this.yUpperBound = yUpperBound;
+            this.yLowerBound = yLowerBound;
+        }
+    }
 
 }

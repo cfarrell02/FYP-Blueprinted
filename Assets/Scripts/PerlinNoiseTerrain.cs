@@ -25,8 +25,7 @@ public class BlockyTerrain : MonoBehaviour
     public Block grass, dirt, stone; 
     
     [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
-    public List<SerializableTuple<Block, float>> ore = new List<SerializableTuple<Block, float>>();
-
+    public List<SerializableOreParameters> ore = new List<SerializableOreParameters>();
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
@@ -280,14 +279,27 @@ public class BlockyTerrain : MonoBehaviour
             List<Block> verticalBlocks = new List<Block>();
 
             List<Block> oreVerticalBlocks = ore
-                .SelectMany(oreBlock => GenerateOreList(x, z, depth, oreBlock.Item2, oreBlock.Item1))
+                .SelectMany(oreBlock =>
+                {
+                    float yUpperBound = oreBlock.yUpperBound, yLowerBound = oreBlock.yLowerBound;
+                    int yDiff = (int) Mathf.Abs(yUpperBound - yLowerBound);
+                    var list = GenerateOreList(x, z, yDiff, oreBlock.oreThreshold, oreBlock.oreBlock, oreBlock.scale);
+                    float lowestY = list.Min(block => block.location.y);
+                    float highestY = list.Max(block => block.location.y);
+                    float scaler = (yUpperBound - yLowerBound) / (highestY - lowestY);
+                    list.ForEach(block =>
+                    {
+                        block.location = new Vector3(block.location.x, yLowerBound + (block.location.y - lowestY) * scaler, block.location.z);
+                    });
+                    
+                    return list;
+                })
                 .DistinctBy(block => block.location)
                 .ToList();
 
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
-
-            int stoneThresholdHeight = (int)(stoneThreshold * depth);
+            
 
             for (int i = -depth; i <= y; ++i)
             {
@@ -301,7 +313,7 @@ public class BlockyTerrain : MonoBehaviour
                 var oreBlock = oreVerticalBlocks.FirstOrDefault(block => block.location == cubePos);
 
                 Block topBlock = (oreBlock ? oreBlock : grass);
-                Block block = (i <= stoneThresholdHeight) ? ((Random.Range(0, 10) < 5) ? dirt : stone ) : stone;
+                Block block = (i <= stoneThreshold) ? ((Random.Range(0, 10) < 5) ? dirt : stone ) : stone;
                 block = oreBlock ? oreBlock : block;
 
                 if (toBeLoaded)
@@ -311,6 +323,7 @@ public class BlockyTerrain : MonoBehaviour
                 }
                 else
                 {
+                    InstantiateCube(cubePos, block);
                     copyOfCubeObject.InstantiateBlock(block);
                 }
 
@@ -337,6 +350,8 @@ public class BlockyTerrain : MonoBehaviour
     {
         if (!cube2) cube2 = grass;
         
+        if(cube2.id != 5) return; // Debugging to only oil blocks
+        
 
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
@@ -355,34 +370,35 @@ public class BlockyTerrain : MonoBehaviour
 
     }
     
-    List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab)
+    List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab, float oreScale)
     {
+        var verticalBlock = new List<Block>();
+        float halfHeight = height / 2.0f; // Half of the height
 
-                var verticalBlock = new List<Block>();
-                for (int y = 0; y < height; y++)
-                {
-                    float xCoord = .1f * x * scale;
-                    float zCoord = .1f * z * scale;
+        for (int y = 0; y < height; y++)
+        {
+            float xCoord = 0.1f * x * oreScale;
+            float zCoord = 0.1f * z * oreScale;
 
-                    float oreValue = Mathf.PerlinNoise(xCoord, zCoord);
-                    float newThreshold = oreThreshold + (y / (float)height);
-                    
-                    if (oreValue > newThreshold)
-                    {
-                        Vector3 position = new Vector3(x, y, z);
+            float oreValue = Mathf.PerlinNoise(xCoord, zCoord);
+            // Calculate the new threshold based on height
+            float newThreshold = oreThreshold + (Mathf.Abs(y - halfHeight) / halfHeight) * oreScale;
 
-                        // Create a new Block object with the desired properties
-                        Block oreBlock = ScriptableObject.CreateInstance<Block>();
-                        oreBlock.InstantiateBlock(blockPrefab);
-                        oreBlock.location = position;
+            if (oreValue > newThreshold)
+            {
+                Vector3 position = new Vector3(x, y, z);
 
-                        // Add the Block object to the list
-                        verticalBlock.Add(oreBlock);
-                    }
-                }
-                return verticalBlock;
+                // Create a new Block object with the desired properties
+                Block oreBlock = ScriptableObject.CreateInstance<Block>();
+                oreBlock.InstantiateBlock(blockPrefab);
+                oreBlock.location = position;
+
+                // Add the Block object to the list
+                verticalBlock.Add(oreBlock);
+            }
+        }
+        return verticalBlock;
     }
-
 
 
     void UnloadTerrain()
