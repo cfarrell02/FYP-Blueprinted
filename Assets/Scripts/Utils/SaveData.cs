@@ -52,13 +52,11 @@ namespace Utils
         public struct SerializableVerticalBlocks
         {
             public bool isLoaded;
-            public bool navMeshBuilt;
             public List<SerializableBlockData> blocks;
             
             public SerializableVerticalBlocks(VerticalBlocks verticalBlocks)
             {
                 isLoaded = verticalBlocks.isLoaded;
-                navMeshBuilt = verticalBlocks.navMeshBuilt;
                 blocks = verticalBlocks.blocks.Select(block => new SerializableBlockData((int)block.location.y, block.id, block.isLoaded)).ToList();
                 
             }
@@ -252,8 +250,7 @@ namespace Utils
                             }
                         }
                     ).Where(newBlock => newBlock != null).ToList(), 
-                    pair.value.isLoaded, 
-                    pair.value.navMeshBuilt
+                    pair.value.isLoaded
                 )
             );
             

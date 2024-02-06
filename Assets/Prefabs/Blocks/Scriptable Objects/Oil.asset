@@ -17,7 +17,7 @@ MonoBehaviour:
   name: Oil
   id: 2
   maxStackSize: 100
-  prefab: {fileID: 5763828162553407202, guid: 06617643b04b86e4bb1422ee70f5845c, type: 3}
+  prefab: {fileID: 5763828162553407202, guid: c10b16205ae20d9428aa02381d9d67dd, type: 3}
   icon: {fileID: 0}
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}
   craftable: 0
