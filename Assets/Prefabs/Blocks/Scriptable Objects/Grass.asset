@@ -15,8 +15,8 @@ MonoBehaviour:
   durability: 10
   maxDurability: 100
   name: Grass
-  id: 1
-  maxStackSize: 100
+  id: 0
+  maxStackSize: 1000
   prefab: {fileID: 5763828162553407202, guid: f01bf10d1fcfdcb4f959f0aedaeb8460, type: 3}
   icon: {fileID: 0}
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}
