@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Utils
 {
@@ -18,9 +19,13 @@ namespace Utils
     [Serializable]
     public struct SerializableOreParameters
     {
+        [Tooltip("The block to be used for the ore.")]
         public Block oreBlock;
+        [Range(0, 1), Tooltip("The threshold for the ore. Recommended to keep this value between 0 and 1.")]
         public float oreThreshold;
+        [Range(0, 1), Tooltip("The scale of the noise used to generate the ore. Recommended to keep this value between 0 and 1.")]
         public float scale;
+        [Tooltip("The upper bound for the ore's y position.")]
         public int yUpperBound, yLowerBound;
         
         public SerializableOreParameters(Block oreBlock, float oreThreshold, float scale, int yUpperBound, int yLowerBound)

@@ -15,8 +15,8 @@ MonoBehaviour:
   durability: 10
   maxDurability: 100
   name: Stone
-  id: 3
-  maxStackSize: 100
+  id: 0
+  maxStackSize: 1000
   prefab: {fileID: 5763828162553407202, guid: 45096160b8863b54ebfe2043a9456ecd, type: 3}
   icon: {fileID: 0}
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}

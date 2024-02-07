@@ -825,7 +825,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30.2
+  m_fontSize: 18
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1083,7 +1083,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ac955badd87bad4fa2b721581649548, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  depth: 10
+  depth: 20
   scale: 1
   cubeHeight: 1
   enemyPrefab: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
@@ -1092,16 +1092,17 @@ MonoBehaviour:
   stone: {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
   ore:
   - oreBlock: {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
-    oreThreshold: -1
-    scale: 10
-    yUpperBound: 1
+    oreThreshold: 0.806
+    scale: 0.8
+    yUpperBound: 0
     yLowerBound: -10
   loadDistance: 40
   navMeshDistance: 20
   newTerrainDistance: 10
   newNavMeshDistance: 10
   perlinScale: 5
-  stoneThreshold: 0.5
+  stoneThreshold: -6
+  stoneThresholdRange: 2
 --- !u!1 &1668610341
 GameObject:
   m_ObjectHideFlags: 0
