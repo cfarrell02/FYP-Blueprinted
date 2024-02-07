@@ -15,8 +15,8 @@ MonoBehaviour:
   durability: 10
   maxDurability: 100
   name: Wood
-  id: 2
-  maxStackSize: 100
+  id: 5
+  maxStackSize: 1000
   prefab: {fileID: 5763828162553407202, guid: 06617643b04b86e4bb1422ee70f5845c, type: 3}
   icon: {fileID: 0}
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}

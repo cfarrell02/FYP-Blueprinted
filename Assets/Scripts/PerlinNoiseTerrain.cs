@@ -14,7 +14,7 @@ using Random = UnityEngine.Random;
 
 public class BlockyTerrain : MonoBehaviour
 {
-    
+
     public int depth = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
@@ -22,11 +22,10 @@ public class BlockyTerrain : MonoBehaviour
     public GameObject
         enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
 
-    public Block grass, dirt, stone; 
-    
-    [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
-    public List<SerializableTuple<Block, float>> ore = new List<SerializableTuple<Block, float>>();
+    public Block grass, dirt, stone;
 
+    [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
+    public List<SerializableOreParameters> ore = new List<SerializableOreParameters>();
 
     int previousPlayerPosX;
     int previousPlayerPosZ;
@@ -35,7 +34,8 @@ public class BlockyTerrain : MonoBehaviour
     [SerializeField] int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField] int newNavMeshDistance = 10; // Multiplier for the load distance when generating terrain
     [SerializeField] int perlinScale = 10; // Multiplier for the perlin noise scale
-    [SerializeField] float stoneThreshold = 0.5f; // Threshold for stone generation
+    [SerializeField] int stoneThreshold = 4; // Threshold for stone generation
+    [SerializeField] int stoneThresholdRange = 2; // Range for the stone threshold
 
 
 
@@ -67,11 +67,11 @@ public class BlockyTerrain : MonoBehaviour
 
         if (!isFillInHolesRunning)
             StartCoroutine(FillInHoles());
-        
+
         StartCoroutine(LateStart()); //Late start on the loading to ensure the player has been loaded
 
     }
-    
+
     IEnumerator LateStart()
     {
         yield return new WaitForNextFrameUnit();
@@ -85,7 +85,7 @@ public class BlockyTerrain : MonoBehaviour
             GenerateInitialTerrain();
         }
     }
-    
+
 
     void Update()
     {
@@ -106,7 +106,7 @@ public class BlockyTerrain : MonoBehaviour
 
         if (lightingManager && lightingManager.isNight())
             HandleEnemySpawn();
-        
+
     }
 
     void HandleNavmesh()
@@ -243,6 +243,7 @@ public class BlockyTerrain : MonoBehaviour
         {
             surface.BuildNavMesh();
         }
+
         AsyncOperation operation = surface.UpdateNavMesh(surface.navMeshData);
         while (!operation.isDone)
         {
@@ -255,8 +256,8 @@ public class BlockyTerrain : MonoBehaviour
     void GenerateCubeAtPosition(int x, int z)
     {
         Vector2 currentPos = new Vector2(x, z);
-        
-        if (coordsToHeight.ContainsKey(currentPos) 
+
+        if (coordsToHeight.ContainsKey(currentPos)
             && !coordsToHeight[currentPos].isLoaded)
         {
             var verticalBlocks = coordsToHeight[currentPos];
@@ -273,21 +274,32 @@ public class BlockyTerrain : MonoBehaviour
             }
 
             coordsToHeight[currentPos] = verticalBlocks;
-            
+
         }
         else
         {
             List<Block> verticalBlocks = new List<Block>();
 
             List<Block> oreVerticalBlocks = ore
-                .SelectMany(oreBlock => GenerateOreList(x, z, depth, oreBlock.Item2, oreBlock.Item1))
+                .SelectMany(oreBlock =>
+                {
+                    float yUpperBound = oreBlock.yUpperBound, yLowerBound = oreBlock.yLowerBound;
+                    int yDiff = (int)Mathf.Abs(yUpperBound - yLowerBound);
+                    var list = GenerateOreList(x, z, yDiff, oreBlock.oreThreshold, oreBlock.oreBlock, oreBlock.scale);
+                    list.ForEach(block =>
+                    {
+                        var actualY = block.location.y + yLowerBound;
+                        block.location = new Vector3(block.location.x, actualY, block.location.z);
+                    });
+
+                    return list;
+                })
                 .DistinctBy(block => block.location)
                 .ToList();
 
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
-
-            int stoneThresholdHeight = (int)(stoneThreshold * depth);
+            
 
             for (int i = -depth; i <= y; ++i)
             {
@@ -299,9 +311,29 @@ public class BlockyTerrain : MonoBehaviour
 
                 Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
                 var oreBlock = oreVerticalBlocks.FirstOrDefault(block => block.location == cubePos);
+                
+                if(oreBlock && oreBlock.blockType == Block.BlockType.Empty) continue;
+                
+                
 
                 Block topBlock = (oreBlock ? oreBlock : grass);
-                Block block = (i <= stoneThresholdHeight) ? ((Random.Range(0, 10) < 5) ? dirt : stone ) : stone;
+                Block block;
+                if (i > stoneThreshold + stoneThresholdRange)
+                {
+                    // Dirt above stone
+                    block = dirt;
+                }
+                else if (i < stoneThreshold - stoneThresholdRange)
+                {
+                    // Stone below stone threshold
+                    block = stone;
+                }
+                else
+                {
+                    // Mix of stone and dirt around the stone threshold
+                    block = Random.Range(0, 100) < 50 ? stone : dirt;
+                }
+                
                 block = oreBlock ? oreBlock : block;
 
                 if (toBeLoaded)
@@ -336,7 +368,6 @@ public class BlockyTerrain : MonoBehaviour
     public void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = grass;
-        
 
         GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
@@ -354,35 +385,34 @@ public class BlockyTerrain : MonoBehaviour
         }
 
     }
-    
-    List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab)
+
+    List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab, float oreScale)
     {
+        var verticalBlock = new List<Block>();
+        float halfHeight = height / 2.0f; // Half of the height
 
-                var verticalBlock = new List<Block>();
-                for (int y = 0; y < height; y++)
-                {
-                    float xCoord = .1f * x * scale;
-                    float zCoord = .1f * z * scale;
+        for (int y = (int)-halfHeight; y <= halfHeight; ++y)
+        {
+            float xCoord = 0.1f * (x + y) * oreScale; // Adjusted x coordinate
+            float zCoord = 0.1f * (z + y) * oreScale; // Adjusted z coordinate
 
-                    float oreValue = Mathf.PerlinNoise(xCoord, zCoord);
-                    float newThreshold = oreThreshold + (y / (float)height);
-                    
-                    if (oreValue > newThreshold)
-                    {
-                        Vector3 position = new Vector3(x, y, z);
+            float oreValue = Mathf.PerlinNoise(xCoord, zCoord);
 
-                        // Create a new Block object with the desired properties
-                        Block oreBlock = ScriptableObject.CreateInstance<Block>();
-                        oreBlock.InstantiateBlock(blockPrefab);
-                        oreBlock.location = position;
+            float adjustedThreshold = oreThreshold + Mathf.Abs((float)y) / 100;
+            
+            if (oreValue > adjustedThreshold)
+            {
+                // Create a new Block object with the desired properties
+                Block oreBlock = ScriptableObject.CreateInstance<Block>();
+                oreBlock.InstantiateBlock(blockPrefab);
+                oreBlock.location = new Vector3(x, Mathf.Floor(y + halfHeight), z);
 
-                        // Add the Block object to the list
-                        verticalBlock.Add(oreBlock);
-                    }
-                }
-                return verticalBlock;
+                // Add the Block object to the list
+                verticalBlock.Add(oreBlock);
+            }
+        }
+        return verticalBlock;
     }
-
 
 
     void UnloadTerrain()
@@ -427,7 +457,7 @@ public class BlockyTerrain : MonoBehaviour
     {
         return coordsToHeight;
     }
-    
+
     public void SetHeightMap(Dictionary<Vector2, VerticalBlocks> heightMap)
     {
         coordsToHeight = heightMap;
@@ -541,22 +571,22 @@ public class BlockyTerrain : MonoBehaviour
 
         return null;
     }
-    
 
-public void DestroyAllCubes()
-{
-    var allCubes = GameObject.FindGameObjectsWithTag("Cube");
-    foreach (var cube in allCubes)
+
+    public void DestroyAllCubes()
     {
-        Destroy(cube);
+        var allCubes = GameObject.FindGameObjectsWithTag("Cube");
+        foreach (var cube in allCubes)
+        {
+            Destroy(cube);
+        }
     }
+
+
+
 }
 
 
-
-
-
-};
 
 [Serializable]
 public struct VerticalBlocks
