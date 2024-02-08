@@ -288,7 +288,7 @@ public class HUD : MonoBehaviour
             Destroy(child.gameObject);
             
         }
-        Destroy(camObject);
+        Destroy(camObject.gameObject); //TODO Fix the inability to destroy the camera
         Destroy(item);
         var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0));
         entity.icon = sprite;

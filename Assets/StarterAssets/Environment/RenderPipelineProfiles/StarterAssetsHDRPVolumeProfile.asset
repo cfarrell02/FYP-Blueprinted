@@ -302,6 +302,62 @@ MonoBehaviour:
   filter:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &-6177363454839972173
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbb66dc641fe8ef4c843eb98a8fa4058, type: 3}
+  m_Name: FullScreenFog
+  m_EditorClassIdentifier: 
+  active: 1
+  mode:
+    m_OverrideState: 1
+    m_Value: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0
+  color:
+    m_OverrideState: 1
+    m_Value: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 1}
+  densityMode:
+    m_OverrideState: 1
+    m_Value: 2
+  startLine:
+    m_OverrideState: 1
+    m_Value: 0
+  endLine:
+    m_OverrideState: 0
+    m_Value: 10
+  startHeight:
+    m_OverrideState: 0
+    m_Value: 5
+  endHeight:
+    m_OverrideState: 0
+    m_Value: 0
+  density:
+    m_OverrideState: 1
+    m_Value: 0
+  noiseMode:
+    m_OverrideState: 1
+    m_Value: 0
+  noiseTexture:
+    m_OverrideState: 0
+    m_Value: {fileID: 0}
+    dimension: 1
+  noiseIntensity:
+    m_OverrideState: 0
+    m_Value: 0.5
+  noiseScale:
+    m_OverrideState: 0
+    m_Value: 1
+  noiseScrollSpeed:
+    m_OverrideState: 0
+    m_Value: {x: 1, y: 1}
 --- !u!114 &-4501967695779405341
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -451,15 +507,7 @@ MonoBehaviour:
   m_Name: StarterAssetsHDRPVolumeProfile
   m_EditorClassIdentifier: 
   components:
-  - {fileID: 7686318427622180703}
-  - {fileID: -1016694868962581565}
-  - {fileID: 7502528774814404555}
-  - {fileID: 7542669330009093999}
-  - {fileID: 1501199423866068322}
-  - {fileID: 5315503232242033309}
-  - {fileID: 1932259527246508038}
-  - {fileID: -8290671188493191910}
-  - {fileID: 198738852298360104}
+  - {fileID: -6177363454839972173}
 --- !u!114 &198738852298360104
 MonoBehaviour:
   m_ObjectHideFlags: 3

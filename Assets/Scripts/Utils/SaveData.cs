@@ -14,18 +14,20 @@ namespace Utils
         public List<SerializableTuple<int,int>> inventory;
         public List<SerializableEntity> entitiesInScene;
         public List<SerializableKeyValuePair> coordsToHeightList;
-        public float time;
+        public float time, mapScale;
         public int nightsSurvived;
+        
         
         
 
         public SaveData(Dictionary<Vector2, VerticalBlocks> dictionary, List<GameObject> entitiesInScene, Vector3 playerPosition, InventoryItem<Entity>[] inventory, 
-            float time, int nightsSurvived, Quaternion playerRotation)
+            float time, int nightsSurvived, Quaternion playerRotation, float mapScale)
         {
             // Converting entities to serializable entities, this will need to be changed as more enemies are added
 
             List<(string,int)> allEntities = GameManager.Instance.allEntities.Where(entity => entity is Item).ToList().Select(entity => (entity.name, entity.id)).ToList();
             List<(string, int)> allEnemies = new List<(string, int)> { ("Skeleton", 1) }; //TODO Update with actual enemies
+            
             
             var entities = entitiesInScene.Select(entity =>
             {
@@ -68,6 +70,7 @@ namespace Utils
             this.time = time;
             this.nightsSurvived = nightsSurvived;
             this.playerRotation = new SerializableVector3(playerRotation.eulerAngles);
+            this.mapScale = mapScale;
             
             
             
@@ -89,6 +92,11 @@ namespace Utils
                     GameManager.Instance.allEntities.First(entity => entity.id == item.Item2),
                     item.Item1))
                 .ToList();
+        }
+        
+        public float GetMapScale()
+        {
+            return mapScale;
         }
         
         public List<(string, Vector3, string)> GetEntitiesInScene()
