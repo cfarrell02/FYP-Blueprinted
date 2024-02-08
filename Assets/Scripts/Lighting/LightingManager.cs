@@ -43,6 +43,8 @@ public class LightingManager : MonoBehaviour
             GameManager.Instance.IncreaseNightsSurvived();
             timeOfDay = 0;
         }
+
+        directionalLight.gameObject.SetActive(!isNight());
         
     }
     

@@ -15,7 +15,7 @@ MonoBehaviour:
   durability: 10
   maxDurability: 100
   name: Dirt
-  id: 0
+  id: 1
   maxStackSize: 1000
   prefab: {fileID: 5763828162553407202, guid: a7e5cca22de47489a8faa86bc9c53eeb, type: 3}
   icon: {fileID: 0}

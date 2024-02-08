@@ -15,7 +15,7 @@ MonoBehaviour:
   durability: 10
   maxDurability: 100
   name: Oil
-  id: 0
+  id: 3
   maxStackSize: 1000
   prefab: {fileID: 5763828162553407202, guid: c10b16205ae20d9428aa02381d9d67dd, type: 3}
   icon: {fileID: 0}

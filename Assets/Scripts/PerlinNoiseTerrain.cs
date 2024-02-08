@@ -19,8 +19,7 @@ public class BlockyTerrain : MonoBehaviour
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
 
-    public GameObject
-        enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
+    public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
 
     public Block grass, dirt, stone;
 
@@ -54,6 +53,7 @@ public class BlockyTerrain : MonoBehaviour
         {
             Destroy(cube);
         }
+        
     }
 
     void Start()
@@ -75,10 +75,10 @@ public class BlockyTerrain : MonoBehaviour
     IEnumerator LateStart()
     {
         yield return new WaitForNextFrameUnit();
-        var file = File.Exists(GameManager.Instance.savePath + GameManager.Instance.currentSaveFile + ".json");
+        var file = File.Exists(GameManager.Instance.savePath + GameManager.Instance.currentSaveFile + ".data");
         if (file)
         {
-            GameManager.Instance.LoadGame(GameManager.Instance.currentSaveFile + ".json");
+            GameManager.Instance.LoadGame(GameManager.Instance.currentSaveFile + ".data");
         }
         else
         {
@@ -181,9 +181,7 @@ public class BlockyTerrain : MonoBehaviour
                                 }
 
                             }
-
                             Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-
                             break;
                         }
                     }

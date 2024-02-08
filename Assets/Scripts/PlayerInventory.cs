@@ -28,14 +28,9 @@ public class PlayerInventory : MonoBehaviour
     public int inventoryCapacity = 10;
     [SerializeField, Tooltip("This is the starting items of the player.")]
     private InventoryItem<Entity>[] startingItems;
-
-    [SerializeField, Tooltip("This is the maximum health of the player.")]
-    private int playerHealth = 100;
     [SerializeField, Tooltip("This is the color of the block when the player is looking at it.")]
     Color blockHighlightColor = Color.red;
     
-    private int currentHealth;
-
     private InventoryItem<Entity>[] inventory;
     private GameObject _lookedAtObject;
     private BlockyTerrain blockyTerrain;
@@ -63,7 +58,6 @@ public class PlayerInventory : MonoBehaviour
 
         
         selectedBlockIndex = 0;
-        currentHealth = playerHealth;
 
         for(int i = 0; i < startingItems.Length; ++i)
         {
@@ -201,7 +195,7 @@ public class PlayerInventory : MonoBehaviour
 
     void HandleHealth()
     {
-        if (currentHealth <= 0)
+        if (GetComponent<Health>().GetCurrentHealth() <= 0)
         {
             GameManager.Instance.ResetGame();
             
@@ -522,49 +516,7 @@ public class PlayerInventory : MonoBehaviour
     {
         return selectedBlockIndex;
     }
-
-    public int GetCurrentHealth()
-    {
-        return currentHealth;
-    }
     
-    public int GetMaxHealth()
-    {
-        return playerHealth;
-    }
-    
-    
-    public bool AddHealth(int health)
-    {
-        if (currentHealth >= playerHealth)
-        {
-            return false;
-        }
-        
-        if (currentHealth + health > playerHealth)
-        {
-            currentHealth = playerHealth;
-            return true;
-        }
-        currentHealth += health;
-        return true;
-    }
-    
-    public bool RemoveHealth(int health)
-    {
-        if (currentHealth <= 0)
-        {
-            return false;
-        }
-        
-        if (currentHealth - health < 0)
-        {
-            currentHealth = 0;
-            return true;
-        }
-        currentHealth -= health;
-        return true;
-    }
 
 
 }

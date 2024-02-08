@@ -5,7 +5,6 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     const float DETECT_DISTANCE = 8f;
-    public int health = 100;
     public Behaviour behaviour;
     public float lookDistance = 30f;
     public enum Behaviour
@@ -18,7 +17,6 @@ public class Enemy : MonoBehaviour
 
     private GameObject player;
     private NavMeshAgent agent;
-    private int currentHealth;
     private Renderer rend;
     private float timer = 0f;
     private Animator anim;
@@ -29,7 +27,6 @@ public class Enemy : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         agent.speed = 1f;
-        currentHealth = health;
         rend = GetComponent<Renderer>();
         player = GameObject.FindWithTag("Player");
         if (rend == null)
@@ -59,7 +56,9 @@ public class Enemy : MonoBehaviour
         Look();
         Listen();
         
-        if (currentHealth <= 20)
+        
+        
+        if (GetComponent<Health>().GetCurrentHealth() < 20)
         {
             behaviour = Behaviour.Flee;
             
@@ -67,18 +66,7 @@ public class Enemy : MonoBehaviour
         //TODO Add in undoing flee when player is far enough away and increasing health
         
     }
-
-    public void TakeDamage(int damage, Vector3 hitPoint)
-    {
-        currentHealth -= damage;
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
-        
-        //Knockback, TODO: Improve this
-        transform.position = Vector3.MoveTowards(transform.position, hitPoint, -1f);
-    }
+    
     
     private void Wander()
     {
@@ -98,8 +86,8 @@ public class Enemy : MonoBehaviour
         if (timer > .8f)
         {
             timer = 0f;
-            var playerInventory = player.GetComponent<PlayerInventory>();
-            playerInventory.RemoveHealth(10);
+            var health = player.GetComponent<Health>();
+            health.TakeDamage(10);
         }
     }
     

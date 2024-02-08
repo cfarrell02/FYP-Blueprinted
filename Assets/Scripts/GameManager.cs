@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using Utils;
 
@@ -81,13 +82,13 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.O))
         {
             print("Saving terrain");
-            SaveGame(currentSaveFile + ".json");
+            SaveGame(currentSaveFile + ".data");
         }
         
         if (Input.GetKeyDown(KeyCode.P))
         {
             print("Loading terrain");
-            LoadGame(currentSaveFile + ".json");
+            LoadGame(currentSaveFile + ".data");
         }
     }
 
@@ -127,7 +128,7 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    public void SaveGame(string path = "SaveGame.json")
+    public void SaveGame(string path = "SaveGame.data")
     {
         if (!IsMainScene()) return;
         print("Saving game to " + savePath + path);
@@ -145,8 +146,11 @@ public class GameManager : MonoBehaviour
         SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies.ToList(), playerPos, playerInventory,
             lightManager.GetTimeOfDay(), GameManager.Instance.NightsSurvived, playerRot);
 
-        string json = JsonUtility.ToJson(saveData);
-        File.WriteAllText(savePath + path, json);
+        //Save saveData as binary
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Create(savePath + path);
+        bf.Serialize(file, saveData);
+        file.Close();
     }
 
     private static bool IsMainScene()
@@ -155,17 +159,17 @@ public class GameManager : MonoBehaviour
         return UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main";
     }
 
-    public void LoadGame(string path = "SaveGame.json")
+    public void LoadGame(string path = "SaveGame.data")
     {
         if (!IsMainScene()) return;
         
-        string json = File.ReadAllText(savePath + path);
-        SaveData saveData = JsonUtility.FromJson<SaveData>(json);
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Open(savePath + path, FileMode.Open);
+        SaveData saveData = (SaveData) bf.Deserialize(file);
+        file.Close();
         var coordsToHeightList = saveData.GetCoordsToHeightList();
         
-
         generator.DestroyAllCubes();
-
         generator.SetHeightMap(coordsToHeightList);
         var coordsToHeight = generator.GetHeightMap();
 
@@ -214,7 +218,7 @@ public class GameManager : MonoBehaviour
         playerTransform.position = playerPos;
         playerTransform.rotation = playerRot;
         GameObject.Find("LightingManager").GetComponent<LightingManager>().SetTimeOfDay(timeOfDay);
-        GameManager.Instance.NightsSurvived = nightsSurvived;
+        NightsSurvived = nightsSurvived;
 
         var playerInventoryItem = playerTransform.GetComponent<PlayerInventory>();
         playerInventoryItem.SetInventory(playerInventory.ToArray());

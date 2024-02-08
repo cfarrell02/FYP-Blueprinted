@@ -15,7 +15,7 @@ MonoBehaviour:
   durability: 0
   maxDurability: 0
   name: Empty
-  id: 0
+  id: 51
   maxStackSize: 0
   prefab: {fileID: 0}
   icon: {fileID: 0}

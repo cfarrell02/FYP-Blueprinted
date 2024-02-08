@@ -9,128 +9,15 @@ namespace Utils
     [Serializable]
     public class SaveData
     {
-        [Serializable]
-        public struct SerializableVector2
-        {
-            public float x;
-            public float y;
-
-            public SerializableVector2(Vector2 vector2)
-            {
-                x = vector2.x;
-                y = vector2.y;
-            }
-            public SerializableVector2(float x, float y)
-            {
-                this.x = x;
-                this.y = y;
-            }
-        }
-        
-        [Serializable]
-        public struct SerializableVector3
-        {
-            public float x;
-            public float y;
-            public float z;
-
-            public SerializableVector3(Vector3 vector3)
-            {
-                x = vector3.x;
-                y = vector3.y;
-                z = vector3.z;
-            }
-            public SerializableVector3(float x, float y, float z)
-            {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-            }
-        }
-        
-        [Serializable]
-        public struct SerializableVerticalBlocks
-        {
-            public bool isLoaded;
-            public List<SerializableBlockData> blocks;
-            
-            public SerializableVerticalBlocks(VerticalBlocks verticalBlocks)
-            {
-                isLoaded = verticalBlocks.isLoaded;
-                blocks = verticalBlocks.blocks.Select(block => new SerializableBlockData((int)block.location.y, block.id, block.isLoaded)).ToList();
-                
-            }
-        }
-        
-
-
-        [Serializable]
-        public struct SerializableIntTuple
-        {
-            public int count;
-            public int blockId;
-            
-            public SerializableIntTuple(int count, int blockId)
-            {
-                this.count = count;
-                this.blockId = blockId;
-            }
-        }
-        
-        [Serializable]
-        public struct SerializableBlockData
-        {
-            public int depth;
-            public int blockId;
-            public bool isLoaded;
-            
-            public SerializableBlockData(int depth, int blockId,bool isLoaded)
-            {
-                this.depth = depth;
-                this.blockId = blockId;
-                this.isLoaded = isLoaded;
-            }
-        }
-        
         public SerializableVector3 playerPosition;
         public SerializableVector3 playerRotation;
-        public List<SerializableIntTuple> inventory;
+        public List<SerializableTuple<int,int>> inventory;
         public List<SerializableEntity> entitiesInScene;
         public List<SerializableKeyValuePair> coordsToHeightList;
         public float time;
         public int nightsSurvived;
         
         
-
-
-        [Serializable]
-        public struct SerializableKeyValuePair
-        {
-            public SerializableVector2 key;
-            public SerializableVerticalBlocks value;
-
-            public SerializableKeyValuePair(KeyValuePair<Vector2, VerticalBlocks> pair)
-            {
-                key = new SerializableVector2(pair.Key);
-                value = new SerializableVerticalBlocks(pair.Value); 
-            }
-        }
-        
-        [Serializable]
-        public struct SerializableEntity
-        {
-            public int id;
-            public SerializableVector3 location;
-            public string type;
-
-            public SerializableEntity(int id, Vector3 location, string type)
-            {
-                this.id = id;
-                this.location = new SerializableVector3(location);
-                this.type = type;
-            }
-
-        }
 
         public SaveData(Dictionary<Vector2, VerticalBlocks> dictionary, List<GameObject> entitiesInScene, Vector3 playerPosition, InventoryItem<Entity>[] inventory, 
             float time, int nightsSurvived, Quaternion playerRotation)
@@ -177,7 +64,7 @@ namespace Utils
 
             var inventoryList = inventory.Where(item => item.item != null).ToList();
             
-            this.inventory = inventoryList.Select(item => new SerializableIntTuple(item.count, item.item.id)).ToList();
+            this.inventory = inventoryList.Select(item => new SerializableTuple<int,int>(item.count, item.item.id)).ToList();
             this.time = time;
             this.nightsSurvived = nightsSurvived;
             this.playerRotation = new SerializableVector3(playerRotation.eulerAngles);
@@ -198,7 +85,10 @@ namespace Utils
         
         public List<InventoryItem<Entity>> GetInventory()
         {
-            return inventory.Select(item => new InventoryItem<Entity>(GameManager.Instance.allEntities.First(entity => entity.id == item.blockId), item.count)).ToList();
+            return inventory.Select(item => new InventoryItem<Entity>(
+                    GameManager.Instance.allEntities.First(entity => entity.id == item.Item2),
+                    item.Item1))
+                .ToList();
         }
         
         public List<(string, Vector3, string)> GetEntitiesInScene()

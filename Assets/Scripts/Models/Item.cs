@@ -45,8 +45,8 @@ public class Item : Entity
                     if (hit.transform.tag == "Enemy")
                     {
                         Debug.Log("You hit an enemy");
-                        var enemy = hit.transform.GetComponent<Enemy>();
-                        enemy.TakeDamage((int)damage, hit.point);
+                        var enemy = hit.transform.GetComponent<Health>();
+                        enemy.TakeDamage((int)damage);
                     }
                 }
                 break;
@@ -61,8 +61,8 @@ public class Item : Entity
                 break;
             case ItemType.Health:
                 Debug.Log("You used health");
-                var playerInventory = player.GetComponent<PlayerInventory>();
-                return playerInventory.AddHealth((int)value);
+                var playerHealth = player.GetComponent<Health>();
+                playerHealth.Heal((int)value);
                 
                 break;
             
