@@ -64,6 +64,7 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
+        scale = Random.Range(scale/2, scale + scale/2);
 
         if (!isFillInHolesRunning)
             StartCoroutine(FillInHoles());
@@ -105,8 +106,35 @@ public class BlockyTerrain : MonoBehaviour
         }
 
         if (lightingManager && lightingManager.isNight())
+        {
             HandleEnemySpawn();
+           // ResizeTerrain(newTerrainDistance);
+        }
 
+    }
+    
+    public void ResizeTerrain(int newSize)
+    {
+        loadDistance = newSize;
+        navMeshDistance = newSize / 2;
+        newTerrainDistance = newSize / 4;
+        newNavMeshDistance = newSize / 4;
+        
+        var instantiatedVerticalBlocks = coordsToHeight.Values.Where(verticalBlocks => verticalBlocks.isLoaded).ToList();
+        
+        foreach (var verticalBlocks in instantiatedVerticalBlocks)
+        {
+            foreach (var block in verticalBlocks.blocks)
+            {
+                Destroy(GameObject.Find(block.name + ": " + block.location));
+                block.isLoaded = false;
+            }
+        }
+        
+        
+        
+        GenerateTerrain();
+        
     }
 
     void HandleNavmesh()

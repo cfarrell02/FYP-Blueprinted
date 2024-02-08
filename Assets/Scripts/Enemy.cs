@@ -7,6 +7,7 @@ public class Enemy : MonoBehaviour
     const float DETECT_DISTANCE = 8f;
     public Behaviour behaviour;
     public float lookDistance = 30f;
+    public int damage = 10;
     public enum Behaviour
     {
         Idle,
@@ -21,6 +22,7 @@ public class Enemy : MonoBehaviour
     private float timer = 0f;
     private Animator anim;
     private float fleeDistance = 5f;
+    private LightingManager lightingManager;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +30,7 @@ public class Enemy : MonoBehaviour
         anim = GetComponent<Animator>();
         agent.speed = 1f;
         rend = GetComponent<Renderer>();
+        lightingManager = FindObjectOfType<LightingManager>();
         player = GameObject.FindWithTag("Player");
         if (rend == null)
         {
@@ -55,8 +58,6 @@ public class Enemy : MonoBehaviour
         
         Look();
         Listen();
-        
-        
         
         if (GetComponent<Health>().GetCurrentHealth() < 20)
         {
@@ -87,7 +88,9 @@ public class Enemy : MonoBehaviour
         {
             timer = 0f;
             var health = player.GetComponent<Health>();
-            health.TakeDamage(10);
+            int damageToDeal = damage + Random.Range(-5, 5);
+            damageToDeal = lightingManager.isNight() ? damageToDeal * 2 : damageToDeal; // Double damage at night
+            health.TakeDamage(damageToDeal);
         }
     }
     

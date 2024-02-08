@@ -63,6 +63,9 @@ namespace StarterAssets
 		// timeout deltatime
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
+		
+		//Reference to the lighting manager
+		private LightingManager lightingManager;
 
 	
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
@@ -101,6 +104,7 @@ namespace StarterAssets
 			_input = GetComponent<StarterAssetsInputs>();
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 			_playerInput = GetComponent<PlayerInput>();
+			lightingManager = FindObjectOfType<LightingManager>();
 #else
 			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
@@ -160,6 +164,8 @@ namespace StarterAssets
 		{
 			// set target speed based on move speed, sprint speed and if sprint is pressed
 			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+			
+			targetSpeed = lightingManager.isNight() ? targetSpeed * .75f : targetSpeed; // 25% slower at night
 
 			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
