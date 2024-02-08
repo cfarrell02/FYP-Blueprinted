@@ -70,6 +70,9 @@ public class Menu : MonoBehaviour
         {
             var save = saves[i];
             var fileName = System.IO.Path.GetFileName(save).Split('.')[0]; // Remove the file extension
+            
+            if(fileName == "") continue;
+            
             print("Save file: " + fileName);
 
             // Instantiate a new save button

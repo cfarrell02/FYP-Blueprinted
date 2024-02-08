@@ -337,7 +337,10 @@ public class HUD : MonoBehaviour
 
     private void UpdateHealthBar()
     {
-        float normalizedHealth = (float)playerInventoryObject.GetCurrentHealth() / playerInventoryObject.GetMaxHealth();
+        Health playerHealth = playerInventoryObject.GetComponent<Health>();
+
+
+        float normalizedHealth = playerHealth.GetCurrentHealth() / (float)playerHealth.maxHealth;
 
         healthBar.transform.localScale = new Vector3(normalizedHealth, 1, 1);
         healthBar.color = Color.Lerp(lowHealthColor, fullHealthColor, normalizedHealth);
