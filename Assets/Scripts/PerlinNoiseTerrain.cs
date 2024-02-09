@@ -26,8 +26,9 @@ public class BlockyTerrain : MonoBehaviour
     [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
     public List<SerializableOreParameters> ore = new List<SerializableOreParameters>();
 
-    int previousPlayerPosX;
-    int previousPlayerPosZ;
+    int previousPlayerPosX, previousPlayerPosZ;
+    int previousPlayerPosXnav, previousPlayerPosZnav;
+    
     [SerializeField] int loadDistance = 40; // Distance around the player to load new terrain
     [SerializeField] int navMeshDistance = 20; // Distance around the player to load new terrain
     [SerializeField] int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
@@ -63,6 +64,8 @@ public class BlockyTerrain : MonoBehaviour
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
+        previousPlayerPosXnav = (int)playerTransform.position.x;
+        previousPlayerPosZnav = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
         scale = Random.Range(scale/2, scale + scale/2);
 
@@ -143,9 +146,12 @@ public class BlockyTerrain : MonoBehaviour
         int currentPlayerPosZ = (int)playerTransform.position.z;
 
         // Check if the player has moved to a new grid area
-        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosX) >= newNavMeshDistance ||
-            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZ) >= newNavMeshDistance)
+        if (Mathf.Abs(currentPlayerPosX - previousPlayerPosXnav) >= newNavMeshDistance ||
+            Mathf.Abs(currentPlayerPosZ - previousPlayerPosZnav) >= newNavMeshDistance)
         {
+            previousPlayerPosXnav = currentPlayerPosX;
+            previousPlayerPosZnav = currentPlayerPosZ;  
+            
             //print("Building navmesh");
             //Ensure only blocks that are within the navmesh distance are parented to the navmesh
             foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
