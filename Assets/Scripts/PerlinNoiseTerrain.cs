@@ -301,7 +301,7 @@ public class BlockyTerrain : MonoBehaviour
             {
                 if (block.isLoaded)
                 {
-                    InstantiateCube(block.location);
+                    InstantiateCube(block.location, block);
                 }
             }
 
@@ -385,7 +385,6 @@ public class BlockyTerrain : MonoBehaviour
             }
 
             coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true });
-
         }
     }
 

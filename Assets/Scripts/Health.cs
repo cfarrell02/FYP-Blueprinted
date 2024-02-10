@@ -31,6 +31,8 @@ public class Health : MonoBehaviour
         }
         else
         {
+            LevelManager levelManager = FindObjectOfType<LevelManager>();
+            levelManager.GainXP(10);
             Destroy(gameObject);
         }
     }

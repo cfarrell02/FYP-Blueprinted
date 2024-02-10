@@ -19,10 +19,13 @@ public abstract class Entity : ScriptableObject
     public Sprite icon ;
     [Tooltip("This is an offset used for rendering the item.")]
     public Vector3 renderOffset ;
+    [Header("Crafting Options")]
     [Tooltip("Is this craftable?")] 
     public bool craftable;
     [Tooltip("This is the recipe for crafting the item. Only applicable if craftable is true.")]
     public InventoryItem<Entity>[] recipe;
+    [Tooltip("Minimum level required to craft this item. 0 means no level required.")]
+    public int minLevel = 0;
     
     // public Vector3 renderRotation ;
 
