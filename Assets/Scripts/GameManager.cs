@@ -137,6 +137,7 @@ public class GameManager : MonoBehaviour
         var pickupsAndEnemies = pickups.Concat(enemies).ToArray();
         var playerTransform = GameObject.FindWithTag("Player").transform;
         var coordsToHeight = generator.GetHeightMap();
+        int playerXP = playerTransform.GetComponent<LevelManager>().GetCurrentXP();
 
         Vector3 playerPos = playerTransform.position;
         Quaternion playerRot = playerTransform.rotation;
@@ -144,7 +145,7 @@ public class GameManager : MonoBehaviour
         var lightManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
 
         SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies.ToList(), playerPos, playerInventory,
-            lightManager.GetTimeOfDay(), NightsSurvived, playerRot, generator.scale);
+            lightManager.GetTimeOfDay(), NightsSurvived, playerRot, generator.scale, playerXP);
 
         //Save saveData as binary
         BinaryFormatter bf = new BinaryFormatter();
@@ -191,6 +192,14 @@ public class GameManager : MonoBehaviour
     
     private void LoadEntitiesInScene(SaveData saveData)
     {
+        //Remove all default spawned entities
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        GameObject[] pickups = GameObject.FindGameObjectsWithTag("Pickup");
+        GameObject[] allEntities = enemies.Concat(pickups).ToArray();
+        foreach (var entity in allEntities)
+        {
+            Destroy(entity);
+        }
         foreach (var entity in saveData.GetEntitiesInScene())
         {
             if (entity.Item3 == "Enemy")

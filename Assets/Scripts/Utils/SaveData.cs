@@ -15,18 +15,19 @@ namespace Utils
         public List<SerializableEntity> entitiesInScene;
         public List<SerializableKeyValuePair> coordsToHeightList;
         public float time, mapScale;
-        public int nightsSurvived;
+        public int nightsSurvived, playerXP;    
         
         
         
 
         public SaveData(Dictionary<Vector2, VerticalBlocks> dictionary, List<GameObject> entitiesInScene, Vector3 playerPosition, InventoryItem<Entity>[] inventory, 
-            float time, int nightsSurvived, Quaternion playerRotation, float mapScale)
+            float time, int nightsSurvived, Quaternion playerRotation, float mapScale, int XP)
         {
             // Converting entities to serializable entities, this will need to be changed as more enemies are added
 
             List<(string,int)> allEntities = GameManager.Instance.allEntities.Where(entity => entity is Item).ToList().Select(entity => (entity.name, entity.id)).ToList();
             List<(string, int)> allEnemies = new List<(string, int)> { ("Skeleton", 1) }; //TODO Update with actual enemies
+            playerXP = XP;
             
             
             var entities = entitiesInScene.Select(entity =>
@@ -84,6 +85,11 @@ namespace Utils
         public Vector3 GetPlayerPosition()
         {
             return new Vector3(playerPosition.x, playerPosition.y, playerPosition.z);
+        }
+        
+        public int GetPlayerXP()
+        {
+            return playerXP;
         }
         
         public List<InventoryItem<Entity>> GetInventory()

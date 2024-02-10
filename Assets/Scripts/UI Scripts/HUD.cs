@@ -16,6 +16,8 @@ public class HUD : MonoBehaviour
     public Image healthBar;
     public Color fullHealthColor, lowHealthColor;
     public GameObject inventorySlotPrefab;
+    public Image xpBar;
+    public TextMeshProUGUI levelText;
 
     [Header("Inventory")]
     public PlayerInventory playerInventoryObject;
@@ -31,11 +33,13 @@ public class HUD : MonoBehaviour
     private bool craftingOpen = false;
     private int craftingIndex = 0;
     private int selectedBlockIndex = -100;
+    private LevelManager levelManager;
 
     private void Start()
     {
         canvas = GetComponent<Canvas>();
         inventory = playerInventoryObject.GetInventory();
+        levelManager = FindObjectOfType<LevelManager>();
 
         UpdateBuildInfoText();
 
@@ -109,6 +113,7 @@ public class HUD : MonoBehaviour
 
         UpdateHealthBar();
         UpdateNightText();
+        UpdateLevelText();
         
         if(selectedBlockIndex != playerInventoryObject.GetSelectedBlockIndex())
         {
@@ -142,8 +147,23 @@ public class HUD : MonoBehaviour
             craftingOpen = false;
             GameManager.Instance.InputEnabled = true;
         }
+        
+        
+        
     }
-    
+
+    private void UpdateLevelText()
+    {
+        int[] xpLevels = levelManager.xpThresholds;
+        int currentlevel = levelManager.GetCurrentLevel();
+        int currentXPLevel = xpLevels[currentlevel - 1];
+        int nextXPLevel = currentlevel < xpLevels.Length ? xpLevels[currentlevel] : currentXPLevel;
+        int currentXP = levelManager.GetCurrentXP();
+        float normalizedXP = (currentXP - currentXPLevel) / (float)(nextXPLevel - currentXPLevel);
+        xpBar.transform.localScale = new Vector3(normalizedXP, 1, 1);
+        levelText.text = "Level " + currentlevel;
+    }
+
     private void UpdateNightText()
     {
         string nightText = $"Night: {GameManager.Instance.NightsSurvived}";

@@ -57,4 +57,12 @@ public class LevelManager : MonoBehaviour
         // Default thresholds for levels 1 to 10
         xpThresholds = new int[] { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000 };
     }
+    
+    void Update()
+    {
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     GainXP(50);
+        // }
+    }
 }
