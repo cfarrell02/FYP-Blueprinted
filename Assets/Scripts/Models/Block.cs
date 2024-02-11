@@ -36,7 +36,7 @@ public class Block : Entity
     public Block(
         string name, int id, int durability, int maxDurability,
          int maxStackSize, Vector3 location,
-        Vector3 rotation, Vector3 scale, GameObject prefab)
+        Vector3 rotation, Vector3 scale, GameObject prefab, BlockType blockType)
     {
         this.name = name;
         this.id = id;
@@ -48,6 +48,7 @@ public class Block : Entity
         this.scale = scale;
         isLoaded = false;
         this.prefab = prefab;
+        this.blockType = blockType;
         color = prefab.GetComponent<Renderer>().material.color;
     }
     
@@ -63,6 +64,7 @@ public class Block : Entity
         scale = new Vector3(0, 0, 0);
         isLoaded = true;
         prefab = null;
+        blockType = BlockType.Normal;
         color = new Color(1, 1, 1);
     }
     
@@ -80,6 +82,8 @@ public class Block : Entity
         prefab = block.prefab;
         renderOffset = block.renderOffset;
         color = block.color;
+        value = block.value;
+        blockType = block.blockType;
     }
 
 }
