@@ -45,7 +45,7 @@ public class BlockyTerrain : MonoBehaviour
     private NavMeshSurface surface;
     private float timer = 0f;
     private LightingManager lightingManager;
-    private bool isFillInHolesRunning = false;
+    private List<Block> emptyBlocks = new List<Block>();
 
     private void Awake()
     {
@@ -69,8 +69,12 @@ public class BlockyTerrain : MonoBehaviour
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
         scale = Random.Range(scale/2, scale + scale/2);
 
-        if (!isFillInHolesRunning)
-            StartCoroutine(FillInHoles());
+        ore.ForEach((ore) =>
+        {
+            ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2);
+        }
+        );
+        
 
         StartCoroutine(LateStart()); //Late start on the loading to ensure the player has been loaded
 
@@ -93,6 +97,9 @@ public class BlockyTerrain : MonoBehaviour
 
     void Update()
     {
+        
+        FillInCaves();
+
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
         HandleNavmesh();
@@ -114,31 +121,9 @@ public class BlockyTerrain : MonoBehaviour
            // ResizeTerrain(newTerrainDistance);
         }
 
+
     }
-    
-    public void ResizeTerrain(int newSize)
-    {
-        loadDistance = newSize;
-        navMeshDistance = newSize / 2;
-        newTerrainDistance = newSize / 4;
-        newNavMeshDistance = newSize / 4;
-        
-        var instantiatedVerticalBlocks = coordsToHeight.Values.Where(verticalBlocks => verticalBlocks.isLoaded).ToList();
-        
-        foreach (var verticalBlocks in instantiatedVerticalBlocks)
-        {
-            foreach (var block in verticalBlocks.blocks)
-            {
-                Destroy(GameObject.Find(block.name + ": " + block.location));
-                block.isLoaded = false;
-            }
-        }
-        
-        
-        
-        GenerateTerrain();
-        
-    }
+
 
     void HandleNavmesh()
     {
@@ -337,14 +322,30 @@ public class BlockyTerrain : MonoBehaviour
             {
                 Vector3 cubePos = new Vector3(x, i, z);
                 bool toBeLoaded = i >= y;
-
-                if (!isFillInHolesRunning)
-                    StartCoroutine(FillInHoles());
+                
 
                 Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
                 var oreBlock = oreVerticalBlocks.FirstOrDefault(block => block.location == cubePos);
                 
-                if(oreBlock && oreBlock.blockType == Block.BlockType.Empty) continue;
+                if(oreBlock && oreBlock.blockType == Block.BlockType.Empty){ 
+                    emptyBlocks.Add(oreBlock);
+                    continue; // Don't generate empty blocks
+                }
+                
+                // Can be laggy
+                // //Add in air block above the terrain
+                // if (toBeLoaded)
+                // {
+                //     for (int j = (int)y + 1; j < depth; j++)
+                //     {
+                //         Block airBlock = ScriptableObject.CreateInstance<Block>();
+                //         airBlock.InstantiateBlock(grass); //
+                //         airBlock.location = new Vector3(x, i + 1, z);
+                //         airBlock.isLoaded = true;
+                //         emptyBlocks.Add(airBlock);
+                //     }
+                // }
+
                 
                 
 
@@ -386,16 +387,37 @@ public class BlockyTerrain : MonoBehaviour
 
             coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true });
         }
+        
+        
     }
-
-    IEnumerator FillInHoles()
+    
+    void FillInCaves()
     {
-        isFillInHolesRunning = true;
-        yield return null;
+    // Create a list to store the empty blocks that need to be removed
+    var all = GameManager.Instance.allEntities.OfType<Block>().ToList();
+    var safetyBlock = all.FirstOrDefault(block => block.blockType == Block.BlockType.AntiSpawn);
 
-        isFillInHolesRunning = false;
+    foreach (var emptyBlock in emptyBlocks)
+    {
+       // InstantiateCube(emptyBlock.location, safetyBlock);
+        var surroundingBlocks = GetSurroundingBlocks(emptyBlock.location);
+        for (int i = 0; i < surroundingBlocks.Length; i++)
+        {
+            var block = FindBlock(surroundingBlocks[i]);
+            if (block != null && !block.isLoaded)
+            {
+                InstantiateCube(block.location, block);
+                block.isLoaded = true;
+                coordsToHeight[new Vector2(block.location.x, block.location.z)].blocks.Add(block);
+            }
+        }
     }
 
+    emptyBlocks.Clear();
+
+    }
+    
+    
     public void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = grass;
