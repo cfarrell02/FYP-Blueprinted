@@ -97,6 +97,9 @@ public class BlockyTerrain : MonoBehaviour
 
     void Update()
     {
+        
+        FillInCaves();
+
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
         HandleNavmesh();
@@ -117,34 +120,10 @@ public class BlockyTerrain : MonoBehaviour
             HandleEnemySpawn();
            // ResizeTerrain(newTerrainDistance);
         }
-        FillInCaves();
 
 
     }
-    
-    public void ResizeTerrain(int newSize)
-    {
-        loadDistance = newSize;
-        navMeshDistance = newSize / 2;
-        newTerrainDistance = newSize / 4;
-        newNavMeshDistance = newSize / 4;
-        
-        var instantiatedVerticalBlocks = coordsToHeight.Values.Where(verticalBlocks => verticalBlocks.isLoaded).ToList();
-        
-        foreach (var verticalBlocks in instantiatedVerticalBlocks)
-        {
-            foreach (var block in verticalBlocks.blocks)
-            {
-                Destroy(GameObject.Find(block.name + ": " + block.location));
-                block.isLoaded = false;
-            }
-        }
-        
-        
-        
-        GenerateTerrain();
-        
-    }
+
 
     void HandleNavmesh()
     {
@@ -352,6 +331,20 @@ public class BlockyTerrain : MonoBehaviour
                     emptyBlocks.Add(oreBlock);
                     continue; // Don't generate empty blocks
                 }
+                
+                // Can be laggy
+                // //Add in air block above the terrain
+                // if (toBeLoaded)
+                // {
+                //     for (int j = (int)y + 1; j < depth; j++)
+                //     {
+                //         Block airBlock = ScriptableObject.CreateInstance<Block>();
+                //         airBlock.InstantiateBlock(grass); //
+                //         airBlock.location = new Vector3(x, i + 1, z);
+                //         airBlock.isLoaded = true;
+                //         emptyBlocks.Add(airBlock);
+                //     }
+                // }
 
                 
                 
@@ -401,7 +394,6 @@ public class BlockyTerrain : MonoBehaviour
     void FillInCaves()
     {
     // Create a list to store the empty blocks that need to be removed
-    List<Block> blocksToRemove = new List<Block>();
     var all = GameManager.Instance.allEntities.OfType<Block>().ToList();
     var safetyBlock = all.FirstOrDefault(block => block.blockType == Block.BlockType.AntiSpawn);
 
@@ -417,10 +409,6 @@ public class BlockyTerrain : MonoBehaviour
                 InstantiateCube(block.location, block);
                 block.isLoaded = true;
                 coordsToHeight[new Vector2(block.location.x, block.location.z)].blocks.Add(block);
-                if (!blocksToRemove.Contains(emptyBlock))
-                {
-                    blocksToRemove.Add(emptyBlock);
-                }
             }
         }
     }
