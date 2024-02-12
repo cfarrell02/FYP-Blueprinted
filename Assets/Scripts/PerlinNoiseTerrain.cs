@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
+using static Utils.Utils;
 using Utils;
 using Random = UnityEngine.Random;
 
@@ -45,14 +45,15 @@ public class BlockyTerrain : MonoBehaviour
     private NavMeshSurface surface;
     private float timer = 0f;
     private LightingManager lightingManager;
-    private List<Block> emptyBlocks = new List<Block>();
+    private List<Block> emptyBlocks = new List<Block>(), lightingBlocks = new List<Block>();
+    private FogManager fogManager;
 
     private void Awake()
     {
         var allCubes = GameObject.FindGameObjectsWithTag("Cube");
         foreach (var cube in allCubes)
         {
-            Destroy(cube);
+            DestroyWithChildren(cube.gameObject);
         }
         
     }
@@ -68,8 +69,9 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosZnav = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
         scale = Random.Range(scale/2, scale + scale/2);
+        fogManager = FindObjectOfType<FogManager>();
 
-        ore.ForEach((ore) =>
+        ore.ForEach(ore =>
         {
             ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2);
         }
@@ -120,8 +122,29 @@ public class BlockyTerrain : MonoBehaviour
             HandleEnemySpawn();
            // ResizeTerrain(newTerrainDistance);
         }
+        
+        DetectLightSources();
 
 
+    }
+
+    void DetectLightSources()
+    {
+        lightingBlocks.ForEach(block =>
+        {
+            if (block.blockType == Block.BlockType.Light)
+            {
+                float distance = Vector3.Distance(block.location, playerTransform.position);
+                if (distance < 10)
+                {
+                    fogManager.SetIntensityMultiplier(0.5f);
+                }
+                else
+                {
+                    fogManager.SetIntensityMultiplier(1f);
+                }
+            }
+        });
     }
 
 
@@ -501,7 +524,7 @@ public class BlockyTerrain : MonoBehaviour
                 var a = coordsToHeight[pos2D];
                 a.isLoaded = false;
                 coordsToHeight[pos2D] = a;
-                Destroy(cube); // Remove cube from the scene
+                DestroyWithChildren(cube.gameObject); // Remove cube from the scene
             }
         }
     }
@@ -532,9 +555,15 @@ public class BlockyTerrain : MonoBehaviour
                     blockList.Remove(block);
 
                     var cubeToRemove = GameObject.Find(block.name + ": " + position);
-                    Destroy(cubeToRemove);
+                    
+                    DestroyWithChildren(cubeToRemove.gameObject);
 
                     var surroundingBlocks = GetSurroundingBlocks(position);
+                    
+                    if(block.blockType == Block.BlockType.Light && lightingBlocks.Contains(block))
+                    {
+                        lightingBlocks.Remove(block);
+                    }
 
 
                     foreach (Vector3 surroundingBlock in surroundingBlocks)
@@ -590,6 +619,11 @@ public class BlockyTerrain : MonoBehaviour
                 {
                     blockList.Add(blockToAdd);
                 }
+                
+                if(blockToAdd.blockType == Block.BlockType.Light && !lightingBlocks.Contains(blockToAdd))
+                {
+                    lightingBlocks.Add(blockToAdd);
+                }
 
                 InstantiateCube(position, blockToAdd);
                 var a = coordsToHeight[pos];
@@ -631,7 +665,7 @@ public class BlockyTerrain : MonoBehaviour
         var allCubes = GameObject.FindGameObjectsWithTag("Cube");
         foreach (var cube in allCubes)
         {
-            Destroy(cube);
+            DestroyWithChildren(cube.gameObject);
         }
     }
 

@@ -15,6 +15,7 @@ public class FogManager : MonoBehaviour
     [Range(0, 1)]
     public float Density, NightDensity;
     public Color Color, NightColor;
+    private float intensityMultiplier = 1;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,7 +29,7 @@ public class FogManager : MonoBehaviour
         }
         
         fog.active = true;
-        fog.intensity.value = Intensity;
+        fog.intensity.value = Intensity * intensityMultiplier;
         fog.color.value = Color;
         fog.density.value = Density;
     }
@@ -40,16 +41,21 @@ public class FogManager : MonoBehaviour
         if (lightingManager.isNight())
         {
             fog.color.value = NightColor;
-            fog.intensity.value = NightIntensity;
+            fog.intensity.value = NightIntensity * intensityMultiplier;
             fog.density.value = NightDensity;
         }
         else
         {
             fog.color.value = Color;
-            fog.intensity.value = Intensity;
+            fog.intensity.value = Intensity * intensityMultiplier;
             fog.density.value = Density;
         }
         
         
+    }
+    
+    public void SetIntensityMultiplier(float multiplier)
+    {
+        intensityMultiplier = multiplier;
     }
 }

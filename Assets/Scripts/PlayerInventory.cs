@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem.HID;
 using UnityEngine.SceneManagement;
+using static Utils.Utils;
 
 [System.Serializable]
 public struct InventoryItem<T>
@@ -87,6 +88,7 @@ public class PlayerInventory : MonoBehaviour
             }
         }
     }
+    
 
     //This retrieves a list of all craftable items
     //This method is quite expensive and should only be called when necessary.
@@ -158,7 +160,7 @@ public class PlayerInventory : MonoBehaviour
             var pickup = other.gameObject.GetComponent<Pickup>();
             
             AddItem(pickup.item);
-            Destroy(other.gameObject);
+            DestroyWithChildren(other.gameObject);
         }
 
     }
@@ -180,7 +182,13 @@ public class PlayerInventory : MonoBehaviour
             if (hit.collider.gameObject.GetComponent<Renderer>() == null || !hit.collider.gameObject.CompareTag("Cube"))
                 return;
     
-            _lookedAtObject = hit.collider.gameObject;
+            var hitObject = hit.collider.gameObject;
+            while (hitObject.transform.parent != null && hitObject.transform.parent.gameObject.CompareTag("Cube")) //To account for blocks with children
+            {
+                hitObject = hitObject.transform.parent.gameObject;
+            }
+            
+            _lookedAtObject = hitObject;
             ChangeBlockColor(_lookedAtObject, true);
         }
         else
@@ -240,6 +248,7 @@ public class PlayerInventory : MonoBehaviour
 
     void RenderSelectedItem()
     {
+        
         var selectedItem = inventory[selectedBlockIndex];
 
         //if (selectedItem.item is Block)
@@ -249,7 +258,7 @@ public class PlayerInventory : MonoBehaviour
         if (selectedBlock.item != null && selectedBlock.item.prefab)
         {
             if (renderedObject)
-                Destroy(renderedObject);
+                DestroyWithChildren(renderedObject.gameObject);
 
         // Assuming selectedItem.item.prefab is the prefab you want to instantiate
 
@@ -267,6 +276,10 @@ public class PlayerInventory : MonoBehaviour
 
         // Set the layer (if needed)
         renderedObject.layer = 7;
+        
+        //Set children to the same layer
+        var children = renderedObject.GetComponentsInChildren<Transform>();
+        children.ToList().ForEach(x => x.gameObject.layer = 7);
 
                
             var collider = renderedObject.GetComponent<Collider>();
@@ -281,10 +294,13 @@ public class PlayerInventory : MonoBehaviour
         else
         {
             if (renderedObject)
-                Destroy(renderedObject);
+                DestroyWithChildren(renderedObject.gameObject);
             renderedObject = null;
         }
     }
+    
+    
+
 
 
     void UseSelectedTool()
@@ -307,6 +323,7 @@ public class PlayerInventory : MonoBehaviour
                 bool toDelete = tool.Use(); // Other tools are used when the player clicks
                 if (toDelete)
                 {
+                    RemoveItem(selectedBlockIndex);
                     RemoveItem(selectedBlockIndex);
                 }
             }
@@ -376,6 +393,12 @@ public class PlayerInventory : MonoBehaviour
             if (hit.collider.gameObject.GetComponent<Renderer>() == null || !hit.collider.gameObject.CompareTag("Cube"))
                 return;
         }
+        
+        //Light blocks cant be used to place blocks from.
+        var lookedAtBlock = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
+                            
+        if(lookedAtBlock.blockType == Block.BlockType.Light)
+            return;
     
         var block = inventory[selectedBlockIndex];
         if (block.count != 0 && _lookedAtObject != null && block.item.name != null)
@@ -385,6 +408,10 @@ public class PlayerInventory : MonoBehaviour
             Vector3 hitNormal = hit.normal;
             // Place bloc one over from blockpos in the direction of the hit normal
             Vector3 placePos = blockPos + hitNormal * blockyTerrain.grass.prefab.transform.localScale.x;
+            
+            var existingBlock = blockyTerrain.FindBlock(placePos);
+            if (existingBlock != null)
+                return;
     
             //Assume the entity is a block -- Should be fine since we are checking for this in the if statement
             var blockItem = (Block)block.item;
@@ -401,6 +428,9 @@ public class PlayerInventory : MonoBehaviour
             blockToAdd.isLoaded = true;
             blockToAdd.maxStackSize = blockItem.maxStackSize;
             blockToAdd.color = blockItem.color;
+            blockToAdd.blockType = blockItem.blockType;
+            blockToAdd.value = blockItem.value;
+            
             
             blockyTerrain.AddBlock(placePos, blockToAdd);
             // Remove the block from the inventory
@@ -415,7 +445,7 @@ public class PlayerInventory : MonoBehaviour
         if (blockObject != null)
         {
             var block = blockyTerrain.FindBlock(blockObject.transform.position);
-            if (block != null)
+            if (block != null && blockObject.GetComponent<Renderer>() != null)
             {
                 if (newColor)
                 {
