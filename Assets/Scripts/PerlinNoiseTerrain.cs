@@ -101,7 +101,7 @@ public class BlockyTerrain : MonoBehaviour
     {
         
         FillInCaves();
-
+        
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
         HandleNavmesh();
@@ -114,9 +114,9 @@ public class BlockyTerrain : MonoBehaviour
             previousPlayerPosZ = currentPlayerPosZ;
             GenerateTerrain();
             UnloadTerrain();
-
+        
         }
-
+        
         if (lightingManager && lightingManager.isNight())
         {
             HandleEnemySpawn();
@@ -164,6 +164,12 @@ public class BlockyTerrain : MonoBehaviour
             //Ensure only blocks that are within the navmesh distance are parented to the navmesh
             foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
             {
+                //Dont touch held items or items that arent directly children of the terrain/navmesh
+                if(cube.layer == 7 || !(cube.transform.parent.name.Contains("Navmesh") || cube.transform.parent.name.Contains("Generator")))
+                {
+                    continue;
+                }
+                
                 Vector3 pos = cube.transform.position;
                 // print (pos);
                 // Remove cubes outside the visible area from the scene
@@ -416,10 +422,7 @@ public class BlockyTerrain : MonoBehaviour
     
     void FillInCaves()
     {
-    // Create a list to store the empty blocks that need to be removed
-    var all = GameManager.Instance.allEntities.OfType<Block>().ToList();
-    var safetyBlock = all.FirstOrDefault(block => block.blockType == Block.BlockType.AntiSpawn);
-
+        
     foreach (var emptyBlock in emptyBlocks)
     {
        // InstantiateCube(emptyBlock.location, safetyBlock);
