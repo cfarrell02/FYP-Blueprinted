@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6056641248102965325}
   - component: {fileID: 8945141336835598202}
   - component: {fileID: 4308462889023327870}
+  - component: {fileID: -4864321161752347861}
   m_Layer: 0
   m_Name: Skeleton
   m_TagString: Enemy
@@ -165,6 +166,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+--- !u!114 &-4864321161752347861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225661646640385875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b25af8627659c6949b60949c3aa8d91d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedEditorNode: {fileID: 0}
+  repeatOnFinish: 0
+  maxExecutionsPerTick: 1000
+  parent: {fileID: 0}
 --- !u!1 &8392204778800602970
 GameObject:
   m_ObjectHideFlags: 0
