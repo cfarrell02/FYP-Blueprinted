@@ -453,7 +453,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.5e-44, z: 1.2822e-41, w: 1.12283e-40}
+  m_BoundingSphereOverride: {x: 7.17e-43, y: 0, z: 0, w: 1.6625453e-36}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -2622,7 +2622,7 @@ PrefabInstance:
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[4].item
       value: 
-      objectReference: {fileID: 11400000, guid: 7a53f3b8382e0fc4e88353555800fbbf, type: 2}
+      objectReference: {fileID: 11400000, guid: bc31e5e846b9905458899ba17fe7ba9f, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[5].item
       value: 
@@ -2645,7 +2645,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[4].count
-      value: 1
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[5].count

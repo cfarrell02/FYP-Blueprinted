@@ -27,6 +27,7 @@ public class Block : Entity
         Normal,
         AntiSpawn,
         Empty,
+        Light,
     }
 
 
