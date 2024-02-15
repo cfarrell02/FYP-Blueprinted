@@ -36,6 +36,8 @@ public class Enemy : MonoBehaviour
         // Initialize the behavior tree
         behaviourTree = new BehaviourTree(
             new Selector(
+                new Sequence(new Condition(CanHearPlayer),
+                    new Action(ChasePlayer)),
                 new Sequence(
                     new Condition(IsPlayerInSight),
                     new Action(ChasePlayer)
@@ -64,6 +66,11 @@ public class Enemy : MonoBehaviour
         var direction = (player.transform.position - transform.position).normalized;
         float angle = Vector3.Angle(transform.forward, direction);
         return angle < 45f; // Check if player is within 45 degrees of the enemy's forward direction
+    }
+    
+    private bool CanHearPlayer()
+    {
+        return Vector3.Distance(transform.position, player.transform.position) < DETECT_DISTANCE;
     }
 
     private bool IsPlayerInRange()
