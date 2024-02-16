@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Void
   m_EditorClassIdentifier: 
   durability: 0
-  maxDurability: 0
+  maxDurability: 0.5
   name: Empty
   id: 51
   maxStackSize: 0
@@ -22,6 +22,7 @@ MonoBehaviour:
   renderOffset: {x: 0.46, y: -0.42, z: 0.71}
   craftable: 0
   recipe: []
+  minLevel: 0
   location: {x: 0, y: 0, z: 0}
   rotation: {x: 0, y: 0, z: 0}
   scale: {x: 0, y: 0, z: 0}

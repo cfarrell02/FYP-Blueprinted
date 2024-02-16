@@ -43,7 +43,7 @@ public class Block : Entity
         this.id = id;
         this.durability = durability;
         this.maxDurability = maxDurability;
-        this.maxDurability = maxStackSize;
+        this.maxStackSize = maxStackSize;
         this.location = location;
         this.rotation = rotation;
         this.scale = scale;
@@ -73,7 +73,7 @@ public class Block : Entity
     {
         name = block.name;
         id = block.id;
-        durability = block.durability;
+        durability = 0;
         maxDurability = block.maxDurability;
         maxStackSize = block.maxStackSize;
         location = block.location;

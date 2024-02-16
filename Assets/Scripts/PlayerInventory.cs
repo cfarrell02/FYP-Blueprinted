@@ -33,7 +33,7 @@ public class PlayerInventory : MonoBehaviour
     Color blockHighlightColor = Color.red;
     
     private InventoryItem<Entity>[] inventory;
-    private GameObject _lookedAtObject;
+    private GameObject _lookedAtObject, currentLookedAtObject;
     private BlockyTerrain blockyTerrain;
     private GameObject mainCamera;
     private GameObject renderedObject;
@@ -307,19 +307,20 @@ public class PlayerInventory : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-
             var selectedItem = inventory[selectedBlockIndex];
 
             if (selectedItem.item is Item)
             {
-                var tool = (Item)selectedItem.item;
+                Item tool = (Item)selectedItem.item;
                 tool.Update();
 
                 if (tool.itemType == Item.ItemType.Blueprint)
                 {
-                    AddBlockToInventory(); // Blueprint is a tool that adds blocks to the inventory
+                    // Start the coroutine and wait for it to complete
+                    StartCoroutine(AddBlockToInventoryCoroutine());
                     return;
                 }
+
                 bool toDelete = tool.Use(); // Other tools are used when the player clicks
                 if (toDelete)
                 {
@@ -328,30 +329,55 @@ public class PlayerInventory : MonoBehaviour
                 }
             }
             else if (inventory[selectedBlockIndex].item is Block)
+            {
                 PlaceBlockFromInventory(); // Blocks are placed when the player clicks
+            }
         }
     }
 
-    void AddBlockToInventory()
+    IEnumerator AddBlockToInventoryCoroutine()
     {
         if (_lookedAtObject)
         {
             var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
-            
-            
-            if(!(inventory[selectedBlockIndex].item is Item && ((Item)inventory[selectedBlockIndex].item).itemType == Item.ItemType.Blueprint))
+
+            if (!(inventory[selectedBlockIndex].item is Item && ((Item)inventory[selectedBlockIndex].item).itemType == Item.ItemType.Blueprint))
             {
-                return;
+                yield break;
             }
-    
-            if (AddItem(block))
-            {
-                blockyTerrain.RemoveBlock(block.location);
-    
-            }
+
+            // Start the coroutine and wait for it to complete
+            yield return StartCoroutine(BreakBlock(block));
+
+            // This code will execute after the coroutine completes
+
         }
     }
-    
+
+    IEnumerator BreakBlock(Block block)
+    {
+        float maxDurability = block.maxDurability;
+        while (block.durability < maxDurability)
+        {
+            block.durability += Time.deltaTime; // Decrease durability over time
+            yield return null; // Wait for the next frame
+
+            if (!Input.GetMouseButton(0)) // Check if the mouse button is still held down
+            {
+                // Player released mouse button, stop breaking the block
+                yield break;
+            }
+        }
+        block.durability = 0;
+
+        // Block has been fully broken
+        if (AddItem(block))
+        { 
+            blockyTerrain.RemoveBlock(block.location);
+        }
+    }
+
+
     void DropHeldItem()
     {
         //Only drop the item if it is an item, might remove this to make blocks droppable, IDK???
@@ -430,6 +456,7 @@ public class PlayerInventory : MonoBehaviour
             blockToAdd.color = blockItem.color;
             blockToAdd.blockType = blockItem.blockType;
             blockToAdd.value = blockItem.value;
+            blockToAdd.maxDurability = blockItem.maxDurability;
             
             
             blockyTerrain.AddBlock(placePos, blockToAdd);
@@ -445,11 +472,13 @@ public class PlayerInventory : MonoBehaviour
         if (blockObject != null)
         {
             var block = blockyTerrain.FindBlock(blockObject.transform.position);
+            float durability = block.durability, maxDurability = block.maxDurability;
+            float normalizedDurability = durability / maxDurability;
             if (block != null && blockObject.GetComponent<Renderer>() != null)
             {
                 if (newColor)
                 {
-                    blockObject.GetComponent<Renderer>().material.color = blockHighlightColor;
+                    blockObject.GetComponent<Renderer>().material.color = blockHighlightColor * (1 - normalizedDurability) + block.color * normalizedDurability;
                 }
                 else
                 {

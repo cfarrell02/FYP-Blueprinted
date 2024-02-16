@@ -24,6 +24,7 @@ MonoBehaviour:
   recipe:
   - item: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
     count: 5
+  minLevel: 3
   itemType: 3
   speed: 0
   damage: 0
