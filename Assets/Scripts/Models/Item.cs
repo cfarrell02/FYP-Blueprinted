@@ -39,7 +39,10 @@ public class Item : Entity
                 Debug.Log("You used a sword");
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, 100))
+                //Every layer except minimap
+                LayerMask mask = ~LayerMask.GetMask("Minimap");
+                
+                if (Physics.Raycast(ray, out hit, 100, mask))
                 {
                     Debug.Log(hit.transform.name);
                     if (hit.transform.tag == "Enemy")

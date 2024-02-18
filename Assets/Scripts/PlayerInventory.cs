@@ -38,7 +38,6 @@ public class PlayerInventory : MonoBehaviour
     private GameObject mainCamera;
     private GameObject renderedObject;
     private int inventorySize;
-    private GameManager gameManager;
     private float timer;
 
 
@@ -65,8 +64,6 @@ public class PlayerInventory : MonoBehaviour
             inventory[i] = startingItems[i];
             inventorySize++;
         }
-
-        gameManager = GameManager.Instance;
         
     }
 
@@ -79,7 +76,7 @@ public class PlayerInventory : MonoBehaviour
         HandleHealth();
         RenderSelectedItem();
 
-        if (GameManager.Instance.InputEnabled)
+        if (GameManager.Instance.craftingIsOpen)
         {
             HandleInput();
             if (Input.GetKeyDown(KeyCode.Q))
@@ -93,8 +90,9 @@ public class PlayerInventory : MonoBehaviour
     //This retrieves a list of all craftable items
     //This method is quite expensive and should only be called when necessary.
     public List<(Entity, int)> GetAllCraftableItems()
-    {
-        Entity[] allItems = gameManager.allEntities.Select(x => x.craftable ? x : null).Where(x => x != null).ToArray();
+    { 
+        print("Getting craftable items");
+        Entity[] allItems = GameManager.Instance.allEntities.Select(x => x.craftable ? x : null).Where(x => x != null).ToArray();
         List<(Entity, int)> craftableItems = new List<(Entity, int)>();
 
         foreach (Entity item in allItems)

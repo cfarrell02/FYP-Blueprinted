@@ -21,11 +21,11 @@ public class DeathScreenUI : MonoBehaviour
         
         startButton.onClick.AddListener(NextLevel);
 
-        var leaderboard = GameManager.Instance.leaderboard;
+        var leaderboard = GameManager.Instance.leaderboardEntries;
         leaderboardText.text = "Leaderboard\n";
-        foreach (var entry in leaderboard.entries)
+        foreach (var entry in leaderboard)
         {
-            leaderboardText.text += $"{entry.name} - {entry.score}\n";
+            leaderboardText.text += $"{entry.Item1} - {entry.Item2}\n";
         }
 
     }
