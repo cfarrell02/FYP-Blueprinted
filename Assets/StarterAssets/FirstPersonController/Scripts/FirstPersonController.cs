@@ -121,13 +121,17 @@ namespace StarterAssets
 
 		private void Update()
 		{
+			if(!GameManager.Instance.inputEnabled)
+				return;
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
 		}
 
 		private void LateUpdate()
-		{
+		{			
+			if(!GameManager.Instance.inputEnabled)
+				return;
 			CameraRotation();
 		}
 

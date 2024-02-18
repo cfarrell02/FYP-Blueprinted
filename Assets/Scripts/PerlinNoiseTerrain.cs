@@ -124,6 +124,13 @@ public class BlockyTerrain : MonoBehaviour
         }
         
         DetectLightSources();
+        
+        
+        //Check if player has fallen off the map
+        if (playerTransform.position.y < -depth)
+        {
+            playerTransform.position = new Vector3(playerTransform.position.x, 10, playerTransform.position.z);
+        }
 
 
     }

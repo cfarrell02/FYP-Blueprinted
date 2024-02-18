@@ -34,6 +34,7 @@ public class HUD : MonoBehaviour
     private int craftingIndex = 0;
     private int selectedBlockIndex = -100;
     private LevelManager levelManager;
+    private Animator animator;
 
     private void Start()
     {
@@ -41,10 +42,11 @@ public class HUD : MonoBehaviour
         inventory = playerInventoryObject.GetInventory();
         levelManager = FindObjectOfType<LevelManager>();
 
-        UpdateBuildInfoText();
+        //UpdateBuildInfoText();
 
         CreateIcons(ref inventoryIcons, inventory);
         currentItemText.gameObject.SetActive(false);
+        animator = GetComponent<Animator>();
     }
     
     public void SetPlayerInventory(PlayerInventory playerInventory)
@@ -138,18 +140,18 @@ public class HUD : MonoBehaviour
         {
             
             craftingOpen = !craftingOpen; 
-            GameManager.Instance.InputEnabled = !craftingOpen;
+            GameManager.Instance.craftingIsOpen = !craftingOpen;
         }
 
         if (Input.GetKeyDown(KeyCode.Return) && craftingOpen)
         {
             playerInventoryObject.CraftItem(craftingIndex);
             craftingOpen = false;
-            GameManager.Instance.InputEnabled = true;
+            GameManager.Instance.craftingIsOpen = true;
         }
-        
-        
-        
+
+        animator.SetBool("Paused", GameManager.Instance.isPaused);
+
     }
 
     private void UpdateLevelText()

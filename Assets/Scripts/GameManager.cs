@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utils;
 
 public class GameManager : MonoBehaviour
@@ -31,8 +32,10 @@ public class GameManager : MonoBehaviour
     
     [Tooltip("All entities in the game.")]
     public Entity[] allEntities;
-    
-    public bool InputEnabled = true;
+
+    public bool inputEnabled = true;
+    public bool craftingIsOpen = false;
+    public bool isPaused = false;
     public int NightsSurvived { get; set; } = 0;
     
     private string leaderboardFilePath;
@@ -40,7 +43,7 @@ public class GameManager : MonoBehaviour
     public string currentSaveFile;
     private BlockyTerrain generator;
     
-    public Leaderboard leaderboard = new Leaderboard(new List<LeaderboardEntry>());
+    public List<SerializableTuple<string,int>> leaderboardEntries = new List<SerializableTuple<string, int>>();
 
 
     // Awake is called when the script instance is being loaded
@@ -57,8 +60,7 @@ public class GameManager : MonoBehaviour
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
 
-            // Initialize the leaderboard with an empty list
-            leaderboard = new Leaderboard(new List<LeaderboardEntry>());
+
         }
 
         leaderboardFilePath = "data/leaderboard/leaderboard.json";
@@ -90,6 +92,11 @@ public class GameManager : MonoBehaviour
             print("Loading terrain");
             LoadGame(currentSaveFile + ".data");
         }
+        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            TogglePause();
+        }
     }
 
     public void IncreaseNightsSurvived()
@@ -97,24 +104,40 @@ public class GameManager : MonoBehaviour
         NightsSurvived++;
     }
     
+    public void TogglePause()
+    {
+        if (isPaused)
+        {
+            inputEnabled = true;
+            Time.timeScale = 1;
+            isPaused = false;
+        }
+        else
+        {
+            inputEnabled = false;
+            Time.timeScale = 0;
+            isPaused = true;
+        }
+    }
+    
     public void ResetGame()
     {
-        string DateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        string dateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         
-        AddToLeaderboard($"Player {DateTime}", NightsSurvived); // Name is hardcoded for now
+        AddToLeaderboard($"Player {dateTime}", NightsSurvived); // Name is hardcoded for now
         NightsSurvived = 0;
     }
     
     public void AddToLeaderboard(string name, int score)
     {
-        leaderboard.entries.Add(new LeaderboardEntry(name, score));
-        leaderboard.entries.Sort((x, y) => y.score.CompareTo(x.score));
+        leaderboardEntries.Add(new SerializableTuple<string, int>(name, score));
+        leaderboardEntries = leaderboardEntries.OrderByDescending(e => e.Item2).ToList();
         SaveLeaderboard();
     }
     
     private void SaveLeaderboard()
     {
-        string json = JsonUtility.ToJson(leaderboard);
+        string json = JsonUtility.ToJson(leaderboardEntries);
         print(json);
         File.WriteAllText(leaderboardFilePath, json);
     }
@@ -124,7 +147,7 @@ public class GameManager : MonoBehaviour
         if (File.Exists(leaderboardFilePath))
         {
             string json = File.ReadAllText(leaderboardFilePath);
-            leaderboard = JsonUtility.FromJson<Leaderboard>(json);
+            leaderboardEntries = JsonUtility.FromJson<List<SerializableTuple<string,int>>>(json);
         }
     }
     
@@ -239,27 +262,4 @@ public class GameManager : MonoBehaviour
     }
 
 
-}
-[Serializable]
-public struct Leaderboard
-{
-    public List<LeaderboardEntry> entries;
-    
-    public Leaderboard(List<LeaderboardEntry> entries)
-    {
-        this.entries = entries;
-    }
-}
-
-[Serializable]
-public struct LeaderboardEntry
-{
-    public string name;
-    public int score;
-    
-    public LeaderboardEntry(string name, int score)
-    {
-        this.name = name;
-        this.score = score;
-    }
 }
