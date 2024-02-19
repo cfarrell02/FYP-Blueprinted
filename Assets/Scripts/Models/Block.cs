@@ -69,8 +69,14 @@ public class Block : Entity
         color = new Color(1, 1, 1);
     }
     
-    public void InstantiateBlock(Block block)
+    public override void CopyOf(Entity entity)
     {
+        if (entity is Block == false)
+        {
+            return;
+        }
+        var block = (Block) entity;
+        
         name = block.name;
         id = block.id;
         durability = 0;

@@ -47,7 +47,7 @@ public class OreGenerator : MonoBehaviour
 
                         // Create a new Block object with the desired properties
                         Block oreBlock = ScriptableObject.CreateInstance<Block>();
-                        oreBlock.InstantiateBlock(blockPrefab);
+                        oreBlock.CopyOf(blockPrefab);
                         oreBlock.location = position;
 
                         // Add the Block object to the list

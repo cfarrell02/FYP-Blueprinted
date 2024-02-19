@@ -170,7 +170,7 @@ public class PlayerInventory : MonoBehaviour
         Transform cameraTransform = Camera.main.transform;
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
     
-        if (Physics.Raycast(ray, out hit, 5f))
+        if (Physics.Raycast(ray, out hit, 5f, LayerMask.GetMask("NavMesh")))
         {
             if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
             {

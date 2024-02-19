@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.031207386, g: 0.06706706, b: 0.12085987, a: 1}
+  m_IndirectSpecularColor: {r: 0.031207476, g: 0.06706731, b: 0.12086046, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -873,7 +873,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2709257068976105614, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_LocalPosition.x
@@ -881,7 +881,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2709257068976105614, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.327
+      value: 5.33
       objectReference: {fileID: 0}
     - target: {fileID: 2709257068976105614, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2162,7 +2162,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40.05
+  m_fontSize: 18
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2492,7 +2492,7 @@ MonoBehaviour:
   depth: 20
   scale: 1
   cubeHeight: 1
-  enemyPrefab: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
+  enemyPrefab: {fileID: 11400000, guid: 91505f67cde048b4494c2a429837c5bc, type: 2}
   grass: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
   dirt: {fileID: 11400000, guid: dd396c96daeee4778b0122fcfbd3f9e1, type: 2}
   stone: {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
@@ -2502,6 +2502,11 @@ MonoBehaviour:
     scale: 0.8
     yUpperBound: 5
     yLowerBound: -10
+  - oreBlock: {fileID: 11400000, guid: aedcde7566c3db0468a3bb969666b6b1, type: 2}
+    oreThreshold: 0.586
+    scale: 0.8
+    yUpperBound: -8
+    yLowerBound: -15
   - oreBlock: {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
     oreThreshold: 0.8
     scale: 0.855

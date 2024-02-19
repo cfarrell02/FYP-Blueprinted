@@ -141,7 +141,7 @@ namespace Utils
                             if (foundBlock != null)
                             {
                                 var newBlock = ScriptableObject.CreateInstance<Block>();
-                                newBlock.InstantiateBlock(foundBlock);
+                                newBlock.CopyOf(foundBlock);
                                 newBlock.location = new Vector3(pair.key.x, block.depth, pair.key.y);
                                 newBlock.isLoaded = block.isLoaded;
                                 return newBlock;

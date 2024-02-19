@@ -97,6 +97,30 @@ public class Item : Entity
             Break();
         }
     }
+    
+    public override void CopyOf(Entity entity)
+    {
+        if (entity is Item == false)
+        {
+            return;
+        }
+        var item = (Item) entity;
+        
+        name = item.name;
+        id = item.id;
+        durability = item.durability;
+        maxDurability = item.maxDurability;
+        maxStackSize = item.maxStackSize;
+        prefab = item.prefab;
+        renderOffset = item.renderOffset;
+        value = item.value;
+        itemType = item.itemType;
+        speed = item.speed;
+        damage = item.damage;
+        craftable = item.craftable;
+        recipe = item.recipe;
+        minLevel = item.minLevel;
+    }
 
 }
 

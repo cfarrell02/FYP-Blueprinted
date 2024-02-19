@@ -28,5 +28,7 @@ public abstract class Entity : ScriptableObject
     public int minLevel = 0;
     
     // public Vector3 renderRotation ;
+    
+    public abstract void CopyOf(Entity entity); // Copy the properties of another entity
 
 }

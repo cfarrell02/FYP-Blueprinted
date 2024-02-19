@@ -19,7 +19,7 @@ public class BlockyTerrain : MonoBehaviour
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
 
-    public GameObject enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
+    public Enemy enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
 
     public Block grass, dirt, stone;
 
@@ -220,7 +220,7 @@ public class BlockyTerrain : MonoBehaviour
                                 }
 
                             }
-                            Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+                            enemyPrefab.InstantiateEnemy(spawnPos);
                             break;
                         }
                     }
@@ -392,11 +392,11 @@ public class BlockyTerrain : MonoBehaviour
                 if (toBeLoaded)
                 {
                     InstantiateCube(cubePos, topBlock);
-                    copyOfCubeObject.InstantiateBlock(topBlock);
+                    copyOfCubeObject.CopyOf(topBlock);
                 }
                 else
                 {
-                    copyOfCubeObject.InstantiateBlock(block);
+                    copyOfCubeObject.CopyOf(block);
                 }
 
                 copyOfCubeObject.location = cubePos;
@@ -474,7 +474,7 @@ public class BlockyTerrain : MonoBehaviour
             {
                 // Create a new Block object with the desired properties
                 Block oreBlock = ScriptableObject.CreateInstance<Block>();
-                oreBlock.InstantiateBlock(blockPrefab);
+                oreBlock.CopyOf(blockPrefab);
                 oreBlock.location = new Vector3(x, Mathf.Floor(y + halfHeight), z);
 
                 // Add the Block object to the list

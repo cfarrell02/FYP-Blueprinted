@@ -59,7 +59,8 @@ public class HUD : MonoBehaviour
             SceneManager.LoadScene(0);
         });
         
-        
+        //Set xpbar to 0
+        xpBar.transform.localScale = new Vector3(0, 1, 1);
     }
     
     public void SetPlayerInventory(PlayerInventory playerInventory)
@@ -151,7 +152,7 @@ public class HUD : MonoBehaviour
             craftableIcons = null;
         }
         
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && !GameManager.Instance.isPaused)
         {
             
             craftingOpen = !craftingOpen; 
@@ -186,14 +187,7 @@ public class HUD : MonoBehaviour
         string nightText = $"Night: {GameManager.Instance.NightsSurvived}";
         nightTextItem.text = nightText;
     }
-
-    private void UpdateBuildInfoText()
-    {
-        string buildInfo = $"Build: {Application.version} Platform: {Application.platform} Unity: {Application.unityVersion} OS: {SystemInfo.operatingSystem}";
-        buildInfo += $"\n{Application.productName}, {Application.companyName}, {prototypeVersion}";
-        text.text = buildInfo;
-    }
-
+    
     private void UpdateInventoryIcons()
     {
         float iconWidth = inventoryIconContainer.GetComponent<RectTransform>().rect.width /

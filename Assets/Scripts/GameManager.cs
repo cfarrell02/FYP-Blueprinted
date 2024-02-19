@@ -256,7 +256,7 @@ public class GameManager : MonoBehaviour
         {
             if (entity.Item3 == "Enemy")
             {
-                Instantiate(generator.enemyPrefab, entity.Item2, Quaternion.identity);
+                generator.enemyPrefab.InstantiateEnemy(entity.Item2);
             }
             else if (entity.Item3 == "Item")
             {

@@ -21,6 +21,17 @@ public class Health : MonoBehaviour
         {
             Die();
         }
+        
+    }
+    
+    public void SetHealth(int health)
+    {
+        currentHealth = health;
+        
+        if(currentHealth > maxHealth)
+        {
+            maxHealth = currentHealth;
+        }
     }
     
     void Die()
