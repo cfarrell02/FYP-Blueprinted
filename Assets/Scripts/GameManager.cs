@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Utils;
@@ -13,6 +15,7 @@ public class GameManager : MonoBehaviour
     private static GameManager _instance;
 
     // Public property to access the instance
+    //Singleton taken from stack overflow
     public static GameManager Instance
     {
         get
@@ -47,7 +50,6 @@ public class GameManager : MonoBehaviour
 
 
     // Awake is called when the script instance is being loaded
-// Awake is called when the script instance is being loaded
     private void Awake()
     {
         // Ensure there is only one instance of the GameManager
@@ -70,14 +72,36 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         LoadLeaderboard();
+            
     }
+    
+    IEnumerator LateStart()
+    {
+        yield return new WaitForNextFrameUnit();
+        var file = File.Exists(savePath + currentSaveFile + ".data");
+        if (file)
+        {
+            LoadGame(currentSaveFile + ".data");
+        }
+        else
+        {
+            generator.GenerateInitialTerrain();
+        }
+        HUD hud = GameObject.Find("Canvas").GetComponent<HUD>();
+        hud.TriggerLoadEnd();
+    }
+
 
     private void Update()
     {
-        if (!generator && IsMainScene() )
+        if(!IsMainScene()) return;
+        
+        
+        if (!generator )
         {
             print(IsMainScene());
             generator = GameObject.Find("Generator").GetComponent<BlockyTerrain>();
+            StartCoroutine(LateStart());
         }
         
         //Temp load and save, will be moved to pause menu
@@ -108,12 +132,16 @@ public class GameManager : MonoBehaviour
     {
         if (isPaused)
         {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
             inputEnabled = true;
             Time.timeScale = 1;
             isPaused = false;
         }
         else
         {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             inputEnabled = false;
             Time.timeScale = 0;
             isPaused = true;
@@ -122,9 +150,10 @@ public class GameManager : MonoBehaviour
     
     public void ResetGame()
     {
-        string dateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        string name = currentSaveFile == "" ? "New Game " + dateTime : currentSaveFile;
         
-        AddToLeaderboard($"Player {dateTime}", NightsSurvived); // Name is hardcoded for now
+        AddToLeaderboard(name, NightsSurvived); // Name is hardcoded for now
         NightsSurvived = 0;
     }
     

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class HUD : MonoBehaviour
@@ -22,6 +23,7 @@ public class HUD : MonoBehaviour
     [Header("Inventory")]
     public PlayerInventory playerInventoryObject;
     public GameObject inventoryIconContainer;
+    public GameObject inventoryParent;
     
     [Header("Rendering")]
     public Camera camera;
@@ -35,6 +37,9 @@ public class HUD : MonoBehaviour
     private int selectedBlockIndex = -100;
     private LevelManager levelManager;
     private Animator animator;
+    
+    [Header("Pause Options")]
+    public Button returnToMenuButton;
 
     private void Start()
     {
@@ -47,6 +52,14 @@ public class HUD : MonoBehaviour
         CreateIcons(ref inventoryIcons, inventory);
         currentItemText.gameObject.SetActive(false);
         animator = GetComponent<Animator>();
+        
+        
+        returnToMenuButton.onClick.AddListener(() =>
+        {
+            SceneManager.LoadScene(0);
+        });
+        
+        
     }
     
     public void SetPlayerInventory(PlayerInventory playerInventory)
@@ -71,6 +84,7 @@ public class HUD : MonoBehaviour
         {
             // Instantiate inventory slot prefab
             GameObject slotObject = Instantiate(inventorySlotPrefab, canvas.transform);
+            slotObject.transform.parent = inventoryParent.transform;
 
             slotObject.GetComponent<RectTransform>().sizeDelta = new Vector2(iconWidth, iconWidth);
 
@@ -103,6 +117,7 @@ public class HUD : MonoBehaviour
         }
         StartCoroutine(ShowCurrentItemLabel(item.item.name));
     }
+    
 
 
     private void Update()
@@ -251,6 +266,11 @@ public class HUD : MonoBehaviour
         
         inventoryIcons[index] = selectedSlot;
 
+    }
+    
+    public void TriggerLoadEnd()
+    {
+        animator.SetTrigger("Loaded");
     }
     
     

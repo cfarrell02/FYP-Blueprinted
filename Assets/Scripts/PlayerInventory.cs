@@ -76,7 +76,7 @@ public class PlayerInventory : MonoBehaviour
         HandleHealth();
         RenderSelectedItem();
 
-        if (GameManager.Instance.craftingIsOpen)
+        if (!GameManager.Instance.craftingIsOpen)
         {
             HandleInput();
             if (Input.GetKeyDown(KeyCode.Q))

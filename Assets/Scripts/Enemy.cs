@@ -113,6 +113,14 @@ public class Enemy : MonoBehaviour
     {
         print("Chasing");
         agent.SetDestination(player.transform.position);
+        //If cant find path to player then fly towards player
+        if (agent.pathStatus == NavMeshPathStatus.PathPartial)
+        {
+            //Teleport to player
+            transform.position = player.transform.position;
+        }
+
+
     }
 
     private void Flee()

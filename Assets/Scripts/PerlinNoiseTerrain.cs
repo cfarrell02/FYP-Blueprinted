@@ -77,24 +77,8 @@ public class BlockyTerrain : MonoBehaviour
         }
         );
         
-
-        StartCoroutine(LateStart()); //Late start on the loading to ensure the player has been loaded
-
     }
 
-    IEnumerator LateStart()
-    {
-        yield return new WaitForNextFrameUnit();
-        var file = File.Exists(GameManager.Instance.savePath + GameManager.Instance.currentSaveFile + ".data");
-        if (file)
-        {
-            GameManager.Instance.LoadGame(GameManager.Instance.currentSaveFile + ".data");
-        }
-        else
-        {
-            GenerateInitialTerrain();
-        }
-    }
 
 
     void Update()
