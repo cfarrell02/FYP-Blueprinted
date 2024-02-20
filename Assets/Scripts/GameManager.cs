@@ -72,6 +72,9 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         LoadLeaderboard();
+        
+        //On application quit, save the game
+        Application.quitting += () => SaveGame(currentSaveFile + ".data");
             
     }
     
@@ -184,7 +187,7 @@ public class GameManager : MonoBehaviour
     
     public void SaveGame(string path = "SaveGame.data")
     {
-        if (!IsMainScene()) return;
+        if (!IsMainScene() || path==".data") return;
         print("Saving game to " + savePath + path);
         var pickups = GameObject.FindGameObjectsWithTag("Pickup");
         var enemies = GameObject.FindGameObjectsWithTag("Enemy");

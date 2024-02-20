@@ -77,7 +77,6 @@ public class Menu : MonoBehaviour
         {
             if (uiItem.name == "Canvas")
                 continue;
-
             uiItem.SetActive(false);
         }
 

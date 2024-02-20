@@ -73,7 +73,6 @@ public class PlayerInventory : MonoBehaviour
         timer += Time.deltaTime;
         CheckBlockInFront();
         UseSelectedTool();
-        HandleHealth();
         RenderSelectedItem();
 
         if (!GameManager.Instance.craftingIsOpen)
@@ -198,23 +197,7 @@ public class PlayerInventory : MonoBehaviour
             }
         }
     }
-
-    void HandleHealth()
-    {
-        if (GetComponent<Health>().GetCurrentHealth() <= 0)
-        {
-            GameManager.Instance.ResetGame();
-            
-            // Get the current active scene index
-            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-
-            // Load the next scene by incrementing the current scene index
-            int nextSceneIndex = (currentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
     
-            SceneManager.LoadScene(nextSceneIndex);
-            
-        }
-    }
 
 
 
@@ -339,7 +322,8 @@ public class PlayerInventory : MonoBehaviour
         {
             var block = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
 
-            if (!(inventory[selectedBlockIndex].item is Item && ((Item)inventory[selectedBlockIndex].item).itemType == Item.ItemType.Blueprint))
+            if (!(inventory[selectedBlockIndex].item is Item && ((Item)inventory[selectedBlockIndex].item).itemType == Item.ItemType.Blueprint)
+                || block.maxDurability <= 0) //Negative max durability means the block cannot be broken
             {
                 yield break;
             }

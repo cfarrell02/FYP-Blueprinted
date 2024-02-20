@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7af0d71f3f769a04282201578b5aaf9d, type: 3}
+  m_Name: Bedrock
+  m_EditorClassIdentifier: 
+  durability: 0
+  maxDurability: -20
+  name: Bedrock
+  id: 6
+  maxStackSize: 1000
+  prefab: {fileID: 5763828162553407202, guid: 45096160b8863b54ebfe2043a9456ecd, type: 3}
+  icon: {fileID: 0}
+  renderOffset: {x: 0.46, y: -0.42, z: 0.71}
+  craftable: 0
+  recipe: []
+  minLevel: 0
+  location: {x: 0, y: 0, z: 0}
+  rotation: {x: 0, y: 0, z: 0}
+  scale: {x: 0, y: 0, z: 0}
+  isLoaded: 0
+  color: {r: 0.42352942, g: 0.42352942, b: 0.42352942, a: 1}
+  value: 0
+  blockType: 0

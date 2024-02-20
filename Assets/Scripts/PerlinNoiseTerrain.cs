@@ -21,7 +21,7 @@ public class BlockyTerrain : MonoBehaviour
 
     public Enemy enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
 
-    public Block grass, dirt, stone;
+    public Block grass, dirt, stone, bedrock;
 
     [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
     public List<SerializableOreParameters> ore = new List<SerializableOreParameters>();
@@ -111,7 +111,7 @@ public class BlockyTerrain : MonoBehaviour
         
         
         //Check if player has fallen off the map
-        if (playerTransform.position.y < -depth)
+        if (playerTransform.position.y < (-depth -2))
         {
             playerTransform.position = new Vector3(playerTransform.position.x, 10, playerTransform.position.z);
         }
@@ -390,6 +390,12 @@ public class BlockyTerrain : MonoBehaviour
                 }
                 
                 block = oreBlock ? oreBlock : block;
+                
+                
+                if(i == -depth)
+                {
+                    block = bedrock;
+                }
 
                 if (toBeLoaded)
                 {

@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Health : MonoBehaviour
 {
@@ -38,7 +39,16 @@ public class Health : MonoBehaviour
     {
         if (isPlayer)
         {
-            Debug.Log("You died"); //This is handled elsewhere
+            GameManager.Instance.SaveGame(GameManager.Instance.currentSaveFile + "_dead.data");
+            GameManager.Instance.ResetGame();
+            
+            // Get the current active scene index
+            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+
+            // Load the next scene by incrementing the current scene index
+            int nextSceneIndex = (currentSceneIndex + 1) % SceneManager.sceneCountInBuildSettings;
+    
+            SceneManager.LoadScene(nextSceneIndex);
         }
         else
         {
