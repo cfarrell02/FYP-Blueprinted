@@ -36,6 +36,7 @@ public class BlockyTerrain : MonoBehaviour
     [SerializeField] int perlinScale = 10; // Multiplier for the perlin noise scale
     [SerializeField] int stoneThreshold = 4; // Threshold for stone generation
     [SerializeField] int stoneThresholdRange = 2; // Range for the stone threshold
+    [SerializeField] int poolSize = 500; // Pool size for the block pool
 
 
 
@@ -46,6 +47,7 @@ public class BlockyTerrain : MonoBehaviour
     private float timer = 0f;
     private LightingManager lightingManager;
     private List<Block> emptyBlocks = new List<Block>(), lightingBlocks = new List<Block>();
+    private List<GameObject> pooledBlocks = new List<GameObject>();
     private FogManager fogManager;
 
     private void Awake()
@@ -367,8 +369,6 @@ public class BlockyTerrain : MonoBehaviour
                 //         emptyBlocks.Add(airBlock);
                 //     }
                 // }
-
-                
                 
 
                 Block topBlock = (oreBlock ? oreBlock : grass);
@@ -442,28 +442,6 @@ public class BlockyTerrain : MonoBehaviour
 
     }
     
-    
-    public void InstantiateCube(Vector3 position, Block cube2 = null)
-    {
-        if (!cube2) cube2 = grass;
-
-        GameObject cube = Instantiate(cube2.prefab, position, Quaternion.identity);
-        cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
-        cube.tag = "Cube";
-        cube.name = cube2.name + ": " + position;
-        cube.isStatic = true;
-        float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
-        if (distanceToPlayer < navMeshDistance)
-        {
-            cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
-        }
-        else
-        {
-            cube.transform.parent = transform;
-        }
-
-    }
-
     List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab, float oreScale)
     {
         var verticalBlock = new List<Block>();
@@ -492,7 +470,56 @@ public class BlockyTerrain : MonoBehaviour
         return verticalBlock;
     }
 
+    
+    public void InstantiateCube(Vector3 position, Block cube2 = null)
+    {
+        if (!cube2) cube2 = grass;
+        
+        var pooledBlock = GetPooledBlock(cube2);
+        
+        GameObject cube;
+        if (pooledBlock != null)
+        {
+            cube = pooledBlock;
+            cube.transform.position = position;
+           // print("Reusing block");
+        }
+        else
+        {
+           // print("Creating new block");
+            cube = Instantiate(cube2.prefab, position, Quaternion.identity);
+        }
+        
+        cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
+        cube.tag = "Cube";
+        cube.name = cube2.name + ": " + position;
+        cube.isStatic = true;
+        float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
+        if (distanceToPlayer < navMeshDistance)
+        {
+            cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
+        }
+        else
+        {
+            cube.transform.parent = transform;
+        }
 
+    }
+    
+    GameObject GetPooledBlock(Block block)
+    {
+        var res = pooledBlocks.FirstOrDefault(b => b.name.Contains(block.name) && !b.activeInHierarchy);
+        if (res)
+        {
+            res.SetActive(true);
+            pooledBlocks.Remove(res);
+        }
+
+        return res;
+        
+    }
+
+    
     void UnloadTerrain()
     {
         GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube" 
@@ -526,7 +553,18 @@ public class BlockyTerrain : MonoBehaviour
                 var a = coordsToHeight[pos2D];
                 a.isLoaded = false;
                 coordsToHeight[pos2D] = a;
-                DestroyWithChildren(cube.gameObject); // Remove cube from the scene
+                
+                if(pooledBlocks.Count > poolSize)
+                {
+                    pooledBlocks.Remove(cube);
+                    DestroyWithChildren(cube);
+                    return;
+                }
+                if(!pooledBlocks.Contains(cube))
+                {
+                    pooledBlocks.Add(cube);
+                }
+                cube.SetActive(false);
             }
         }
     }

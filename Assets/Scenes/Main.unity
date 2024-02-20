@@ -819,7 +819,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.04e-43, y: NaN, z: 2.1e-44, w: 4.5919e-41}
+  m_BoundingSphereOverride: {x: 0, y: 4.005879e-11, z: NaN, w: -4.0615736e-27}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -2594,11 +2594,12 @@ MonoBehaviour:
     yLowerBound: -10
   loadDistance: 50
   navMeshDistance: 30
-  newTerrainDistance: 2
+  newTerrainDistance: 1
   newNavMeshDistance: 5
   perlinScale: 5
   stoneThreshold: -6
   stoneThresholdRange: 2
+  poolSize: 400
 --- !u!1 &1599382421
 GameObject:
   m_ObjectHideFlags: 0
