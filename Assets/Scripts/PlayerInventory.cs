@@ -421,7 +421,7 @@ public class PlayerInventory : MonoBehaviour
         //Light blocks cant be used to place blocks from.
         var lookedAtBlock = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
                             
-        if(lookedAtBlock.blockType == Block.BlockType.Light)
+        if(lookedAtBlock == null || lookedAtBlock.blockType == Block.BlockType.Light)
             return;
     
         var block = inventory[selectedBlockIndex];

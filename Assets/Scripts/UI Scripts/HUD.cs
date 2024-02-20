@@ -56,6 +56,7 @@ public class HUD : MonoBehaviour
         
         returnToMenuButton.onClick.AddListener(() =>
         {
+            GameManager.Instance.TogglePause(); 
             SceneManager.LoadScene(0);
         });
         

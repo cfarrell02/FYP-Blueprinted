@@ -8,20 +8,44 @@ using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-    public Button startButton;
-    public TextMeshProUGUI StartText;
+    public Button startButton, openLoadScreen, quitButton, loadBackButton,
+        settingsButton, settingsBackButton, leaderboardButton, leaderboardBackButton;
+    public TextMeshProUGUI StartText, LeaderboardText;
     public GameObject savesPanel; // Change Image to GameObject
     public TMP_InputField saveGameInput;
 
+    
+    private Animator animator;
+    List<string> existingSaves = new List<string>();
+    
     void Start()
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        animator = GetComponent<Animator>();
 
         startButton.onClick.AddListener(() => StartCoroutine(DisplaySplashScreen()));
+        openLoadScreen.onClick.AddListener(() => animator.SetBool("LoadScreen", true));
+        quitButton.onClick.AddListener(() => Application.Quit());
+        loadBackButton.onClick.AddListener(() => animator.SetBool("LoadScreen", false));
+        settingsButton.onClick.AddListener(() => animator.SetBool("SettingsScreen", true));
+        settingsBackButton.onClick.AddListener(() => animator.SetBool("SettingsScreen", false));
+        leaderboardButton.onClick.AddListener(() => animator.SetBool("LeaderboardScreen", true));
+        leaderboardBackButton.onClick.AddListener(() => animator.SetBool("LeaderboardScreen", false));
+        
         StartText.gameObject.SetActive(false);
         PopulateSaves();
 
+    }
+    
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+        
+        PopulateLeaderboard();
     }
 
     void StartGame()
@@ -34,6 +58,17 @@ public class Menu : MonoBehaviour
 
     IEnumerator DisplaySplashScreen()
     {
+        if(existingSaves.Contains(saveGameInput.text))
+        {
+            print("Save already exists");
+            yield break;
+        }
+        if(saveGameInput.text == "")
+        {
+            print("Save name cannot be empty");
+            yield break;
+        }
+        
         GameManager.Instance.currentSaveFile = saveGameInput.text;
         var allGameObjects = FindObjectsOfType<GameObject>();
         var uiItems = allGameObjects.Where(go => go.layer == 5).ToList();
@@ -49,6 +84,26 @@ public class Menu : MonoBehaviour
         StartText.gameObject.SetActive(true);
         yield return new WaitForSeconds(3);
         StartGame();
+    }
+
+    void PopulateLeaderboard()
+    {
+        var leaderboard = GameManager.Instance.leaderboardEntries.entries;
+        
+        if(leaderboard == null || leaderboard.Count == 0)
+        {
+            LeaderboardText.text = "No entries yet";
+            return;
+        }
+        
+        leaderboard = leaderboard.OrderByDescending(x => x.night).ToList();
+        
+        string leaderboardText = "";
+        foreach (var entry in leaderboard)
+        {
+            leaderboardText += $"{entry.name} ({entry.xp}) - {entry.night} nights survived\n";
+        }
+        LeaderboardText.text = leaderboardText;
     }
 
     void PopulateSaves()
@@ -72,8 +127,9 @@ public class Menu : MonoBehaviour
             var fileName = System.IO.Path.GetFileName(save).Split('.')[0]; // Remove the file extension
             
             if(fileName == "") continue;
-            
+            existingSaves.Add(fileName);
             print("Save file: " + fileName);
+            
 
             // Instantiate a new save button
             var saveButton = Instantiate(startButton, savesPanel.transform);

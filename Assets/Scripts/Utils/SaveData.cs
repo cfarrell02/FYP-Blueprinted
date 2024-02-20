@@ -11,7 +11,7 @@ namespace Utils
     {
         public SerializableVector3 playerPosition;
         public SerializableVector3 playerRotation;
-        public List<SerializableTuple<int,int>> inventory;
+        public List<SerialzableIntIntTuple> inventory;
         public List<SerializableEntity> entitiesInScene;
         public List<SerializableKeyValuePair> coordsToHeightList;
         public float time, mapScale;
@@ -67,7 +67,7 @@ namespace Utils
 
             var inventoryList = inventory.Where(item => item.item != null).ToList();
             
-            this.inventory = inventoryList.Select(item => new SerializableTuple<int,int>(item.count, item.item.id)).ToList();
+            this.inventory = inventoryList.Select(item => new SerialzableIntIntTuple(item.count, item.item.id)).ToList();
             this.time = time;
             this.nightsSurvived = nightsSurvived;
             this.playerRotation = new SerializableVector3(playerRotation.eulerAngles);

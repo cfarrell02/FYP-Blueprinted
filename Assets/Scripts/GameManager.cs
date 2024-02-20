@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     public string currentSaveFile;
     private BlockyTerrain generator;
     
-    public List<SerializableTuple<string,int>> leaderboardEntries = new List<SerializableTuple<string, int>>();
+    public Leaderboard leaderboardEntries = new Leaderboard(new List<LeaderboardEntry>());
 
 
     // Awake is called when the script instance is being loaded
@@ -153,14 +153,16 @@ public class GameManager : MonoBehaviour
         string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         string name = currentSaveFile == "" ? "New Game " + dateTime : currentSaveFile;
         
-        AddToLeaderboard(name, NightsSurvived); // Name is hardcoded for now
+        
+        var levelManager = GameObject.FindGameObjectWithTag("Player").GetComponent<LevelManager>();
+        AddToLeaderboard(name, NightsSurvived, levelManager.GetCurrentXP());
         NightsSurvived = 0;
     }
     
-    public void AddToLeaderboard(string name, int score)
+    public void AddToLeaderboard(string name, int score, int xp = 0)
     {
-        leaderboardEntries.Add(new SerializableTuple<string, int>(name, score));
-        leaderboardEntries = leaderboardEntries.OrderByDescending(e => e.Item2).ToList();
+        leaderboardEntries.entries.Add(new LeaderboardEntry(name, score, xp));
+        leaderboardEntries.entries = leaderboardEntries.entries.OrderByDescending(e => e.night).ToList();
         SaveLeaderboard();
     }
     
@@ -176,7 +178,7 @@ public class GameManager : MonoBehaviour
         if (File.Exists(leaderboardFilePath))
         {
             string json = File.ReadAllText(leaderboardFilePath);
-            leaderboardEntries = JsonUtility.FromJson<List<SerializableTuple<string,int>>>(json);
+            leaderboardEntries = JsonUtility.FromJson<Leaderboard>(json);
         }
     }
     
@@ -288,6 +290,31 @@ public class GameManager : MonoBehaviour
 
         var canvas = GameObject.Find("Canvas");
         canvas.GetComponent<HUD>().SetPlayerInventory(playerInventoryItem);
+    }
+
+    [Serializable]
+    public struct LeaderboardEntry
+    {
+        public string name;
+        public int night, xp;
+        
+        public LeaderboardEntry(string name, int night, int xp)
+        {
+            this.name = name;
+            this.night = night;
+            this.xp = xp;
+        }
+    }
+
+    [Serializable]
+    public struct Leaderboard
+    {
+        public List<LeaderboardEntry> entries;
+        
+        public Leaderboard(List<LeaderboardEntry> entries)
+        {
+            this.entries = entries;
+        }
     }
 
 

@@ -5,19 +5,21 @@ using System.Linq;
 
 namespace Utils
 {
-    [Serializable]
-    public struct SerializableTuple<T1, T2>
-    {
-        public T1 Item1;
-        public T2 Item2;
 
-        public SerializableTuple(T1 item1, T2 item2)
+    
+    [Serializable]
+    public struct SerialzableIntIntTuple
+    {
+        public int Item1;
+        public int Item2;
+
+        public SerialzableIntIntTuple(int item1, int item2)
         {
             Item1 = item1;
             Item2 = item2;
         }
     }
-
+    
     [Serializable]
     public struct SerializableVector2
     {

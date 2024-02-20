@@ -156,7 +156,9 @@ public class BlockyTerrain : MonoBehaviour
             foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
             {
                 //Dont touch held items or items that arent directly children of the terrain/navmesh
-                if(cube.layer == 7 || !(cube.transform.parent.name.Contains("Navmesh") || cube.transform.parent.name.Contains("Generator")))
+                if(cube && (cube.layer == 7 
+                   || !(cube.transform.parent.name.Contains("Navmesh")
+                        || cube.transform.parent.name.Contains("Generator"))))
                 {
                     continue;
                 }
