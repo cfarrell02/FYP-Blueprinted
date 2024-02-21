@@ -2592,14 +2592,14 @@ MonoBehaviour:
     scale: 0.855
     yUpperBound: 0
     yLowerBound: -10
-  loadDistance: 50
-  navMeshDistance: 30
+  loadDistance: 40
+  navMeshDistance: 25
   newTerrainDistance: 1
   newNavMeshDistance: 5
   perlinScale: 5
   stoneThreshold: -6
   stoneThresholdRange: 2
-  poolSize: 400
+  poolSize: 1000
 --- !u!1 &1599382421
 GameObject:
   m_ObjectHideFlags: 0

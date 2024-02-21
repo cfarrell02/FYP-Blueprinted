@@ -9,8 +9,8 @@ public class EnemyBehaviour : MonoBehaviour
     // Enemy properties
     public float lookDistance = 30f;
     public float hearingDistance = 10f;
-    public int damage = 10;
-    public float speed = 1f;
+    public int damage = 10; 
+    public float speed = 10f;
     public float fleeDistance = 5f;
 
     // Components
@@ -49,7 +49,7 @@ public class EnemyBehaviour : MonoBehaviour
         // Behaviour tree initialization
         InitializeBehaviourTree();
         
-        ScaleBasedOnLevel();
+        //ScaleBasedOnLevel();
         
     }
     
@@ -82,13 +82,19 @@ public class EnemyBehaviour : MonoBehaviour
         Sequence attackPlayer = new Sequence("Attack Player");
 
         Leaf chaseLeaf = new Leaf("Chase", ChasePlayer);
-        attackPlayer.AddChild(chaseLeaf);
+        Leaf breakBlockLeaf = new Leaf("Break Block", BreakBlockInFront);
+        
+        Selector chaseOrBreak = new Selector("Chase or Break");
+        chaseOrBreak.AddChild(chaseLeaf);
+        chaseOrBreak.AddChild(breakBlockLeaf);
 
         Leaf attackLeaf = new Leaf("Attack", AttackPlayer);
         Inverter attackInverter = new Inverter("Invert");
         attackInverter.AddChild(attackLeaf);
         
+        attackPlayer.AddChild(chaseOrBreak);
         attackPlayer.AddChild(attackInverter);
+        
 
         // Sequence for fleeing
         Sequence flee = new Sequence("Flee");
@@ -147,7 +153,7 @@ public class EnemyBehaviour : MonoBehaviour
 
     private bool ShouldFlee()
     {
-        return GetComponent<Health>().GetCurrentHealth() < 20;
+        return GetComponent<Health>().GetCurrentHealth() < 30;
     }
 
     // Actions
@@ -178,7 +184,12 @@ public class EnemyBehaviour : MonoBehaviour
         {
             timer = 0f;
             var health = player.GetComponent<Health>();
-            int damageToDeal = damage + Random.Range(-5, 5);
+            int damageToDeal = damage + Random.Range(5, 10);
+
+            if (!IsPlayerInRange())
+                return Node.Status.FAILURE;
+            
+            
             damageToDeal = lightingManager.isNight() ? damageToDeal * 2 : damageToDeal; // Double damage at night
             health.TakeDamage(damageToDeal);
 
@@ -197,6 +208,21 @@ public class EnemyBehaviour : MonoBehaviour
 
         return Node.Status.RUNNING;
     }
+
+    private Node.Status BreakBlockInFront()
+    {
+        Vector3 blockPosition = transform.position + transform.forward;
+        var generator = FindObjectOfType<BlockyTerrain>();
+        if (generator.RemoveBlock(blockPosition))
+        {
+            state = ActionState.IDLE;
+            return Node.Status.SUCCESS;
+        }
+        
+        return Node.Status.FAILURE;
+    }
+    
+    
 
     private Node.Status ChasePlayer()
     {
