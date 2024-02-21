@@ -47,7 +47,7 @@ public class BlockyTerrain : MonoBehaviour
     private float timer = 0f;
     private LightingManager lightingManager;
     private List<Block> emptyBlocks = new List<Block>(), lightingBlocks = new List<Block>();
-    private List<GameObject> pooledBlocks = new List<GameObject>();
+    private Dictionary<string, List<GameObject>> pooledBlocks = new Dictionary<string, List<GameObject>>();
     private FogManager fogManager;
 
     private void Awake()
@@ -442,6 +442,13 @@ public class BlockyTerrain : MonoBehaviour
 
     }
     
+    void SetActiveBlock(GameObject block, bool active)
+    {
+        // block.GetComponent<Renderer>().enabled = active;
+        // block.GetComponent<Collider>().enabled = active;
+        
+    }
+    
     List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab, float oreScale)
     {
         var verticalBlock = new List<Block>();
@@ -508,11 +515,20 @@ public class BlockyTerrain : MonoBehaviour
     
     GameObject GetPooledBlock(Block block)
     {
-        var res = pooledBlocks.FirstOrDefault(b => b.name.Contains(block.name) && !b.activeInHierarchy);
+        GameObject res = null;
+        
+        if(!pooledBlocks.ContainsKey(block.name.Split(':')[0]))
+        {
+            return res;
+        }
+
+        res = pooledBlocks[block.name.Split(':')[0]].FirstOrDefault();
+        
         if (res)
         {
-            res.SetActive(true);
-            pooledBlocks.Remove(res);
+            //res.SetActive(true);
+            SetActiveBlock(res, true);
+            pooledBlocks[block.name.Split(':')[0]].Remove(res);
         }
 
         return res;
@@ -520,54 +536,92 @@ public class BlockyTerrain : MonoBehaviour
     }
 
     
-    void UnloadTerrain()
+void UnloadTerrain()
+{
+    // Find all cubes tagged as "Cube"
+    GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube");
+
+    foreach (GameObject cube in cubes)
     {
-        GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube"); // Cube prefab must be tagged as "Cube" 
+        Vector3 pos = cube.transform.position;
 
-        foreach (GameObject cube in cubes)
+        // Check if the cube is outside the visible area
+        if (IsOutsideLoadDistance(pos))
         {
-            Vector3 pos = cube.transform.position;
-            // Remove cubes outside the visible area from the scene
-            if (Mathf.Abs(pos.x - playerTransform.position.x) >= loadDistance ||
-                Mathf.Abs(pos.z - playerTransform.position.z) >= loadDistance)
+            // Get the block corresponding to the cube's position
+            Block block = FindBlock(pos);
+
+            // Update block information
+            UpdateBlockInformation(pos, block);
+
+            // Return cube to the pool if it exceeds the pool size limit
+            if (pooledBlocks.Count > poolSize)
             {
-                Block block = FindBlock(pos);
-                //block.isLoaded = false;
-                //place block in the dictionary
-                Vector2 pos2D = new Vector2(pos.x, pos.z);
-                var blockList = coordsToHeight.ContainsKey(pos2D) ? coordsToHeight[pos2D].blocks : new List<Block>();
-                if (blockList.Count == 0)
-                {
-                    continue;
-                }
-
-                for (int i = 0; i < blockList.Count; ++i)
-                {
-                    if (blockList[i].location == pos)
-                    {
-                        blockList[i] = block;
-                        break;
-                    }
-                }
-
-                var a = coordsToHeight[pos2D];
-                a.isLoaded = false;
-                coordsToHeight[pos2D] = a;
-                
-                if(pooledBlocks.Count > poolSize)
-                {
-                    pooledBlocks.Remove(cube);
-                    DestroyWithChildren(cube);
-                    return;
-                }
-                if(!pooledBlocks.Contains(cube))
-                {
-                    pooledBlocks.Add(cube);
-                }
-                cube.SetActive(false);
+                RemoveFromPool(cube, block);
+                continue;
             }
+
+            // Add cube to the appropriate pool
+            AddToPool(cube, block);
+
+            // Deactivate the cube
+            SetActiveBlock(cube, false);
         }
     }
+}
+
+// Function to check if a position is outside the load distance from the player
+bool IsOutsideLoadDistance(Vector3 position)
+{
+    return Mathf.Abs(position.x - playerTransform.position.x) >= loadDistance ||
+           Mathf.Abs(position.z - playerTransform.position.z) >= loadDistance;
+}
+
+// Function to update block information
+void UpdateBlockInformation(Vector3 position, Block block)
+{
+    Vector2 pos2D = new Vector2(position.x, position.z);
+    if (coordsToHeight.ContainsKey(pos2D))
+    {
+        var blockList = coordsToHeight[pos2D].blocks;
+        for (int i = 0; i < blockList.Count; ++i)
+        {
+            if (blockList[i].location == position)
+            {
+                blockList[i] = block;
+                break;
+            }
+        }
+        var heightData = coordsToHeight[pos2D];
+        heightData.isLoaded = false;
+        coordsToHeight[pos2D] = heightData;
+    }
+}
+
+// Function to remove cube from the pool and destroy it
+void RemoveFromPool(GameObject cube, Block block)
+{
+    if (pooledBlocks.TryGetValue(block.name.Split(':')[0], out var blockList))
+    {
+        blockList.Remove(cube);
+    }
+    DestroyWithChildren(cube);
+}
+
+// Function to add cube to the pool
+void AddToPool(GameObject cube, Block block)
+{
+    string blockName = block.name.Split(':')[0];
+    if (!pooledBlocks.ContainsKey(blockName))
+    {
+        pooledBlocks[blockName] = new List<GameObject>();
+    }
+    if (!pooledBlocks[blockName].Contains(cube))
+    {
+        pooledBlocks[blockName].Add(cube);
+    }
+}
+
 
     public Dictionary<Vector2, VerticalBlocks> GetHeightMap()
     {
