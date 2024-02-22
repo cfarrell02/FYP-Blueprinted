@@ -107,7 +107,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lookDistance: 20
+  hearingDistance: 10
   damage: 10
+  speed: 10
+  fleeDistance: 5
 --- !u!136 &6056641248102965325
 CapsuleCollider:
   m_ObjectHideFlags: 0

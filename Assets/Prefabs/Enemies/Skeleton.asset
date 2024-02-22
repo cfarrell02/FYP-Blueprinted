@@ -26,5 +26,5 @@ MonoBehaviour:
   enemyType: 0
   damage: 10
   health: 100
-  speed: 2
+  speed: 1
   range: 0

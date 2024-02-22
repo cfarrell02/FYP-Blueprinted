@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6657041630033603614}
   - component: {fileID: 5723379213710270190}
   - component: {fileID: 8945506002765451990}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cylinder
   m_TagString: Cube
   m_Icon: {fileID: 0}
@@ -235,6 +235,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4018733693752803801}
+  - component: {fileID: 4203940025938979756}
   m_Layer: 0
   m_Name: Lantern
   m_TagString: Cube
@@ -258,3 +259,19 @@ Transform:
   - {fileID: 3656366950836879513}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4203940025938979756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7624080737707858369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04085878b40cfb34d886abe5194312c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  emmissiveMaterial: {fileID: 2100000, guid: 3fbcac75aded35f48a9524ecf5439aa2, type: 2}
+  nonEmmissiveMaterial: {fileID: -6527670528093515950, guid: ff02a0a00ab750f48b09459b1cafd1b8, type: 3}
+  oilCapacity: 100
+  oilUsage: 0.1

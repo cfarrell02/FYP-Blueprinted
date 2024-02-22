@@ -14,7 +14,6 @@ using Random = UnityEngine.Random;
 
 public class BlockyTerrain : MonoBehaviour
 {
-
     public int depth = 10;
     public float scale = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
@@ -28,7 +27,7 @@ public class BlockyTerrain : MonoBehaviour
 
     int previousPlayerPosX, previousPlayerPosZ;
     int previousPlayerPosXnav, previousPlayerPosZnav;
-    
+
     [SerializeField] int loadDistance = 40; // Distance around the player to load new terrain
     [SerializeField] int navMeshDistance = 20; // Distance around the player to load new terrain
     [SerializeField] int newTerrainDistance = 10; // Multiplier for the load distance when generating terrain
@@ -37,8 +36,6 @@ public class BlockyTerrain : MonoBehaviour
     [SerializeField] int stoneThreshold = 4; // Threshold for stone generation
     [SerializeField] int stoneThresholdRange = 2; // Range for the stone threshold
     [SerializeField] int poolSize = 500; // Pool size for the block pool
-
-
 
 
     private Transform playerTransform;
@@ -57,7 +54,6 @@ public class BlockyTerrain : MonoBehaviour
         {
             DestroyWithChildren(cube.gameObject);
         }
-        
     }
 
     void Start()
@@ -70,24 +66,18 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosXnav = (int)playerTransform.position.x;
         previousPlayerPosZnav = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
-        scale = Random.Range(scale/2, scale + scale/2);
+        scale = Random.Range(scale / 2, scale + scale / 2);
         fogManager = FindObjectOfType<FogManager>();
 
-        ore.ForEach(ore =>
-        {
-            ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2);
-        }
+        ore.ForEach(ore => { ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2); }
         );
-        
     }
-
 
 
     void Update()
     {
-        
         FillInCaves();
-        
+
         int currentPlayerPosX = (int)playerTransform.position.x;
         int currentPlayerPosZ = (int)playerTransform.position.z;
         HandleNavmesh();
@@ -100,25 +90,22 @@ public class BlockyTerrain : MonoBehaviour
             previousPlayerPosZ = currentPlayerPosZ;
             GenerateTerrain();
             UnloadTerrain();
-        
         }
-        
+
         if (lightingManager && lightingManager.isNight())
         {
             HandleEnemySpawn();
-           // ResizeTerrain(newTerrainDistance);
+            // ResizeTerrain(newTerrainDistance);
         }
-        
+
         DetectLightSources();
-        
-        
+
+
         //Check if player has fallen off the map
-        if (playerTransform.position.y < (-depth -2))
+        if (playerTransform.position.y < (-depth - 2))
         {
             playerTransform.position = new Vector3(playerTransform.position.x, 10, playerTransform.position.z);
         }
-
-
     }
 
     void DetectLightSources()
@@ -151,20 +138,20 @@ public class BlockyTerrain : MonoBehaviour
             Mathf.Abs(currentPlayerPosZ - previousPlayerPosZnav) >= newNavMeshDistance)
         {
             previousPlayerPosXnav = currentPlayerPosX;
-            previousPlayerPosZnav = currentPlayerPosZ;  
-            
+            previousPlayerPosZnav = currentPlayerPosZ;
+
             //print("Building navmesh");
             //Ensure only blocks that are within the navmesh distance are parented to the navmesh
             foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
             {
                 //Dont touch held items or items that arent directly children of the terrain/navmesh
-                if(cube && (cube.layer == 7 
-                   || !(cube.transform.parent.name.Contains("Navmesh")
-                        || cube.transform.parent.name.Contains("Generator"))))
+                if (cube && (cube.layer == 7
+                             || !(cube.transform.parent.name.Contains("Navmesh")
+                                  || cube.transform.parent.name.Contains("Generator"))))
                 {
                     continue;
                 }
-                
+
                 Vector3 pos = cube.transform.position;
                 // print (pos);
                 // Remove cubes outside the visible area from the scene
@@ -180,8 +167,6 @@ public class BlockyTerrain : MonoBehaviour
             }
 
             BuildNavmesh();
-
-
         }
     }
 
@@ -222,8 +207,8 @@ public class BlockyTerrain : MonoBehaviour
                                 {
                                     return;
                                 }
-
                             }
+
                             enemyPrefab.InstantiateEnemy(spawnPos);
                             break;
                         }
@@ -231,7 +216,6 @@ public class BlockyTerrain : MonoBehaviour
                 }
             }
         }
-
     }
 
     internal void GenerateInitialTerrain()
@@ -256,21 +240,16 @@ public class BlockyTerrain : MonoBehaviour
 
         for (int x = currentPlayerPosX - loadDistance; x < currentPlayerPosX + loadDistance; x++)
         {
-
-
             for (int z = currentPlayerPosZ - loadDistance; z < currentPlayerPosZ + loadDistance; z++)
             {
-
                 if (coordsToHeight.ContainsKey(new Vector2(x, z)) && coordsToHeight[new Vector2(x, z)].isLoaded)
                 {
                     continue;
                 }
 
                 GenerateCubeAtPosition(x, z);
-
             }
         }
-
     }
 
     private async void BuildNavmesh()
@@ -291,7 +270,6 @@ public class BlockyTerrain : MonoBehaviour
             await Task.Yield();
         }
     }
-
 
 
     void GenerateCubeAtPosition(int x, int z)
@@ -315,7 +293,6 @@ public class BlockyTerrain : MonoBehaviour
             }
 
             coordsToHeight[currentPos] = verticalBlocks;
-
         }
         else
         {
@@ -340,22 +317,23 @@ public class BlockyTerrain : MonoBehaviour
 
             float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
-            
+
 
             for (int i = -depth; i <= y; ++i)
             {
                 Vector3 cubePos = new Vector3(x, i, z);
                 bool toBeLoaded = i >= y;
-                
+
 
                 Block copyOfCubeObject = ScriptableObject.CreateInstance<Block>();
                 var oreBlock = oreVerticalBlocks.FirstOrDefault(block => block.location == cubePos);
-                
-                if(oreBlock && oreBlock.blockType == Block.BlockType.Empty){ 
+
+                if (oreBlock && oreBlock.blockType == Block.BlockType.Empty)
+                {
                     emptyBlocks.Add(oreBlock);
                     continue; // Don't generate empty blocks
                 }
-                
+
                 // Can be laggy
                 // //Add in air block above the terrain
                 // if (toBeLoaded)
@@ -369,7 +347,7 @@ public class BlockyTerrain : MonoBehaviour
                 //         emptyBlocks.Add(airBlock);
                 //     }
                 // }
-                
+
 
                 Block topBlock = (oreBlock ? oreBlock : grass);
                 Block block;
@@ -388,11 +366,11 @@ public class BlockyTerrain : MonoBehaviour
                     // Mix of stone and dirt around the stone threshold
                     block = Random.Range(0, 100) < 50 ? stone : dirt;
                 }
-                
+
                 block = oreBlock ? oreBlock : block;
-                
-                
-                if(i == -depth)
+
+
+                if (i == -depth)
                 {
                     block = bedrock;
                 }
@@ -415,40 +393,56 @@ public class BlockyTerrain : MonoBehaviour
 
             coordsToHeight.Add(currentPos, new VerticalBlocks { blocks = verticalBlocks, isLoaded = true });
         }
-        
-        
     }
-    
+
     void FillInCaves()
     {
+        if(emptyBlocks.Count == 0) return;
         
-    foreach (var emptyBlock in emptyBlocks)
-    {
-       // InstantiateCube(emptyBlock.location, safetyBlock);
-        var surroundingBlocks = GetSurroundingBlocks(emptyBlock.location);
-        for (int i = 0; i < surroundingBlocks.Length; i++)
+        
+        for(int i = emptyBlocks.Count; i>0; i--)
         {
-            var block = FindBlock(surroundingBlocks[i]);
-            if (block != null && !block.isLoaded)
+            var emptyBlock = emptyBlocks[i-1];
+            var surroundingBlocks = GetSurroundingBlocks(emptyBlock.location);
+            bool toRemove = true;
+
+            for (int j = 0; j < surroundingBlocks.Length; j++)
             {
-                InstantiateCube(block.location, block);
-                block.isLoaded = true;
-                coordsToHeight[new Vector2(block.location.x, block.location.z)].blocks.Add(block);
+                var block = FindBlock(surroundingBlocks[j]);
+                
+                
+                
+                if(!coordsToHeight.ContainsKey(new Vector2(surroundingBlocks[j].x, surroundingBlocks[j].z)) ||
+                                               !coordsToHeight[new Vector2(surroundingBlocks[j].x, surroundingBlocks[j].z)].isLoaded)
+                {
+                    toRemove = false;
+                }
+                
+                
+                if (block != null)
+                {
+                    if (!block.isLoaded)
+                    {
+                        InstantiateCube(block.location, block);
+                        block.isLoaded = true;
+                        coordsToHeight[new Vector2(block.location.x, block.location.z)].blocks.Add(block);
+                    }
+                }
             }
+            if(toRemove)
+                emptyBlocks.RemoveAt(i-1);
         }
+        
+        
     }
 
-    emptyBlocks.Clear();
-
-    }
-    
     void SetActiveBlock(GameObject block, bool active)
     {
+        //Not reallllly necessary
         // block.GetComponent<Renderer>().enabled = active;
         // block.GetComponent<Collider>().enabled = active;
-        
     }
-    
+
     List<Block> GenerateOreList(int x, int z, int height, float oreThreshold, Block blockPrefab, float oreScale)
     {
         var verticalBlock = new List<Block>();
@@ -462,7 +456,7 @@ public class BlockyTerrain : MonoBehaviour
             float oreValue = Mathf.PerlinNoise(xCoord, zCoord);
 
             float adjustedThreshold = oreThreshold + Mathf.Abs((float)y) / 100;
-            
+
             if (oreValue > adjustedThreshold)
             {
                 // Create a new Block object with the desired properties
@@ -474,29 +468,30 @@ public class BlockyTerrain : MonoBehaviour
                 verticalBlock.Add(oreBlock);
             }
         }
+
         return verticalBlock;
     }
 
-    
+
     public void InstantiateCube(Vector3 position, Block cube2 = null)
     {
         if (!cube2) cube2 = grass;
-        
+
         var pooledBlock = GetPooledBlock(cube2);
-        
+
         GameObject cube;
         if (pooledBlock != null)
         {
             cube = pooledBlock;
             cube.transform.position = position;
-           // print("Reusing block");
+            // print("Reusing block");
         }
         else
         {
-           // print("Creating new block");
+            // print("Creating new block");
             cube = Instantiate(cube2.prefab, position, Quaternion.identity);
         }
-        
+
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
         cube.name = cube2.name + ": " + position;
@@ -510,20 +505,19 @@ public class BlockyTerrain : MonoBehaviour
         {
             cube.transform.parent = transform;
         }
-
     }
-    
+
     GameObject GetPooledBlock(Block block)
     {
         GameObject res = null;
-        
-        if(!pooledBlocks.ContainsKey(block.name.Split(':')[0]))
+
+        if (!pooledBlocks.ContainsKey(block.name.Split(':')[0]))
         {
             return res;
         }
 
         res = pooledBlocks[block.name.Split(':')[0]].FirstOrDefault();
-        
+
         if (res)
         {
             //res.SetActive(true);
@@ -532,95 +526,97 @@ public class BlockyTerrain : MonoBehaviour
         }
 
         return res;
-        
     }
 
-    
-void UnloadTerrain()
-{
-    // Find all cubes tagged as "Cube"
-    GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube");
 
-    foreach (GameObject cube in cubes)
+    void UnloadTerrain()
     {
-        Vector3 pos = cube.transform.position;
+        // Find all cubes tagged as "Cube"
+        GameObject[] cubes = GameObject.FindGameObjectsWithTag("Cube");
 
-        // Check if the cube is outside the visible area
-        if (IsOutsideLoadDistance(pos))
+        foreach (GameObject cube in cubes)
         {
-            // Get the block corresponding to the cube's position
-            Block block = FindBlock(pos);
+            Vector3 pos = cube.transform.position;
 
-            // Update block information
-            UpdateBlockInformation(pos, block);
-
-            // Return cube to the pool if it exceeds the pool size limit
-            if (pooledBlocks.Count > poolSize)
+            // Check if the cube is outside the visible area
+            if (IsOutsideLoadDistance(pos))
             {
-                RemoveFromPool(cube, block);
-                continue;
+                // Get the block corresponding to the cube's position
+                Block block = FindBlock(pos);
+
+                // Update block information
+                UpdateBlockInformation(pos, block);
+
+                // Return cube to the pool if it exceeds the pool size limit
+                if (pooledBlocks.Count > poolSize)
+                {
+                    RemoveFromPool(cube, block);
+                    continue;
+                }
+
+                // Add cube to the appropriate pool
+                AddToPool(cube, block);
+
+                // Deactivate the cube
+                SetActiveBlock(cube, false);
             }
-
-            // Add cube to the appropriate pool
-            AddToPool(cube, block);
-
-            // Deactivate the cube
-            SetActiveBlock(cube, false);
         }
     }
-}
 
 // Function to check if a position is outside the load distance from the player
-bool IsOutsideLoadDistance(Vector3 position)
-{
-    return Mathf.Abs(position.x - playerTransform.position.x) >= loadDistance ||
-           Mathf.Abs(position.z - playerTransform.position.z) >= loadDistance;
-}
+    bool IsOutsideLoadDistance(Vector3 position)
+    {
+        return Mathf.Abs(position.x - playerTransform.position.x) >= loadDistance ||
+               Mathf.Abs(position.z - playerTransform.position.z) >= loadDistance;
+    }
 
 // Function to update block information
-void UpdateBlockInformation(Vector3 position, Block block)
-{
-    Vector2 pos2D = new Vector2(position.x, position.z);
-    if (coordsToHeight.ContainsKey(pos2D))
+    void UpdateBlockInformation(Vector3 position, Block block)
     {
-        var blockList = coordsToHeight[pos2D].blocks;
-        for (int i = 0; i < blockList.Count; ++i)
+        Vector2 pos2D = new Vector2(position.x, position.z);
+        if (coordsToHeight.ContainsKey(pos2D))
         {
-            if (blockList[i].location == position)
+            var blockList = coordsToHeight[pos2D].blocks;
+            for (int i = 0; i < blockList.Count; ++i)
             {
-                blockList[i] = block;
-                break;
+                if (blockList[i].location == position)
+                {
+                    blockList[i] = block;
+                    break;
+                }
             }
+
+            var heightData = coordsToHeight[pos2D];
+            heightData.isLoaded = false;
+            coordsToHeight[pos2D] = heightData;
         }
-        var heightData = coordsToHeight[pos2D];
-        heightData.isLoaded = false;
-        coordsToHeight[pos2D] = heightData;
     }
-}
 
 // Function to remove cube from the pool and destroy it
-void RemoveFromPool(GameObject cube, Block block)
-{
-    if (pooledBlocks.TryGetValue(block.name.Split(':')[0], out var blockList))
+    void RemoveFromPool(GameObject cube, Block block)
     {
-        blockList.Remove(cube);
+        if (pooledBlocks.TryGetValue(block.name.Split(':')[0], out var blockList))
+        {
+            blockList.Remove(cube);
+        }
+
+        DestroyWithChildren(cube);
     }
-    DestroyWithChildren(cube);
-}
 
 // Function to add cube to the pool
-void AddToPool(GameObject cube, Block block)
-{
-    string blockName = block.name.Split(':')[0];
-    if (!pooledBlocks.ContainsKey(blockName))
+    void AddToPool(GameObject cube, Block block)
     {
-        pooledBlocks[blockName] = new List<GameObject>();
+        string blockName = block.name.Split(':')[0];
+        if (!pooledBlocks.ContainsKey(blockName))
+        {
+            pooledBlocks[blockName] = new List<GameObject>();
+        }
+
+        if (!pooledBlocks[blockName].Contains(cube))
+        {
+            pooledBlocks[blockName].Add(cube);
+        }
     }
-    if (!pooledBlocks[blockName].Contains(cube))
-    {
-        pooledBlocks[blockName].Add(cube);
-    }
-}
 
 
     public Dictionary<Vector2, VerticalBlocks> GetHeightMap()
@@ -635,7 +631,6 @@ void AddToPool(GameObject cube, Block block)
 
     public bool RemoveBlock(Vector3 position)
     {
-
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
@@ -649,12 +644,12 @@ void AddToPool(GameObject cube, Block block)
                     blockList.Remove(block);
 
                     var cubeToRemove = GameObject.Find(block.name + ": " + position);
-                    
+
                     DestroyWithChildren(cubeToRemove.gameObject);
 
                     var surroundingBlocks = GetSurroundingBlocks(position);
-                    
-                    if(block.blockType == Block.BlockType.Light && lightingBlocks.Contains(block))
+
+                    if (block.blockType == Block.BlockType.Light && lightingBlocks.Contains(block))
                     {
                         lightingBlocks.Remove(block);
                     }
@@ -678,15 +673,20 @@ void AddToPool(GameObject cube, Block block)
         return false;
     }
 
+
+    //This is ugly, but it works
     private Vector3[] GetSurroundingBlocks(Vector3 location)
     {
-        Vector3[] surroundingBlocks = new Vector3[6];
-        surroundingBlocks[0] = new Vector3(location.x + cubeHeight, location.y, location.z);
-        surroundingBlocks[1] = new Vector3(location.x - cubeHeight, location.y, location.z);
-        surroundingBlocks[2] = new Vector3(location.x, location.y + cubeHeight, location.z);
-        surroundingBlocks[3] = new Vector3(location.x, location.y - cubeHeight, location.z);
-        surroundingBlocks[4] = new Vector3(location.x, location.y, location.z + cubeHeight);
-        surroundingBlocks[5] = new Vector3(location.x, location.y, location.z - cubeHeight);
+        Vector3[] surroundingBlocks;
+            surroundingBlocks = new Vector3[6];
+            surroundingBlocks[0] = new Vector3(location.x + cubeHeight, location.y, location.z);
+            surroundingBlocks[1] = new Vector3(location.x - cubeHeight, location.y, location.z);
+            surroundingBlocks[2] = new Vector3(location.x, location.y + cubeHeight, location.z);
+            surroundingBlocks[3] = new Vector3(location.x, location.y - cubeHeight, location.z);
+            surroundingBlocks[4] = new Vector3(location.x, location.y, location.z + cubeHeight);
+            surroundingBlocks[5] = new Vector3(location.x, location.y, location.z - cubeHeight);
+        
+
         return surroundingBlocks;
     }
 
@@ -713,8 +713,8 @@ void AddToPool(GameObject cube, Block block)
                 {
                     blockList.Add(blockToAdd);
                 }
-                
-                if(blockToAdd.blockType == Block.BlockType.Light && !lightingBlocks.Contains(blockToAdd))
+
+                if (blockToAdd.blockType == Block.BlockType.Light && !lightingBlocks.Contains(blockToAdd))
                 {
                     lightingBlocks.Add(blockToAdd);
                 }
@@ -753,7 +753,6 @@ void AddToPool(GameObject cube, Block block)
         return null;
     }
 
-
     public void DestroyAllCubes()
     {
         var allCubes = GameObject.FindGameObjectsWithTag("Cube");
@@ -762,11 +761,7 @@ void AddToPool(GameObject cube, Block block)
             DestroyWithChildren(cube.gameObject);
         }
     }
-
-
-
 }
-
 
 
 [Serializable]
@@ -780,5 +775,4 @@ public struct VerticalBlocks
         this.blocks = blocks;
         this.isLoaded = isLoaded;
     }
-
 }

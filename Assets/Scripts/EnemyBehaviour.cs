@@ -49,7 +49,7 @@ public class EnemyBehaviour : MonoBehaviour
         // Behaviour tree initialization
         InitializeBehaviourTree();
         
-        //ScaleBasedOnLevel();
+        ScaleBasedOnLevel();
         
     }
     
@@ -58,13 +58,13 @@ public class EnemyBehaviour : MonoBehaviour
     {
         //Scale up health
         var health = GetComponent<Health>();
-        health.SetHealth((int)(health.GetCurrentHealth() * (playerLevel * 0.1f)));
+        health.SetHealth((int)(health.GetCurrentHealth() * (1+playerLevel * 0.1f)));
         
         //Scale up damage
-        damage = (int)(damage * (playerLevel * 0.1f));
+        damage = (int)(damage * (1+playerLevel * 0.1f));
         
         //Scale up speed
-        agent.speed = speed * (playerLevel * 0.1f);
+        agent.speed = speed * (1+playerLevel * 0.1f);
     }
 
     void Update()

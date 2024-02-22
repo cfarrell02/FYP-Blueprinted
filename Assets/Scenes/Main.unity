@@ -2578,20 +2578,20 @@ MonoBehaviour:
   bedrock: {fileID: 11400000, guid: 69b304548d9dffe41b4c291f3e344548, type: 2}
   ore:
   - oreBlock: {fileID: 11400000, guid: aedcde7566c3db0468a3bb969666b6b1, type: 2}
-    oreThreshold: 0.75
+    oreThreshold: 0.79
     scale: 0.8
     yUpperBound: 5
     yLowerBound: -10
   - oreBlock: {fileID: 11400000, guid: aedcde7566c3db0468a3bb969666b6b1, type: 2}
-    oreThreshold: 0.586
+    oreThreshold: 0.762
     scale: 0.8
-    yUpperBound: -8
-    yLowerBound: -15
+    yUpperBound: -4
+    yLowerBound: -12
   - oreBlock: {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
-    oreThreshold: 0.8
+    oreThreshold: 0.768
     scale: 0.855
     yUpperBound: 0
-    yLowerBound: -10
+    yLowerBound: -12
   loadDistance: 40
   navMeshDistance: 25
   newTerrainDistance: 1
@@ -2599,7 +2599,7 @@ MonoBehaviour:
   perlinScale: 5
   stoneThreshold: -6
   stoneThresholdRange: 2
-  poolSize: 1000
+  poolSize: 800
 --- !u!1 &1599382421
 GameObject:
   m_ObjectHideFlags: 0
@@ -3854,7 +3854,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4699892294820475951, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: m_CullingMask.m_Bits
-      value: 255
+      value: 767
       objectReference: {fileID: 0}
     - target: {fileID: 5356250546746154659, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: m_Name
@@ -3914,7 +3914,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[0]
@@ -3979,7 +3979,7 @@ PrefabInstance:
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[5].item
       value: 
-      objectReference: {fileID: 11400000, guid: 7a53f3b8382e0fc4e88353555800fbbf, type: 2}
+      objectReference: {fileID: 11400000, guid: 6844268663ba0bd4c99a0c02f596a503, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[0].count
       value: 1
@@ -4002,7 +4002,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[5].count
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8581938533461346997, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: m_Layer

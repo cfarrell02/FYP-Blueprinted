@@ -169,7 +169,7 @@ public class PlayerInventory : MonoBehaviour
         Transform cameraTransform = Camera.main.transform;
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
     
-        if (Physics.Raycast(ray, out hit, 5f, LayerMask.GetMask("NavMesh")))
+        if (Physics.Raycast(ray, out hit, 5f, LayerMask.GetMask("NavMesh", "Interactives")))
         {
             if (_lookedAtObject != null && _lookedAtObject != hit.collider.gameObject)
             {
@@ -306,11 +306,23 @@ public class PlayerInventory : MonoBehaviour
                 if (toDelete)
                 {
                     RemoveItem(selectedBlockIndex);
-                    RemoveItem(selectedBlockIndex);
+                    // RemoveItem(selectedBlockIndex);
                 }
             }
             else if (inventory[selectedBlockIndex].item is Block)
             {
+                if (blockyTerrain.FindBlock(_lookedAtObject.transform.position).blockType == Block.BlockType.Light 
+                    && inventory[selectedBlockIndex].item.id == 3)
+                {
+                    var lightBehaviour = _lookedAtObject.GetComponent<LightBehaviour>();
+                    if (lightBehaviour != null)
+                    {
+                        lightBehaviour.RefillOil();
+                        RemoveItem(selectedBlockIndex);
+                    }
+                    
+                }
+                
                 PlaceBlockFromInventory(); // Blocks are placed when the player clicks
             }
         }
