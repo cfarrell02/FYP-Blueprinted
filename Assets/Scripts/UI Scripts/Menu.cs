@@ -55,6 +55,12 @@ public class Menu : MonoBehaviour
 
         SceneManager.LoadScene(nextSceneIndex);
     }
+    
+    void DeleteSave(string saveData)
+    {
+        System.IO.File.Delete("data/saves/" + saveData + ".data");
+        PopulateSaves();
+    }
 
     IEnumerator DisplaySplashScreen()
     {
@@ -132,16 +138,21 @@ public class Menu : MonoBehaviour
 
             // Instantiate a new save button
             var saveButton = Instantiate(startButton, savesPanel.transform);
+            var deleteButton = Instantiate(startButton, savesPanel.transform);
 
             // Set the position of the save button
             float yPos = savesPanel.transform.position.y - (i * buttonHeight) - 120;
             saveButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, yPos);
+            deleteButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(160, yPos);
 
             // Set the text of the TextMeshProUGUI component
             saveButton.GetComponentInChildren<TextMeshProUGUI>().text = fileName;
+            
+            deleteButton.GetComponentInChildren<TextMeshProUGUI>().text = "Delete";
 
             // Add a listener to the button for loading the save
             saveButton.GetComponent<Button>().onClick.AddListener(() => LoadSave(fileName));
+            deleteButton.GetComponent<Button>().onClick.AddListener(() => DeleteSave(fileName));
 
             print("Adding save button for: " + fileName);
         }
