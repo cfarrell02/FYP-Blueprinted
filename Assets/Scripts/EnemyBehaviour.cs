@@ -25,6 +25,10 @@ public class EnemyBehaviour : MonoBehaviour
     // Timer for timeout on chasing
     private float chaseTimeout = 0f;
     private float chaseTimeoutDuration = 5f; // Adjust this value as needed
+    
+    
+    private float flyTimeout = 0f;
+    private float flyTimeoutDuration = 5f; // Adjust this value as needed
 
     // Behaviour tree stuff
     BehaviourTree tree;
@@ -213,49 +217,75 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status BreakBlockInFront()
     {
-        //Start flying towards the player
-        transform.LookAt(player.transform);
-        transform.Translate(Vector3.forward * Time.deltaTime * 2f);
-        agent.enabled = false;
-        
-        if (Vector3.Distance(transform.position, player.transform.position) < .5f)
-        {
-            state = ActionState.IDLE;
-            agent.enabled = true;
-            return Node.Status.SUCCESS;
-            
-        }
-        
-        return Node.Status.RUNNING;
-    }
-    
-    
-
-    private Node.Status ChasePlayer()
-    {
-        Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {Vector3.Distance(transform.position, agent.destination)}");
-        
         agent.SetDestination(player.transform.position);
         
-        
-        Debug.DrawLine(transform.position, agent.pathEndPosition, Color.red);
-        Debug.DrawLine(transform.position, player.transform.position, Color.green);
-
-        // Check if the agent cannot find a complete path to the player or should flee
-        //bool pathBlocked = agent.pathStatus == NavMeshPathStatus.PathPartial && Vector3.Distance(transform.position, agent.destination) > 1f;
-        
-        if (ShouldFlee())
+        flyTimeout += Time.deltaTime;
+        if(flyTimeout > flyTimeoutDuration)
+        {
+            flyTimeout = 0f;
+        }
+        else
         {
             state = ActionState.IDLE;
-            return Node.Status.FAILURE;
+            return Node.Status.RUNNING;
         }
         
-        // Is Agent at the the closest point to the player and partial
-        if (Vector3.Distance(transform.position, agent.pathEndPosition) < 1f && !IsPlayerInRange())
+
+        // Check if the agent is close to the player or if the player is in range
+        if (Vector3.Distance(transform.position, agent.pathEndPosition) > 1f || IsPlayerInRange())
         {
             state = ActionState.IDLE;
             return Node.Status.FAILURE;
             //The player is out of reach but not out of sight
+        }
+    
+        // Move towards the player (fly)
+        transform.LookAt(player.transform);
+        transform.Translate(Vector3.forward * Time.deltaTime * 2f);
+
+        // Check if the enemy has reached the player
+        if (Vector3.Distance(transform.position, player.transform.position) < .5f)
+        {
+            state = ActionState.IDLE;
+            return Node.Status.SUCCESS;
+        }
+
+        // Continue flying towards the player
+        return Node.Status.RUNNING;
+    }
+
+    
+
+    private Node.Status ChasePlayer()
+    {
+        Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {agent.remainingDistance}");
+
+        agent.SetDestination(player.transform.position);
+
+        // Reset the chase timeout timer if player is seen or heard
+        if (IsPlayerInSight() || CanHearPlayer())
+        {
+            chaseTimeout = 0f;
+        }
+        else
+        {
+            // Increment the timeout timer
+            chaseTimeout += Time.deltaTime;
+        
+            // If timed out, stop chasing
+            if (chaseTimeout >= chaseTimeoutDuration)
+            {
+                chaseTimeout = 0f;
+                state = ActionState.IDLE;
+                return Node.Status.FAILURE;
+            }
+        }
+
+        // Check if the agent's path is blocked or if the player is out of reach but not out of sight
+        if (agent.pathStatus == NavMeshPathStatus.PathPartial && agent.remainingDistance < 1f && !IsPlayerInRange())
+        {
+            state = ActionState.IDLE;
+            return Node.Status.FAILURE;
         }
 
         // If player is not in sight and not heard, start the timeout timer
@@ -282,9 +312,11 @@ public class EnemyBehaviour : MonoBehaviour
             return Node.Status.SUCCESS;
         }
 
+        // Continue chasing
         state = ActionState.WORKING;
         return Node.Status.RUNNING;
     }
+
 
     private Node.Status Flee()
     {
