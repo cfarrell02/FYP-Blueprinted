@@ -155,8 +155,8 @@ public class BlockyTerrain : MonoBehaviour
                 Vector3 pos = cube.transform.position;
                 // print (pos);
                 // Remove cubes outside the visible area from the scene
-                if (Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
-                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance)
+                if ((Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
+                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance) && !cube.transform.name.Contains("(Permanent)"))
                 {
                     cube.transform.parent = transform;
                 }
@@ -473,7 +473,7 @@ public class BlockyTerrain : MonoBehaviour
     }
 
 
-    public void InstantiateCube(Vector3 position, Block cube2 = null)
+    public void InstantiateCube(Vector3 position, Block cube2 = null, bool permanentNavmesh = false)
     {
         if (!cube2) cube2 = grass;
 
@@ -494,10 +494,10 @@ public class BlockyTerrain : MonoBehaviour
 
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
-        cube.name = cube2.name + ": " + position;
+        cube.name = cube2.name + ": " + position + (permanentNavmesh ? " (Permanent)" : "");
         cube.isStatic = true;
         float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
-        if (distanceToPlayer < navMeshDistance)
+        if (distanceToPlayer < navMeshDistance || permanentNavmesh)
         {
             cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
         }
@@ -645,6 +645,11 @@ public class BlockyTerrain : MonoBehaviour
 
                     var cubeToRemove = GameObject.Find(block.name + ": " + position);
 
+                    if (!cubeToRemove)
+                    {
+                        cubeToRemove = GameObject.Find(block.name + ": " + position + " (Permanent)");
+                    }
+
                     DestroyWithChildren(cubeToRemove.gameObject);
 
                     var surroundingBlocks = GetSurroundingBlocks(position);
@@ -719,7 +724,7 @@ public class BlockyTerrain : MonoBehaviour
                     lightingBlocks.Add(blockToAdd);
                 }
 
-                InstantiateCube(position, blockToAdd);
+                InstantiateCube(position, blockToAdd, true);
                 var a = coordsToHeight[pos];
                 a.isLoaded = true;
                 coordsToHeight[pos] = a;

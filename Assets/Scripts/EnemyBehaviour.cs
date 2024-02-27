@@ -10,7 +10,7 @@ public class EnemyBehaviour : MonoBehaviour
     public float lookDistance = 30f;
     public float hearingDistance = 10f;
     public int damage = 10; 
-    public float speed = 10f;
+    public float speed = 4f;
     public float fleeDistance = 5f;
 
     // Components
@@ -147,8 +147,8 @@ public class EnemyBehaviour : MonoBehaviour
 
     private bool IsPlayerInRange()
     {
-        float distance = Vector3.Distance(transform.position, player.transform.position);
-        return distance < 2f;
+        float distance = Vector3.Distance(transform.position - Vector3.up*.4f, player.transform.position);
+        return distance < 1.8f;
     }
 
     private bool ShouldFlee()
@@ -159,6 +159,7 @@ public class EnemyBehaviour : MonoBehaviour
     // Actions
     private Node.Status Wander()
     {
+        Debug.Log("Wandering");
         if (timer > 5f)
         {
             timer = 0f;
@@ -180,6 +181,7 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status AttackPlayer()
     {
+        Debug.Log("Attacking player");
         if (timer > .8f)
         {
             timer = 0f;
@@ -211,28 +213,49 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status BreakBlockInFront()
     {
-        Vector3 blockPosition = transform.position + transform.forward;
-        var generator = FindObjectOfType<BlockyTerrain>();
-        if (generator.RemoveBlock(blockPosition))
+        //Start flying towards the player
+        transform.LookAt(player.transform);
+        transform.Translate(Vector3.forward * Time.deltaTime * 2f);
+        agent.enabled = false;
+        
+        if (Vector3.Distance(transform.position, player.transform.position) < .5f)
         {
             state = ActionState.IDLE;
+            agent.enabled = true;
             return Node.Status.SUCCESS;
+            
         }
         
-        return Node.Status.FAILURE;
+        return Node.Status.RUNNING;
     }
     
     
 
     private Node.Status ChasePlayer()
     {
+        Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {Vector3.Distance(transform.position, agent.destination)}");
+        
         agent.SetDestination(player.transform.position);
+        
+        
+        Debug.DrawLine(transform.position, agent.pathEndPosition, Color.red);
+        Debug.DrawLine(transform.position, player.transform.position, Color.green);
 
         // Check if the agent cannot find a complete path to the player or should flee
-        if (agent.pathStatus == NavMeshPathStatus.PathPartial || ShouldFlee())
+        //bool pathBlocked = agent.pathStatus == NavMeshPathStatus.PathPartial && Vector3.Distance(transform.position, agent.destination) > 1f;
+        
+        if (ShouldFlee())
         {
             state = ActionState.IDLE;
             return Node.Status.FAILURE;
+        }
+        
+        // Is Agent at the the closest point to the player and partial
+        if (Vector3.Distance(transform.position, agent.pathEndPosition) < 1f && !IsPlayerInRange())
+        {
+            state = ActionState.IDLE;
+            return Node.Status.FAILURE;
+            //The player is out of reach but not out of sight
         }
 
         // If player is not in sight and not heard, start the timeout timer
@@ -265,6 +288,7 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status Flee()
     {
+        Debug.Log("Fleeing");
         Vector3 towardsPlayer = (player.transform.position - transform.position).normalized;
         agent.SetDestination(transform.position - towardsPlayer * fleeDistance);
         agent.isStopped = false;
