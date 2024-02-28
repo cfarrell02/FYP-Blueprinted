@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using StarterAssets;
 using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using static Utils.Utils;
 using Utils;
 using Random = UnityEngine.Random;
@@ -15,7 +17,7 @@ using Random = UnityEngine.Random;
 public class BlockyTerrain : MonoBehaviour
 {
     public int depth = 10;
-    public float scale = 1f;
+    public float frequency = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
 
     public Enemy enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
@@ -66,11 +68,11 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosXnav = (int)playerTransform.position.x;
         previousPlayerPosZnav = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
-        scale = Random.Range(scale / 2, scale + scale / 2);
+        frequency = Random.Range(frequency / 2, frequency + frequency / 2);
         fogManager = FindObjectOfType<FogManager>();
 
-        ore.ForEach(ore => { ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2); }
-        );
+        ore.ForEach(ore => { ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2); });
+        
     }
 
 
@@ -117,10 +119,12 @@ public class BlockyTerrain : MonoBehaviour
                 float distance = Vector3.Distance(block.location, playerTransform.position);
                 if (distance < 10)
                 {
+                    playerTransform.GetComponent<FirstPersonController>().SetSpeed(4,6);
                     fogManager.SetIntensityMultiplier(0.5f);
                 }
                 else
                 {
+                    playerTransform.GetComponent<FirstPersonController>().SetSpeed(3, 5);
                     fogManager.SetIntensityMultiplier(1f);
                 }
             }
@@ -155,8 +159,8 @@ public class BlockyTerrain : MonoBehaviour
                 Vector3 pos = cube.transform.position;
                 // print (pos);
                 // Remove cubes outside the visible area from the scene
-                if (Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
-                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance)
+                if ((Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
+                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance) && !cube.transform.name.Contains("(Permanent)"))
                 {
                     cube.transform.parent = transform;
                 }
@@ -227,7 +231,7 @@ public class BlockyTerrain : MonoBehaviour
                 GenerateCubeAtPosition(x, z);
             }
         }
-
+        
         surface.BuildNavMesh();
     }
 
@@ -315,7 +319,7 @@ public class BlockyTerrain : MonoBehaviour
                 .DistinctBy(block => block.location)
                 .ToList();
 
-            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
+            float y = Mathf.PerlinNoise(x * 1/frequency, z * 1/frequency) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
 
 
@@ -473,7 +477,7 @@ public class BlockyTerrain : MonoBehaviour
     }
 
 
-    public void InstantiateCube(Vector3 position, Block cube2 = null)
+    public void InstantiateCube(Vector3 position, Block cube2 = null, bool permanentNavmesh = false)
     {
         if (!cube2) cube2 = grass;
 
@@ -494,10 +498,10 @@ public class BlockyTerrain : MonoBehaviour
 
         cube.transform.localScale = new Vector3(1f, cubeHeight, 1f);
         cube.tag = "Cube";
-        cube.name = cube2.name + ": " + position;
+        cube.name = cube2.name + ": " + position + (permanentNavmesh ? " (Permanent)" : "");
         cube.isStatic = true;
         float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
-        if (distanceToPlayer < navMeshDistance)
+        if (distanceToPlayer < navMeshDistance || permanentNavmesh)
         {
             cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
         }
@@ -645,7 +649,12 @@ public class BlockyTerrain : MonoBehaviour
 
                     var cubeToRemove = GameObject.Find(block.name + ": " + position);
 
-                    DestroyWithChildren(cubeToRemove.gameObject);
+                    if (!cubeToRemove)
+                    {
+                        cubeToRemove = GameObject.Find(block.name + ": " + position + " (Permanent)");
+                    }
+
+                    Destroy(cubeToRemove.gameObject);
 
                     var surroundingBlocks = GetSurroundingBlocks(position);
 
@@ -663,8 +672,8 @@ public class BlockyTerrain : MonoBehaviour
                             AddBlock(surroundingBlock, foundBlock);
                         }
                     }
-
-                    BuildNavmesh();
+                    //Delayed to ensure the block is removed before the navmesh is rebuilt
+                    StartCoroutine(PerformFunctionAfterDelay(0.1f, () => { BuildNavmesh(); }));
                     return true;
                 }
             }
@@ -672,7 +681,6 @@ public class BlockyTerrain : MonoBehaviour
 
         return false;
     }
-
 
     //This is ugly, but it works
     private Vector3[] GetSurroundingBlocks(Vector3 location)
@@ -719,7 +727,7 @@ public class BlockyTerrain : MonoBehaviour
                     lightingBlocks.Add(blockToAdd);
                 }
 
-                InstantiateCube(position, blockToAdd);
+                InstantiateCube(position, blockToAdd, true);
                 var a = coordsToHeight[pos];
                 a.isLoaded = true;
                 coordsToHeight[pos] = a;

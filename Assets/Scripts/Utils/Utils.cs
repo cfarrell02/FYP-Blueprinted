@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace Utils
 {
@@ -12,6 +13,13 @@ namespace Utils
                 GameObject.Destroy(child.gameObject);
             }
             GameObject.Destroy(obj);
+        }
+        
+        
+        public static IEnumerator PerformFunctionAfterDelay(float delay, System.Action function)
+        {
+            yield return new WaitForSeconds(delay);
+            function();
         }
         
     }
