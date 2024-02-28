@@ -163,6 +163,15 @@ namespace StarterAssets
 				transform.Rotate(Vector3.up * _rotationVelocity);
 			}
 		}
+		
+		public void SetSpeed(float speed, float sprintSpeed = -1)
+		{
+			if(sprintSpeed < 0)
+				sprintSpeed = speed * 1.5f;
+			
+			MoveSpeed = speed;
+			SprintSpeed = sprintSpeed;
+		}
 
 		private void Move()
 		{

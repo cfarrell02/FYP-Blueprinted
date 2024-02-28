@@ -72,7 +72,10 @@ public class PlayerInventory : MonoBehaviour
         
         timer += Time.deltaTime;
         CheckBlockInFront();
-        UseSelectedTool();
+        
+        if(!GameManager.Instance.isPaused)
+            UseSelectedTool();
+        
         RenderSelectedItem();
 
         if (!GameManager.Instance.craftingIsOpen)
@@ -311,8 +314,9 @@ public class PlayerInventory : MonoBehaviour
             }
             else if (inventory[selectedBlockIndex].item is Block)
             {
-                if (blockyTerrain.FindBlock(_lookedAtObject.transform.position).blockType == Block.BlockType.Light 
-                    && inventory[selectedBlockIndex].item.id == 3)
+                var bl = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
+                if (bl && bl.blockType == Block.BlockType.Light 
+                       && inventory[selectedBlockIndex].item.id == 3)
                 {
                     var lightBehaviour = _lookedAtObject.GetComponent<LightBehaviour>();
                     if (lightBehaviour != null)

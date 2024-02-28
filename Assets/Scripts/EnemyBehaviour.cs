@@ -86,17 +86,14 @@ public class EnemyBehaviour : MonoBehaviour
         Sequence attackPlayer = new Sequence("Attack Player");
 
         Leaf chaseLeaf = new Leaf("Chase", ChasePlayer);
-        Leaf breakBlockLeaf = new Leaf("Break Block", BreakBlockInFront);
         
-        Selector chaseOrBreak = new Selector("Chase or Break");
-        chaseOrBreak.AddChild(chaseLeaf);
-        chaseOrBreak.AddChild(breakBlockLeaf);
+
 
         Leaf attackLeaf = new Leaf("Attack", AttackPlayer);
         Inverter attackInverter = new Inverter("Invert");
         attackInverter.AddChild(attackLeaf);
         
-        attackPlayer.AddChild(chaseOrBreak);
+        attackPlayer.AddChild(chaseLeaf);
         attackPlayer.AddChild(attackInverter);
         
 
@@ -152,7 +149,7 @@ public class EnemyBehaviour : MonoBehaviour
     private bool IsPlayerInRange()
     {
         float distance = Vector3.Distance(transform.position - Vector3.up*.4f, player.transform.position);
-        return distance < 1.8f;
+        return distance < 1f;
     }
 
     private bool ShouldFlee()
@@ -215,29 +212,28 @@ public class EnemyBehaviour : MonoBehaviour
         return Node.Status.RUNNING;
     }
 
-    private Node.Status BreakBlockInFront()
+    private void BreakBlockInFront()
     {
-        agent.SetDestination(player.transform.position);
-        
+        // agent.SetDestination(player.transform.position);
+        // // Check if the agent is close to the player or if the player is in range
+        // if ((agent.remainingDistance > 1f || IsPlayerInRange()) && flyTimeout < flyTimeoutDuration)
+        // {
+        //     state = ActionState.IDLE;
+        //     flyTimeout = 0f;
+        //     return;
+        //     //The player is out of reach but not out of sight
+        // }
+        //
         flyTimeout += Time.deltaTime;
-        if(flyTimeout > flyTimeoutDuration)
-        {
-            flyTimeout = 0f;
-        }
-        else
+        if(flyTimeout < flyTimeoutDuration)
         {
             state = ActionState.IDLE;
-            return Node.Status.RUNNING;
+            return;
         }
+        agent.enabled = false;
         
 
-        // Check if the agent is close to the player or if the player is in range
-        if (Vector3.Distance(transform.position, agent.pathEndPosition) > 1f || IsPlayerInRange())
-        {
-            state = ActionState.IDLE;
-            return Node.Status.FAILURE;
-            //The player is out of reach but not out of sight
-        }
+
     
         // Move towards the player (fly)
         transform.LookAt(player.transform);
@@ -246,12 +242,11 @@ public class EnemyBehaviour : MonoBehaviour
         // Check if the enemy has reached the player
         if (Vector3.Distance(transform.position, player.transform.position) < .5f)
         {
+            agent.enabled = true;
+            flyTimeout = 0f;
             state = ActionState.IDLE;
-            return Node.Status.SUCCESS;
         }
-
-        // Continue flying towards the player
-        return Node.Status.RUNNING;
+        
     }
 
     
@@ -259,13 +254,13 @@ public class EnemyBehaviour : MonoBehaviour
     private Node.Status ChasePlayer()
     {
         Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {agent.remainingDistance}");
-
         agent.SetDestination(player.transform.position);
 
         // Reset the chase timeout timer if player is seen or heard
         if (IsPlayerInSight() || CanHearPlayer())
         {
             chaseTimeout = 0f;
+            
         }
         else
         {
@@ -281,11 +276,17 @@ public class EnemyBehaviour : MonoBehaviour
             }
         }
 
-        // Check if the agent's path is blocked or if the player is out of reach but not out of sight
-        if (agent.pathStatus == NavMeshPathStatus.PathPartial && agent.remainingDistance < 1f && !IsPlayerInRange())
+        //Check if the agent's path is blocked or if the player is out of reach but not out of sight
+        if (agent.remainingDistance < 1f && !IsPlayerInRange() && Vector3.Distance(agent.pathEndPosition, player.transform.position) > 1f)
         {
-            state = ActionState.IDLE;
-            return Node.Status.FAILURE;
+            flyTimeout += Time.deltaTime;
+            if(flyTimeout > flyTimeoutDuration)
+            {
+                flyTimeout = 0f;
+                transform.position = player.transform.position + Vector3.up;
+                return Node.Status.RUNNING;
+            }
+            return Node.Status.RUNNING;
         }
 
         // If player is not in sight and not heard, start the timeout timer

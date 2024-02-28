@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using StarterAssets;
 using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -118,10 +119,12 @@ public class BlockyTerrain : MonoBehaviour
                 float distance = Vector3.Distance(block.location, playerTransform.position);
                 if (distance < 10)
                 {
+                    playerTransform.GetComponent<FirstPersonController>().SetSpeed(4,6);
                     fogManager.SetIntensityMultiplier(0.5f);
                 }
                 else
                 {
+                    playerTransform.GetComponent<FirstPersonController>().SetSpeed(3, 5);
                     fogManager.SetIntensityMultiplier(1f);
                 }
             }
@@ -651,7 +654,7 @@ public class BlockyTerrain : MonoBehaviour
                         cubeToRemove = GameObject.Find(block.name + ": " + position + " (Permanent)");
                     }
 
-                    DestroyWithChildren(cubeToRemove.gameObject);
+                    Destroy(cubeToRemove.gameObject);
 
                     var surroundingBlocks = GetSurroundingBlocks(position);
 
@@ -669,8 +672,8 @@ public class BlockyTerrain : MonoBehaviour
                             AddBlock(surroundingBlock, foundBlock);
                         }
                     }
-
-                    BuildNavmesh();
+                    //Delayed to ensure the block is removed before the navmesh is rebuilt
+                    StartCoroutine(PerformFunctionAfterDelay(0.1f, () => { BuildNavmesh(); }));
                     return true;
                 }
             }
@@ -678,7 +681,6 @@ public class BlockyTerrain : MonoBehaviour
 
         return false;
     }
-
 
     //This is ugly, but it works
     private Vector3[] GetSurroundingBlocks(Vector3 location)
