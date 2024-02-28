@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using static Utils.Utils;
 using Utils;
 using Random = UnityEngine.Random;
@@ -15,7 +16,7 @@ using Random = UnityEngine.Random;
 public class BlockyTerrain : MonoBehaviour
 {
     public int depth = 10;
-    public float scale = 1f;
+    public float frequency = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
 
     public Enemy enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
@@ -66,11 +67,11 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosXnav = (int)playerTransform.position.x;
         previousPlayerPosZnav = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
-        scale = Random.Range(scale / 2, scale + scale / 2);
+        frequency = Random.Range(frequency / 2, frequency + frequency / 2);
         fogManager = FindObjectOfType<FogManager>();
 
-        ore.ForEach(ore => { ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2); }
-        );
+        ore.ForEach(ore => { ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2); });
+        
     }
 
 
@@ -227,7 +228,7 @@ public class BlockyTerrain : MonoBehaviour
                 GenerateCubeAtPosition(x, z);
             }
         }
-
+        
         surface.BuildNavMesh();
     }
 
@@ -315,7 +316,7 @@ public class BlockyTerrain : MonoBehaviour
                 .DistinctBy(block => block.location)
                 .ToList();
 
-            float y = Mathf.PerlinNoise(x * 0.1f * scale, z * 0.1f * scale) * perlinScale;
+            float y = Mathf.PerlinNoise(x * 1/frequency, z * 1/frequency) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
 
 

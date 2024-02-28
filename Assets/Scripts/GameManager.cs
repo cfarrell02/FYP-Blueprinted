@@ -202,7 +202,7 @@ public class GameManager : MonoBehaviour
         var lightManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
 
         SaveData saveData = new SaveData(coordsToHeight, pickupsAndEnemies.ToList(), playerPos, playerInventory,
-            lightManager.GetTimeOfDay(), NightsSurvived, playerRot, generator.scale, playerXP);
+            lightManager.GetTimeOfDay(), NightsSurvived, playerRot, generator.frequency, playerXP);
 
         //Save saveData as binary
         BinaryFormatter bf = new BinaryFormatter();
@@ -240,7 +240,7 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        generator.scale = saveData.GetMapScale();
+        generator.frequency = saveData.GetMapScale();
         
         LoadEntitiesInScene(saveData);
 
