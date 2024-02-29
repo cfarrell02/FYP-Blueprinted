@@ -149,7 +149,7 @@ public class EnemyBehaviour : MonoBehaviour
     private bool IsPlayerInRange()
     {
         float distance = Vector3.Distance(transform.position - Vector3.up*.4f, player.transform.position);
-        return distance < 1f;
+        return distance < 1.2f;
     }
 
     private bool ShouldFlee()

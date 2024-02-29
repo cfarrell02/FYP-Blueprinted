@@ -31,6 +31,8 @@ public class PlayerInventory : MonoBehaviour
     private InventoryItem<Entity>[] startingItems;
     [SerializeField, Tooltip("This is the color of the block when the player is looking at it.")]
     Color blockHighlightColor = Color.red;
+    [SerializeField, Tooltip("Sounds for place/break block")]
+    private AudioClip placeBlockSound, breakBlockSound;
     
     private InventoryItem<Entity>[] inventory;
     private GameObject _lookedAtObject, currentLookedAtObject;
@@ -39,6 +41,7 @@ public class PlayerInventory : MonoBehaviour
     private GameObject renderedObject;
     private int inventorySize;
     private float timer;
+    private AudioSource audioSource;
 
 
     private int selectedBlockIndex;
@@ -55,7 +58,7 @@ public class PlayerInventory : MonoBehaviour
        // inventory = new GameObject[inventoryCapacity];
        blockyTerrain = FindObjectOfType<BlockyTerrain>(); // Will only be one instance of BlockyTerrain, hopefully
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-
+        audioSource = GetComponent<AudioSource>();
         
         selectedBlockIndex = 0;
 
@@ -371,6 +374,7 @@ public class PlayerInventory : MonoBehaviour
         // Block has been fully broken
         if (AddItem(block))
         { 
+            audioSource.PlayOneShot(breakBlockSound);
             blockyTerrain.RemoveBlock(block.location);
         }
     }
@@ -423,6 +427,8 @@ public class PlayerInventory : MonoBehaviour
                             
         if(lookedAtBlock == null || lookedAtBlock.blockType == Block.BlockType.Light)
             return;
+        
+        audioSource.PlayOneShot(placeBlockSound);
     
         var block = inventory[selectedBlockIndex];
         if (block.count != 0 && _lookedAtObject != null && block.item.name != null)

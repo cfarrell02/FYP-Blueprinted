@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.031207476, g: 0.06706731, b: 0.12086046, a: 1}
+  m_IndirectSpecularColor: {r: 0.031207386, g: 0.06706706, b: 0.12085987, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -875,7 +875,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 4.005879e-11, z: NaN, w: -4.0615736e-27}
+  m_BoundingSphereOverride: {x: 4.591775e-39, y: 2.0000002, z: 1.02e-43, w: 1e-45}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1571,7 +1571,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 995067845}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
@@ -2055,7 +2055,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
+  m_fontSize: 40.05
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2148,6 +2148,102 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4692444953215468569, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
   m_PrefabInstance: {fileID: 4450021929729982650}
   m_PrefabAsset: {fileID: 0}
+--- !u!82 &1357357814
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 307459785}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1389123397 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2318069271948005009, guid: 92272f10c4a8c8d4ea82bd1847176a7c, type: 3}
@@ -3760,6 +3856,14 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: breakBlockSound
+      value: 
+      objectReference: {fileID: 8300000, guid: ff04b6e74b20541ec8c1795758e2def7, type: 3}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      propertyPath: placeBlockSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 1d02659dda31b455ebeccdb2f96bb864, type: 3}
+    - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: allItems.Array.size
       value: 5
       objectReference: {fileID: 0}
@@ -3934,6 +4038,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5356250546746154659, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1357357812}
+    - targetCorrespondingSourceObject: {fileID: 5356250546746154659, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1357357814}
     - targetCorrespondingSourceObject: {fileID: 4699892294820475949, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 701500239}
