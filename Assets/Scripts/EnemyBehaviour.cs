@@ -160,6 +160,7 @@ public class EnemyBehaviour : MonoBehaviour
     // Actions
     private Node.Status Wander()
     {
+        agent.isStopped = false;
         Debug.Log("Wandering");
         if (timer > 5f)
         {
@@ -182,6 +183,8 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status AttackPlayer()
     {
+        agent.isStopped = true;
+        agent.SetDestination(transform.position);
         Debug.Log("Attacking player");
         if (timer > .8f)
         {
@@ -254,6 +257,7 @@ public class EnemyBehaviour : MonoBehaviour
     private Node.Status ChasePlayer()
     {
         Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {agent.remainingDistance}");
+        agent.isStopped = false;
         agent.SetDestination(player.transform.position);
 
         // Reset the chase timeout timer if player is seen or heard

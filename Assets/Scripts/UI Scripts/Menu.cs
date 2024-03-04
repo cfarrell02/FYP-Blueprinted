@@ -62,26 +62,33 @@ public class Menu : MonoBehaviour
         PopulateSaves();
     }
 
-    IEnumerator DisplaySplashScreen()
+    IEnumerator DisplaySplashScreen(bool newGame = true)
     {
-        if(existingSaves.Contains(saveGameInput.text))
+        
+    if (newGame)
+    {
+        
+
+        if (existingSaves.Contains(saveGameInput.text))
         {
             print("Save already exists");
             yield break;
         }
-        if(saveGameInput.text == "")
+
+        if (saveGameInput.text == "")
         {
             print("Save name cannot be empty");
             yield break;
         }
-        
-        GameManager.Instance.currentSaveFile = saveGameInput.text;
+    }
+
+    GameManager.Instance.currentSaveFile = saveGameInput.text;
         var allGameObjects = FindObjectsOfType<GameObject>();
         var uiItems = allGameObjects.Where(go => go.layer == 5).ToList();
 
         foreach (var uiItem in uiItems)
         {
-            if (uiItem.name == "Canvas")
+            if (uiItem.name == "Canvas" || uiItem.name == "Background")
                 continue;
             uiItem.SetActive(false);
         }
@@ -162,7 +169,7 @@ public class Menu : MonoBehaviour
     void LoadSave(string saveData)
     {
         GameManager.Instance.currentSaveFile = saveData;
-        StartGame();
+        StartCoroutine(DisplaySplashScreen(false));
 
     }
 }
