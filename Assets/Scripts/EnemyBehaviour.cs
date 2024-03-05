@@ -148,8 +148,10 @@ public class EnemyBehaviour : MonoBehaviour
 
     private bool IsPlayerInRange()
     {
-        float distance = Vector3.Distance(transform.position - Vector3.up*.4f, player.transform.position);
-        return distance < 1.2f;
+        //Check if player is touching the damage box
+        var damageBox = transform.GetChild(0).GetComponent<Collider>();
+        
+        return damageBox.bounds.Intersects(player.GetComponent<Collider>().bounds);
     }
 
     private bool ShouldFlee()

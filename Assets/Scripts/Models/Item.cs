@@ -40,16 +40,22 @@ public class Item : Entity
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 //Every layer except minimap
-                LayerMask mask = ~LayerMask.GetMask("Minimap");
+                LayerMask mask = ~LayerMask.GetMask("Minimap","Ignore Raycast");
+                
+                
                 
                 if (Physics.Raycast(ray, out hit, 100, mask))
                 {
                     Debug.Log(hit.transform.name);
-                    if (hit.transform.tag == "Enemy")
+                    if (hit.transform.CompareTag("Enemy"))
                     {
                         Debug.Log("You hit an enemy");
                         var enemy = hit.transform.GetComponent<Health>();
                         enemy.TakeDamage((int)damage);
+                        
+                        // Apply knockback
+                        var enemyRb = hit.transform.GetComponent<Rigidbody>();
+                        enemyRb.AddForce(ray.direction * 10, ForceMode.Impulse);
                     }
                 }
                 break;
