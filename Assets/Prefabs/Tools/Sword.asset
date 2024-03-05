@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caa93434261a23141b23cbee19f0526c, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
+  durability: -1
   maxDurability: 50
   name: Sword
   id: 1001
@@ -25,7 +26,10 @@ MonoBehaviour:
     count: 3
   - item: {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
     count: 1
+  minLevel: 0
   itemType: 0
   speed: 2
   damage: 10
   value: 0
+  hitSound: {fileID: 8300000, guid: ea5e1ef0d6406e94ab138ed9ed5d9ed3, type: 3}
+  missSound: {fileID: 8300000, guid: 98dab5c2b9a30eb449aadc3172456eed, type: 3}

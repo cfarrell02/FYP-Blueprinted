@@ -186,7 +186,7 @@ public class HUD : MonoBehaviour
 
     private void UpdateNightText()
     {
-        string nightText = $"Night: {GameManager.Instance.NightsSurvived}";
+        string nightText = $"Night: {GameManager.Instance.NightsSurvived} ({10 + GameManager.Instance.NightsSurvived} Enemies Spawning)";
         nightTextItem.text = nightText;
     }
     

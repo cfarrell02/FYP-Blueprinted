@@ -94,7 +94,7 @@ public class Menu : MonoBehaviour
         }
 
         StartText.gameObject.SetActive(true);
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(8);
         StartGame();
     }
 

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
+using static Utils.Utils;
 
 [System.Serializable]
 [CreateAssetMenu(fileName = "Item", menuName = "ScriptableObjects/Item", order = 1)]
@@ -25,6 +27,7 @@ public class Item : Entity
     public float damage;
     [Tooltip("Only if tool is consumable, how much x it gives")]
     public float value;
+    public AudioClip hitSound,missSound;
     
     private GameObject player;
     
@@ -36,15 +39,15 @@ public class Item : Entity
         switch (itemType)
         {
             case ItemType.Sword:
+                var audioSource = player.GetComponent<AudioSource>();
                 Debug.Log("You used a sword");
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 //Every layer except minimap
                 LayerMask mask = ~LayerMask.GetMask("Minimap","Ignore Raycast");
-                
-                
-                
-                if (Physics.Raycast(ray, out hit, 100, mask))
+
+
+                if (Physics.Raycast(ray, out hit, 10, mask))
                 {
                     Debug.Log(hit.transform.name);
                     if (hit.transform.CompareTag("Enemy"))
@@ -52,12 +55,24 @@ public class Item : Entity
                         Debug.Log("You hit an enemy");
                         var enemy = hit.transform.GetComponent<Health>();
                         enemy.TakeDamage((int)damage);
-                        
+
                         // Apply knockback
-                        var enemyRb = hit.transform.GetComponent<Rigidbody>();
-                        enemyRb.AddForce(ray.direction * 10, ForceMode.Impulse);
+                        var enemyBehaviour = hit.transform.GetComponent<EnemyBehaviour>();
+                        if (enemyBehaviour != null)
+                        {
+                            // add upwards force
+                            var direction = ray.direction + Vector3.up;
+                            enemyBehaviour.TakeKnockback(direction, 100);
+                        }
+
+                        audioSource.PlayOneShot(hitSound);
+                    }
+                    else
+                    {
+                        audioSource.PlayOneShot(missSound);
                     }
                 }
+
                 break;
             case ItemType.Blueprint:
                 Debug.Log("You used a blueprint");

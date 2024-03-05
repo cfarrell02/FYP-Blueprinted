@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using static Utils.Utils;
 
 public class EnemyBehaviour : MonoBehaviour
 {
@@ -35,10 +36,15 @@ public class EnemyBehaviour : MonoBehaviour
     enum ActionState { IDLE, WORKING };
     ActionState state = ActionState.IDLE;
 
+
+    private Animator animator;
+    private Health health;
+
     void Start()
     {
         playerLevel = FindObjectOfType<LevelManager>().GetCurrentLevel();
-
+        animator = GetComponentInChildren<Animator>();
+        health = GetComponent<Health>();
         
         // Component initialization
         agent = GetComponent<NavMeshAgent>();
@@ -98,19 +104,19 @@ public class EnemyBehaviour : MonoBehaviour
         
 
         // Sequence for fleeing
-        Sequence flee = new Sequence("Flee");
+        Sequence wander = new Sequence("Flee");
 
         Leaf fleeLeaf = new Leaf("Flee", Flee);
-        flee.AddChild(fleeLeaf);
+        wander.AddChild(fleeLeaf);
 
         Leaf wanderLeaf = new Leaf("Wander", Wander);
-        flee.AddChild(wanderLeaf);
+        wander.AddChild(wanderLeaf);
 
         // Root selector
         Selector root = new Selector("Root");
 
         root.AddChild(attackPlayer);
-        root.AddChild(flee);
+        root.AddChild(wander);
 
         tree.AddChild(root);
     }
@@ -162,6 +168,18 @@ public class EnemyBehaviour : MonoBehaviour
     // Actions
     private Node.Status Wander()
     {
+        
+        print(Vector3.Distance(agent.destination, transform.position));
+        if(Vector3.Distance(agent.destination, transform.position) < 2f)
+        {
+            animator.SetBool("isWalking", false);
+
+        }
+        else
+        {
+            animator.SetBool("isWalking", true);
+
+        }
         agent.isStopped = false;
         Debug.Log("Wandering");
         if (timer > 5f)
@@ -185,6 +203,8 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status AttackPlayer()
     {
+        animator.SetBool("isWalking", false);
+        animator.SetBool("isAttacking", true);
         agent.isStopped = true;
         agent.SetDestination(transform.position);
         Debug.Log("Attacking player");
@@ -258,7 +278,9 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status ChasePlayer()
     {
-        Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {agent.remainingDistance}");
+        animator.SetBool("isAttacking", false);
+        animator.SetBool("isWalking", true);
+        //Debug.Log($"Chasing the player, path partial? {agent.pathStatus} and distance to destination: {agent.remainingDistance}");
         agent.isStopped = false;
         agent.SetDestination(player.transform.position);
 
@@ -274,7 +296,7 @@ public class EnemyBehaviour : MonoBehaviour
             chaseTimeout += Time.deltaTime;
         
             // If timed out, stop chasing
-            if (chaseTimeout >= chaseTimeoutDuration)
+            if (chaseTimeout >= chaseTimeoutDuration )
             {
                 chaseTimeout = 0f;
                 state = ActionState.IDLE;
@@ -294,6 +316,8 @@ public class EnemyBehaviour : MonoBehaviour
             }
             return Node.Status.RUNNING;
         }
+        
+        
 
         // If player is not in sight and not heard, start the timeout timer
         if (!IsPlayerInSight() && !CanHearPlayer())
@@ -318,6 +342,12 @@ public class EnemyBehaviour : MonoBehaviour
             state = ActionState.IDLE;
             return Node.Status.SUCCESS;
         }
+        
+        if(health.GetCurrentHealth() < 30)
+        {
+            state = ActionState.IDLE;
+            return Node.Status.FAILURE;
+        }
 
         // Continue chasing
         state = ActionState.WORKING;
@@ -327,6 +357,7 @@ public class EnemyBehaviour : MonoBehaviour
 
     private Node.Status Flee()
     {
+        animator.SetBool("isWalking", true);
         Debug.Log("Fleeing");
         Vector3 towardsPlayer = (player.transform.position - transform.position).normalized;
         agent.SetDestination(transform.position - towardsPlayer * fleeDistance);
@@ -345,5 +376,19 @@ public class EnemyBehaviour : MonoBehaviour
         }
         
         return Node.Status.FAILURE;
+    }
+    
+    public void TakeKnockback(Vector3 direction, float force=10)
+    {
+        agent.enabled = false;
+        var rb = transform.GetComponent<Rigidbody>();
+        rb.isKinematic = false;
+        rb.AddForce(direction * force , ForceMode.Impulse);
+        StartCoroutine(PerformFunctionAfterDelay(1f, () =>
+        {
+            transform.GetComponent<Rigidbody>().isKinematic = true;
+            agent.enabled = true;
+        }));
+        agent.enabled = true;
     }
 }

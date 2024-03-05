@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     public bool inputEnabled = true;
     public bool craftingIsOpen = false;
     public bool isPaused = false;
+    public AudioSource playerAudio;
     public int NightsSurvived { get; set; } = 0;
     
     private string leaderboardFilePath;
@@ -75,6 +76,7 @@ public class GameManager : MonoBehaviour
         
         //On application quit, save the game
         Application.quitting += () => SaveGame(currentSaveFile + ".data");
+        playerAudio = GameObject.FindWithTag("Player").GetComponent<AudioSource>();
             
     }
     

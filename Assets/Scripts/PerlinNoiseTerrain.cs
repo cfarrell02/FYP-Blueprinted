@@ -177,15 +177,17 @@ public class BlockyTerrain : MonoBehaviour
     void HandleEnemySpawn()
     {
         timer += Time.deltaTime;
+        
+        int maxEnemies = 10 + GameManager.Instance.NightsSurvived;
 
-        if (timer >= 5f && GameObject.FindGameObjectsWithTag("Enemy").Length < 10)
+        if (timer >= 5f && GameObject.FindGameObjectsWithTag("Enemy").Length < maxEnemies)
         {
             timer = 0f;
 
             var noSpawnBlocks = GameObject.FindGameObjectsWithTag("NoSpawn");
 
             float distanceToSpawn = 10f;
-            for (int i = 0; i < 10; i++) // Attempt to find a block to spawn the enemy on 10 times, give up after that
+            for (int i = 0; i < maxEnemies; i++) // Attempt to find a block to spawn the enemy on 10 times, give up after that
             {
                 //Pick a block to spawn the enemy on
                 Vector3 spawnPos = new Vector3(
