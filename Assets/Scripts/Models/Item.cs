@@ -67,10 +67,10 @@ public class Item : Entity
 
                         audioSource.PlayOneShot(hitSound);
                     }
-                    else
-                    {
-                        audioSource.PlayOneShot(missSound);
-                    }
+                }
+                else
+                {
+                    audioSource.PlayOneShot(missSound);
                 }
 
                 break;
@@ -84,6 +84,8 @@ public class Item : Entity
                 Debug.Log("You used health");
                 var playerHealth = player.GetComponent<Health>();
                 playerHealth.Heal((int)value);
+
+                return true;
                 
                 break;
             

@@ -56,8 +56,9 @@ public class HUD : MonoBehaviour
         
         returnToMenuButton.onClick.AddListener(() =>
         {
-            GameManager.Instance.SaveGame(GameManager.Instance.currentSaveFile + ".data" );
-            GameManager.Instance.TogglePause(); 
+            GameManager.Instance.SaveGame(GameManager.Instance.currentSaveFile + ".data");
+            GameManager.Instance.TogglePause();
+
             SceneManager.LoadScene(0);
         });
         
@@ -158,14 +159,14 @@ public class HUD : MonoBehaviour
         {
             
             craftingOpen = !craftingOpen; 
-            GameManager.Instance.craftingIsOpen = !craftingOpen;
+            GameManager.Instance.craftingIsOpen = craftingOpen;
         }
 
         if (Input.GetKeyDown(KeyCode.Return) && craftingOpen)
         {
             playerInventoryObject.CraftItem(craftingIndex);
             craftingOpen = false;
-            GameManager.Instance.craftingIsOpen = true;
+            GameManager.Instance.craftingIsOpen = craftingOpen;
         }
 
         animator.SetBool("Paused", GameManager.Instance.isPaused);

@@ -76,7 +76,6 @@ public class GameManager : MonoBehaviour
         
         //On application quit, save the game
         Application.quitting += () => SaveGame(currentSaveFile + ".data");
-        playerAudio = GameObject.FindWithTag("Player").GetComponent<AudioSource>();
             
     }
     
@@ -100,8 +99,11 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         if(!IsMainScene()) return;
-        
-        
+
+        if (!playerAudio)
+        {
+            playerAudio = GameObject.FindWithTag("Player").GetComponent<AudioSource>();
+        }
         if (!generator )
         {
             print(IsMainScene());

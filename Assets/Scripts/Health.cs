@@ -1,4 +1,5 @@
 
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,6 +8,8 @@ public class Health : MonoBehaviour
     public int currentHealth;
     public int maxHealth = 100;
     private bool isPlayer;
+    
+    float time = 0, rehealPercentage = 0.05f;
     
     // Start is called before the first frame update
     void Start()
@@ -39,7 +42,7 @@ public class Health : MonoBehaviour
     {
         if (isPlayer)
         {
-            GameManager.Instance.SaveGame(GameManager.Instance.currentSaveFile + "_dead.data");
+            //GameManager.Instance.SaveGame(GameManager.Instance.GetSavePath() + "_dead.data");
             GameManager.Instance.ResetGame();
             
             // Get the current active scene index
@@ -71,6 +74,18 @@ public class Health : MonoBehaviour
     {
         return currentHealth;
     }
-    
-    
+
+    private void Update()
+    {
+        if (currentHealth < maxHealth)
+        {
+            time += Time.deltaTime;
+            if (time > 5)
+            {
+                time = 0;
+                Heal((int) (maxHealth * rehealPercentage));
+            }
+        }
+        
+    }
 }

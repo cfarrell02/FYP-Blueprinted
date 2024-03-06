@@ -82,7 +82,10 @@ public class Menu : MonoBehaviour
         }
     }
 
-    GameManager.Instance.currentSaveFile = saveGameInput.text;
+    if(newGame)
+        GameManager.Instance.currentSaveFile = saveGameInput.text;
+    
+    
         var allGameObjects = FindObjectsOfType<GameObject>();
         var uiItems = allGameObjects.Where(go => go.layer == 5).ToList();
 
@@ -148,7 +151,7 @@ public class Menu : MonoBehaviour
             var deleteButton = Instantiate(startButton, savesPanel.transform);
 
             // Set the position of the save button
-            float yPos = savesPanel.transform.position.y - (i * buttonHeight) - 120;
+            float yPos = savesPanel.transform.position.y - (i * buttonHeight) - savesPanel.transform.position.y*0.5f;
             saveButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, yPos);
             deleteButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(160, yPos);
 
@@ -158,7 +161,10 @@ public class Menu : MonoBehaviour
             deleteButton.GetComponentInChildren<TextMeshProUGUI>().text = "Delete";
 
             // Add a listener to the button for loading the save
-            saveButton.GetComponent<Button>().onClick.AddListener(() => LoadSave(fileName));
+            saveButton.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                LoadSave(fileName);
+            });
             deleteButton.GetComponent<Button>().onClick.AddListener(() => DeleteSave(fileName));
 
             print("Adding save button for: " + fileName);
@@ -168,6 +174,7 @@ public class Menu : MonoBehaviour
 
     void LoadSave(string saveData)
     {
+        print("Loading save: " + saveData);
         GameManager.Instance.currentSaveFile = saveData;
         StartCoroutine(DisplaySplashScreen(false));
 

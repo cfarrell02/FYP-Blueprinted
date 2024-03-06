@@ -135,9 +135,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Skeleton
       objectReference: {fileID: 0}
-    - target: {fileID: 1231795917570576389, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2.19
+    - target: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2709257068976105614, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
       propertyPath: m_LocalPosition.x
@@ -179,25 +179,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2801107455127768346, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.01420879
-      objectReference: {fileID: 0}
-    - target: {fileID: 7195996964172591024, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7715422579871152373, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.01281863
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1739884105}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
 --- !u!1 &250438829
 GameObject:
@@ -890,7 +875,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 4.5905e-41, y: 4.1443378e+23, z: 4.5905e-41, w: 9.403955e-38}
+  m_BoundingSphereOverride: {x: 9.18355e-40, y: 9.1835e-41, z: 1.8e-43, w: 9.6285715e-37}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -2353,11 +2338,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1399723058}
   m_CullTransparentMesh: 1
---- !u!1 &1419363103 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 225661646640385875, guid: e2a0881c30ee0b047afa91c12f60d766, type: 3}
-  m_PrefabInstance: {fileID: 21243478}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1432780196
 GameObject:
   m_ObjectHideFlags: 0
@@ -2580,6 +2560,8 @@ MonoBehaviour:
   dirt: {fileID: 11400000, guid: dd396c96daeee4778b0122fcfbd3f9e1, type: 2}
   stone: {fileID: 11400000, guid: 6be48ea7af392a94290c0f9b581e39fb, type: 2}
   bedrock: {fileID: 11400000, guid: 69b304548d9dffe41b4c291f3e344548, type: 2}
+  leaf: {fileID: 11400000, guid: 66d37d802fc11c842ab79c92b443ca97, type: 2}
+  wood: {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
   ore:
   - oreBlock: {fileID: 11400000, guid: aedcde7566c3db0468a3bb969666b6b1, type: 2}
     oreThreshold: 0.79
@@ -2983,33 +2965,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1721319366}
   m_CullTransparentMesh: 1
---- !u!54 &1739884105
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1419363103}
-  serializedVersion: 4
-  m_Mass: 50
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!850595691 &1767165796
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -3311,10 +3266,10 @@ RectTransform:
   - {fileID: 428946330}
   m_Father: {fileID: 1119086790}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 291, y: -109.5}
-  m_SizeDelta: {x: -722, y: -367}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -119.5, y: 124}
+  m_SizeDelta: {x: 99, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2021123483
 GameObject:
@@ -3468,7 +3423,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &2022980363
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3957,7 +3912,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 4d82d3c9d8a6fa74f8e0ed140e5c4905, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.size
-      value: 6
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[0]
@@ -4010,7 +3965,7 @@ PrefabInstance:
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[2].item
       value: 
-      objectReference: {fileID: 11400000, guid: b13023213711c422db0ca172669a6fcc, type: 2}
+      objectReference: {fileID: 11400000, guid: bfd3605e933eea0468f04a7cb9b5e850, type: 2}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[3].item
       value: 
@@ -4033,7 +3988,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[2].count
-      value: 1
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6198114663819023030, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
       propertyPath: startingItems.Array.data[3].count

@@ -22,7 +22,7 @@ public class BlockyTerrain : MonoBehaviour
 
     public Enemy enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
 
-    public Block grass, dirt, stone, bedrock;
+    public Block grass, dirt, stone, bedrock, leaf, wood;
 
     [Tooltip("Any ores to be generated in the world, with the chance of them spawning")]
     public List<SerializableOreParameters> ore = new List<SerializableOreParameters>();
@@ -48,6 +48,7 @@ public class BlockyTerrain : MonoBehaviour
     private List<Block> emptyBlocks = new List<Block>(), lightingBlocks = new List<Block>();
     private Dictionary<string, List<GameObject>> pooledBlocks = new Dictionary<string, List<GameObject>>();
     private FogManager fogManager;
+    private Dictionary<string, Vector3> placedBlocks = new Dictionary<string, Vector3>();
 
     private void Awake()
     {
@@ -130,7 +131,7 @@ public class BlockyTerrain : MonoBehaviour
             }
         });
     }
-
+    
 
     void HandleNavmesh()
     {
@@ -280,6 +281,8 @@ public class BlockyTerrain : MonoBehaviour
 
     void GenerateCubeAtPosition(int x, int z)
     {
+        
+        
         Vector2 currentPos = new Vector2(x, z);
 
         if (coordsToHeight.ContainsKey(currentPos)
@@ -321,11 +324,12 @@ public class BlockyTerrain : MonoBehaviour
                 .DistinctBy(block => block.location)
                 .ToList();
 
-            float y = Mathf.PerlinNoise(x * 1/frequency, z * 1/frequency) * perlinScale;
+            float y = Mathf.PerlinNoise(x * 1 / frequency, z * 1 / frequency) * perlinScale;
             y = Mathf.Floor(y / cubeHeight) * cubeHeight;
 
 
-            for (int i = -depth; i <= y; ++i)
+
+        for (int i = -depth; i <= y; ++i)
             {
                 Vector3 cubePos = new Vector3(x, i, z);
                 bool toBeLoaded = i >= y;
@@ -482,8 +486,13 @@ public class BlockyTerrain : MonoBehaviour
     public void InstantiateCube(Vector3 position, Block cube2 = null, bool permanentNavmesh = false)
     {
         if (!cube2) cube2 = grass;
+        
+        
+        if(placedBlocks.ContainsKey(cube2.name + ": " + position)) return;
 
         var pooledBlock = GetPooledBlock(cube2);
+
+        //pooledBlock = null;
 
         GameObject cube;
         if (pooledBlock != null)
@@ -503,6 +512,7 @@ public class BlockyTerrain : MonoBehaviour
         cube.name = cube2.name + ": " + position + (permanentNavmesh ? " (Permanent)" : "");
         cube.isStatic = true;
         float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
+        placedBlocks[cube2.name + ": " + position] = position;
         if (distanceToPlayer < navMeshDistance || permanentNavmesh)
         {
             cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
@@ -562,6 +572,8 @@ public class BlockyTerrain : MonoBehaviour
 
                 // Add cube to the appropriate pool
                 AddToPool(cube, block);
+                    
+                placedBlocks.Remove(block.name + ": " + pos);
 
                 // Deactivate the cube
                 SetActiveBlock(cube, false);

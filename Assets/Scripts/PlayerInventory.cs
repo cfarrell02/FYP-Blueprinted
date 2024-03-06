@@ -416,7 +416,8 @@ public class PlayerInventory : MonoBehaviour
         Transform cameraTransform = Camera.main.transform;
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
     
-        if (Physics.Raycast(ray, out hit, 5f))
+        LayerMask mask = LayerMask.GetMask("NavMesh", "Interactives");
+        if (Physics.Raycast(ray, out hit, 5f, mask))
         {
             if (hit.collider.gameObject.GetComponent<Renderer>() == null || !hit.collider.gameObject.CompareTag("Cube"))
                 return;
