@@ -8,6 +8,7 @@ public class Health : MonoBehaviour
     public int currentHealth;
     public int maxHealth = 100;
     private bool isPlayer;
+    Vector3 previousPosition, currentPosition;
     
     float time = 0, rehealPercentage = 0.05f;
     
@@ -27,6 +28,8 @@ public class Health : MonoBehaviour
         }
         
     }
+    
+    
     
     public void SetHealth(int health)
     {

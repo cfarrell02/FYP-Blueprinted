@@ -85,7 +85,7 @@ public class FirestoreManager
         {
             { "name", name },
             { "xp", xp },
-            { "nightsSurvived", nightsSurvived }
+            { "nights_survived", nightsSurvived }
         };
 
         AddDataToFirestore("users", user);

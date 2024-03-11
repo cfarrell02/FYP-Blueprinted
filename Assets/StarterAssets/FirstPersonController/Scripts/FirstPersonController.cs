@@ -134,6 +134,13 @@ namespace StarterAssets
 				return;
 			CameraRotation();
 		}
+		
+		private void DetectFallDamage()
+		{
+			//Detect if player falls from a certain height
+			
+			
+		}
 
 		private void GroundedCheck()
 		{
@@ -141,7 +148,7 @@ namespace StarterAssets
 			Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
 			Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
 		}
-
+		
 		private void CameraRotation()
 		{
 			// if there is an input
