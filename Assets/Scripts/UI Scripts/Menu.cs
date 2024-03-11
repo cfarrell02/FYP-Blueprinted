@@ -17,6 +17,7 @@ public class Menu : MonoBehaviour
     
     private Animator animator;
     List<string> existingSaves = new List<string>();
+List<Dictionary<string, object>> leaderboard = new List<Dictionary<string, object>>();
     
     void Start()
     {
@@ -103,20 +104,31 @@ public class Menu : MonoBehaviour
 
     void PopulateLeaderboard()
     {
-        var leaderboard = GameManager.Instance.leaderboardEntries.entries;
         
         if(leaderboard == null || leaderboard.Count == 0)
         {
+            StartCoroutine(GameManager.Instance.firestoreManager.RetrieveDataFromFirestore("users", (data) =>
+                {
+                    if (data == null)
+                    {
+                        print("Failed to retrieve leaderboard data");
+                        return;
+                    }
+                    leaderboard = data;
+                })
+            );
+            
             LeaderboardText.text = "No entries yet";
             return;
         }
         
-        leaderboard = leaderboard.OrderByDescending(x => x.night).ToList();
+        leaderboard = leaderboard.OrderByDescending(x => x["nights_survived"]).ToList();
         
         string leaderboardText = "";
         foreach (var entry in leaderboard)
+            
         {
-            leaderboardText += $"{entry.name} ({entry.xp}) - {entry.night} nights survived\n";
+            leaderboardText += $"{entry["name"]} ({entry["xp"]}) - {entry["nights_survived"]} nights survived\n";
         }
         LeaderboardText.text = leaderboardText;
     }

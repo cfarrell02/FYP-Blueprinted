@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
     public string currentSaveFile;
     private BlockyTerrain generator;
     
-    public Leaderboard leaderboardEntries = new Leaderboard(new List<LeaderboardEntry>());
+    public FirestoreManager firestoreManager;
 
 
     // Awake is called when the script instance is being loaded
@@ -72,10 +72,12 @@ public class GameManager : MonoBehaviour
     
     private void Start()
     {
-        LoadLeaderboard();
+        
         
         //On application quit, save the game
         Application.quitting += () => SaveGame(currentSaveFile + ".data");
+        firestoreManager = new FirestoreManager();
+        
             
     }
     
@@ -109,6 +111,10 @@ public class GameManager : MonoBehaviour
             print(IsMainScene());
             generator = GameObject.Find("Generator").GetComponent<BlockyTerrain>();
             StartCoroutine(LateStart());
+        }
+        if(firestoreManager == null)
+        {
+            firestoreManager = new FirestoreManager();
         }
         
         //Temp load and save, will be moved to pause menu
@@ -166,27 +172,10 @@ public class GameManager : MonoBehaviour
         NightsSurvived = 0;
     }
     
-    public void AddToLeaderboard(string name, int score, int xp = 0)
+
+    public void AddToLeaderboard(string name, int score, int xp)
     {
-        leaderboardEntries.entries.Add(new LeaderboardEntry(name, score, xp));
-        leaderboardEntries.entries = leaderboardEntries.entries.OrderByDescending(e => e.night).ToList();
-        SaveLeaderboard();
-    }
-    
-    private void SaveLeaderboard()
-    {
-        string json = JsonUtility.ToJson(leaderboardEntries);
-        print(json);
-        File.WriteAllText(leaderboardFilePath, json);
-    }
-    
-    private void LoadLeaderboard()
-    {
-        if (File.Exists(leaderboardFilePath))
-        {
-            string json = File.ReadAllText(leaderboardFilePath);
-            leaderboardEntries = JsonUtility.FromJson<Leaderboard>(json);
-        }
+        firestoreManager.AddUser(name, xp, score);
     }
     
     public void SaveGame(string path = "SaveGame.data")
@@ -298,31 +287,7 @@ public class GameManager : MonoBehaviour
         var canvas = GameObject.Find("Canvas");
         canvas.GetComponent<HUD>().SetPlayerInventory(playerInventoryItem);
     }
-
-    [Serializable]
-    public struct LeaderboardEntry
-    {
-        public string name;
-        public int night, xp;
-        
-        public LeaderboardEntry(string name, int night, int xp)
-        {
-            this.name = name;
-            this.night = night;
-            this.xp = xp;
-        }
-    }
-
-    [Serializable]
-    public struct Leaderboard
-    {
-        public List<LeaderboardEntry> entries;
-        
-        public Leaderboard(List<LeaderboardEntry> entries)
-        {
-            this.entries = entries;
-        }
-    }
+    
     
     
 

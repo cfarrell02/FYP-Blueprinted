@@ -12,6 +12,7 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+/[Aa]ssets/[Ff]irebase/
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
@@ -50,6 +51,9 @@ ExportedObj/
 *.opendb
 *.VC.db
 
+google-services.json
+google-services-desktop.json
+
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta
@@ -78,3 +82,9 @@ crashlytics-build.properties
 
 
 # End of https://www.toptal.com/developers/gitignore/api/unity
+Assets/StreamingAssets/google-services.json
+Assets/StreamingAssets/google-services.json.meta
+Assets/StreamingAssets/google-services.json.meta
+Assets/StreamingAssets/google-services.json
+Assets/StreamingAssets/google-services.json
+Assets/StreamingAssets/google-services.json.meta
