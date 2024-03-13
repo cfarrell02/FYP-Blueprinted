@@ -26,6 +26,10 @@ git clone https://github.com/cfarrell02/project-blueprinted.git
 - Open the project in Unity and explore/run the corresponding prototype scenes.
 - Follow README files in each branch for specific instructions.
 
+
+*Note: Package [Firestore](https://firebase.google.com/download/unity) is required to run this unity project (Only the firebase.firestore package is needed).
+Also google-services.json file is required to be placed in the StreamingAssets folder for the project to run.*
+
 ## Contributing
 
 - Fork this repository.
