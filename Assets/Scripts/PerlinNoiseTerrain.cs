@@ -715,6 +715,13 @@ public class BlockyTerrain : MonoBehaviour
 
     public bool AddBlock(Vector3 position, Block blockToAdd)
     {
+        float threshold = 0.5f;
+        if (Vector3.Distance(position, playerTransform.position + new Vector3(0,1.7f,0)) < threshold
+            || Vector3.Distance(position, playerTransform.position + new Vector3(0,.7f,0)) < threshold)
+        {
+            return false;
+        }
+        
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {
