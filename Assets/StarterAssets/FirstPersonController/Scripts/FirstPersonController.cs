@@ -59,6 +59,7 @@ namespace StarterAssets
 		private float _rotationVelocity;
 		private float _verticalVelocity;
 		private float _terminalVelocity = 53.0f;
+		private float _prevVerticalVelocity;
 
 		// timeout deltatime
 		private float _jumpTimeoutDelta;
@@ -126,6 +127,7 @@ namespace StarterAssets
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
+			DetectFallDamage();
 		}
 
 		private void LateUpdate()
@@ -138,8 +140,20 @@ namespace StarterAssets
 		private void DetectFallDamage()
 		{
 			//Detect if player falls from a certain height
+			// Look for a sudden stop in the vertical velocity
+			float stopAmount = Mathf.Abs(_prevVerticalVelocity - _verticalVelocity);
 			
+			if (stopAmount > 10.0f)
+			{
+				//Player took fall damage
+				var health = GetComponent<Health>();
+				if (health)
+					health.TakeDamage((int) stopAmount * 2);
+			}
 			
+//			print(stopAmount);
+
+			_prevVerticalVelocity = _verticalVelocity;
 		}
 
 		private void GroundedCheck()

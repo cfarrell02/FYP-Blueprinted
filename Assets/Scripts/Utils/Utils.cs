@@ -22,5 +22,10 @@ namespace Utils
             function();
         }
         
+        public static Vector3 ToBlockPosition(Vector3 position)
+        {
+            return new Vector3(Mathf.Floor(position.x), Mathf.Floor(position.y), Mathf.Floor(position.z));
+        }
+        
     }
 }

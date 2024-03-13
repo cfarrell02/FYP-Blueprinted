@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -13,6 +14,12 @@ public class Menu : MonoBehaviour
     public TextMeshProUGUI StartText, LeaderboardText;
     public GameObject savesPanel; // Change Image to GameObject
     public TMP_InputField saveGameInput;
+    
+    
+    
+    //Settings
+    public Slider volumeSlider;
+    public AudioMixer audioMixer;
 
     
     private Animator animator;
@@ -36,6 +43,13 @@ List<Dictionary<string, object>> leaderboard = new List<Dictionary<string, objec
         
         StartText.gameObject.SetActive(false);
         PopulateSaves();
+        
+        
+        volumeSlider.onValueChanged.AddListener((value) =>
+        {
+           audioMixer.SetFloat("SoundsVolume", value);
+           print("Volume: " + value);
+        });
 
     }
     

@@ -7,7 +7,8 @@ public class LevelManager : MonoBehaviour
 
     // Current player level and XP
     private int currentLevel = 1;
-    private int currentXP = 0;
+    [SerializeField, Range(0, 1000)]
+    public int currentXP = 0;
 
     // Method to gain XP
     public void GainXP(int xpAmount)

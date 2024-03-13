@@ -9,6 +9,7 @@ public class Health : MonoBehaviour
     public int maxHealth = 100;
     private bool isPlayer;
     Vector3 previousPosition, currentPosition;
+    public AudioClip damageSound;
     
     float time = 0, rehealPercentage = 0.05f;
     
@@ -25,6 +26,12 @@ public class Health : MonoBehaviour
         if (currentHealth <= 0)
         {
             Die();
+        }
+        
+        if (isPlayer)
+        {
+            AudioSource audioSource = GetComponent<AudioSource>();
+            audioSource.PlayOneShot(damageSound);
         }
         
     }

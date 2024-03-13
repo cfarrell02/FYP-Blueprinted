@@ -14,10 +14,10 @@ public class HUD : MonoBehaviour
     public TextMeshProUGUI text;
     public TextMeshProUGUI nightTextItem;
     public TextMeshProUGUI currentItemText;
-    public Image healthBar;
+    public Slider healthBar;
     public Color fullHealthColor, lowHealthColor;
     public GameObject inventorySlotPrefab;
-    public Image xpBar;
+    public Slider xpBar;
     public TextMeshProUGUI levelText;
 
     [Header("Inventory")]
@@ -63,7 +63,7 @@ public class HUD : MonoBehaviour
         });
         
         //Set xpbar to 0
-        xpBar.transform.localScale = new Vector3(0, 1, 1);
+        xpBar.value = 0;
     }
     
     public void SetPlayerInventory(PlayerInventory playerInventory)
@@ -177,11 +177,11 @@ public class HUD : MonoBehaviour
     {
         int[] xpLevels = levelManager.xpThresholds;
         int currentlevel = levelManager.GetCurrentLevel();
-        int currentXPLevel = xpLevels[currentlevel - 1];
-        int nextXPLevel = currentlevel < xpLevels.Length ? xpLevels[currentlevel] : currentXPLevel;
-        int currentXP = levelManager.GetCurrentXP();
-        float normalizedXP = (currentXP - currentXPLevel) / (float)(nextXPLevel - currentXPLevel);
-        xpBar.transform.localScale = new Vector3(normalizedXP, 1, 1);
+        int currentXPLevel = currentlevel == 1 ? xpLevels[0] : xpLevels[currentlevel - 1] - xpLevels[currentlevel - 2];
+        int currentXP = levelManager.GetCurrentXP() - (currentlevel == 1 ? 0 : xpLevels[currentlevel - 2]);
+        float normalizedXP = currentXP / (float)currentXPLevel;
+        xpBar.value = normalizedXP;
+        Debug.Log("XP: " + currentXP + " Current Level: " + currentlevel + " XP Level: " + currentXPLevel + " Normalized: " + normalizedXP);
         levelText.text = "Level " + currentlevel;
     }
 
@@ -381,8 +381,8 @@ public class HUD : MonoBehaviour
 
         float normalizedHealth = playerHealth.GetCurrentHealth() / (float)playerHealth.maxHealth;
 
-        healthBar.transform.localScale = new Vector3(normalizedHealth, 1, 1);
-        healthBar.color = Color.Lerp(lowHealthColor, fullHealthColor, normalizedHealth);
+        healthBar.value = normalizedHealth;
+        healthBar.fillRect.GetComponent<Image>().color = Color.Lerp(lowHealthColor, fullHealthColor, normalizedHealth);
     }
     
 }

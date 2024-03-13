@@ -429,8 +429,6 @@ public class PlayerInventory : MonoBehaviour
         if(lookedAtBlock == null || lookedAtBlock.blockType == Block.BlockType.Light)
             return;
         
-        audioSource.PlayOneShot(placeBlockSound);
-    
         var block = inventory[selectedBlockIndex];
         if (block.count != 0 && _lookedAtObject != null && block.item.name != null)
         {
@@ -464,7 +462,11 @@ public class PlayerInventory : MonoBehaviour
             blockToAdd.maxDurability = blockItem.maxDurability;
             
             
-            blockyTerrain.AddBlock(placePos, blockToAdd);
+            bool success = blockyTerrain.AddBlock(placePos, blockToAdd);
+            if(success)
+                audioSource.PlayOneShot(placeBlockSound);
+            else
+                return;
             // Remove the block from the inventory
             RemoveItem(selectedBlockIndex);
         
