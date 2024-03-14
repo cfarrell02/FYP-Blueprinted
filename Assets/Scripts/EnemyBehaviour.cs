@@ -311,7 +311,9 @@ public class EnemyBehaviour : MonoBehaviour
             if(flyTimeout > flyTimeoutDuration)
             {
                 flyTimeout = 0f;
-                transform.position = player.transform.position + Vector3.up;
+                agent.enabled = false;
+                transform.position = player.transform.position + Camera.main.transform.forward * 2f + Vector3.up * 2f;
+                agent.enabled = true;
                 return Node.Status.RUNNING;
             }
             return Node.Status.RUNNING;
