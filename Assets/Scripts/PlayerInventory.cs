@@ -485,6 +485,9 @@ public class PlayerInventory : MonoBehaviour
         if (blockObject != null)
         {
             var block = blockyTerrain.FindBlock(blockObject.transform.position);
+            if(block == null)
+                return;
+            
             float durability = block.durability, maxDurability = block.maxDurability;
             float normalizedDurability = durability / maxDurability;
             if (block != null && blockObject.GetComponent<Renderer>() != null)

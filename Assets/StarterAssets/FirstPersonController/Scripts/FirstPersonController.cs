@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
 #endif
@@ -75,6 +76,9 @@ namespace StarterAssets
 		private CharacterController _controller;
 		private StarterAssetsInputs _input;
 		private GameObject _mainCamera;
+		
+		private float snowCheckTimer = 0;
+		private float startingSpeed;
 
 		private const float _threshold = 0.01f;
 
@@ -117,6 +121,7 @@ namespace StarterAssets
 			//Hide mouse
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
+			startingSpeed = MoveSpeed;
 			
 		}
 
@@ -128,6 +133,28 @@ namespace StarterAssets
 			GroundedCheck();
 			Move();
 			DetectFallDamage();
+			
+			
+			snowCheckTimer += Time.deltaTime;
+			if (snowCheckTimer > 1f)
+			{
+				//Raycast down to check if we are in snow
+				RaycastHit hit;
+				if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f, LayerMask.GetMask("NavMesh")))
+				{
+					if(hit.transform.name.Contains("Snow"))
+					{
+						MoveSpeed = startingSpeed * .75f;
+					}
+					else
+					{
+						MoveSpeed = startingSpeed;
+						
+					}
+				}
+
+			}
+			
 		}
 
 		private void LateUpdate()

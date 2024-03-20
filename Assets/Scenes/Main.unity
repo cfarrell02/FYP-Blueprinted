@@ -1039,7 +1039,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: NaN}
+  m_BoundingSphereOverride: {x: 1.38419e-40, y: 6e-44, z: 3e-45, w: 5.94364e-40}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1981,12 +1981,12 @@ MonoBehaviour:
   rainProbability: 0.15
   snowProbability: 0.9
   minRainTime: 20
-  minSnowTime: 0
+  minSnowTime: 20
   maxRainTime: 400
-  maxSnowTime: 0
-  snowBlock: {fileID: 0}
+  maxSnowTime: 200
   rainParticleEffect: {fileID: 6723404461773102418, guid: 691d793be0052492e953e7fe575331c5, type: 3}
   snowParticleEffect: {fileID: 2769232945217390225, guid: ca6e0fae09ee042309fb326eb4017925, type: 3}
+  snowBlock: {fileID: 11400000, guid: 241d247adaea148b0a05d1ed6954e057, type: 2}
 --- !u!1 &1008835330
 GameObject:
   m_ObjectHideFlags: 0
