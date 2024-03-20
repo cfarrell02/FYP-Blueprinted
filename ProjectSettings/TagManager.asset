@@ -9,6 +9,8 @@ TagManager:
   - Enemy
   - Pickup
   - NoSpawn
+  - Rain
+  - Snow
   layers:
   - Default
   - TransparentFX

@@ -315,8 +315,9 @@ public class PlayerInventory : MonoBehaviour
                     // RemoveItem(selectedBlockIndex);
                 }
             }
-            else if (inventory[selectedBlockIndex].item is Block)
+            else if (inventory[selectedBlockIndex].item is Block && _lookedAtObject != null)
             {
+                
                 var bl = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
                 if (bl && bl.blockType == Block.BlockType.Light 
                        && inventory[selectedBlockIndex].item.id == 3)
@@ -327,10 +328,13 @@ public class PlayerInventory : MonoBehaviour
                         lightBehaviour.RefillOil();
                         RemoveItem(selectedBlockIndex);
                     }
+
                     
                 }
                 
                 PlaceBlockFromInventory(); // Blocks are placed when the player clicks
+
+                
             }
         }
     }
@@ -370,9 +374,10 @@ public class PlayerInventory : MonoBehaviour
             }
         }
         block.durability = 0;
+        
 
         // Block has been fully broken
-        if (AddItem(block))
+        if (!block.canPickUp || AddItem(block)) //Since code is lazy when evaluating boolean expressions this wont add non pickuppable blocks to inventory
         { 
             audioSource.PlayOneShot(breakBlockSound);
             blockyTerrain.RemoveBlock(block.location);
@@ -425,8 +430,9 @@ public class PlayerInventory : MonoBehaviour
         
         //Light blocks cant be used to place blocks from.
         var lookedAtBlock = blockyTerrain.FindBlock(_lookedAtObject.transform.position);
-                            
-        if(lookedAtBlock == null || lookedAtBlock.blockType == Block.BlockType.Light)
+        
+        print(lookedAtBlock.canPlaceOn ? "Can place on" : "Cannot place on" + " " + lookedAtBlock.name);
+        if(lookedAtBlock == null || !lookedAtBlock.canPlaceOn)
             return;
         
         var block = inventory[selectedBlockIndex];

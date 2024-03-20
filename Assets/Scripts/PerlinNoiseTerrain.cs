@@ -47,7 +47,7 @@ public class BlockyTerrain : MonoBehaviour
     private LightingManager lightingManager;
     private List<Block> emptyBlocks = new List<Block>(), lightingBlocks = new List<Block>();
     private Dictionary<string, List<GameObject>> pooledBlocks = new Dictionary<string, List<GameObject>>();
-    private FogManager fogManager;
+    private WeatherManager weatherManager;
     private Dictionary<string, Vector3> placedBlocks = new Dictionary<string, Vector3>();
 
     private void Awake()
@@ -70,7 +70,7 @@ public class BlockyTerrain : MonoBehaviour
         previousPlayerPosZnav = (int)playerTransform.position.z;
         lightingManager = GameObject.Find("LightingManager").GetComponent<LightingManager>();
         frequency = Random.Range(frequency / 2, frequency + frequency / 2);
-        fogManager = FindObjectOfType<FogManager>();
+        weatherManager = FindObjectOfType<WeatherManager>();
 
         ore.ForEach(ore => { ore.scale = Random.Range(ore.scale / 2, ore.scale + ore.scale / 2); });
         
@@ -121,12 +121,12 @@ public class BlockyTerrain : MonoBehaviour
                 if (distance < 10)
                 {
                     playerTransform.GetComponent<FirstPersonController>().SetSpeed(4,6);
-                    fogManager.SetIntensityMultiplier(0.5f);
+                    weatherManager.SetIntensityMultiplier(0.5f);
                 }
                 else
                 {
                     playerTransform.GetComponent<FirstPersonController>().SetSpeed(3, 5);
-                    fogManager.SetIntensityMultiplier(1f);
+                    weatherManager.SetIntensityMultiplier(1f);
                 }
             }
         });

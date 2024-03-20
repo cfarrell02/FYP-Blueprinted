@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6657041630033603614}
   - component: {fileID: 5723379213710270190}
   - component: {fileID: 8945506002765451990}
-  m_Layer: 9
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Cube
   m_Icon: {fileID: 0}
@@ -119,7 +119,7 @@ GameObject:
   - component: {fileID: 6004043875548921222}
   - component: {fileID: 4812976913764558287}
   - component: {fileID: 9165870411012012862}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Point Light
   m_TagString: Cube
   m_Icon: {fileID: 0}
@@ -236,7 +236,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4018733693752803801}
   - component: {fileID: 4203940025938979756}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Lantern
   m_TagString: Cube
   m_Icon: {fileID: 0}

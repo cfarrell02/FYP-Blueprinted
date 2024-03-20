@@ -15,7 +15,7 @@ MonoBehaviour:
   durability: 0
   maxDurability: 0.5
   name: Leaf
-  id: 5
+  id: 7
   maxStackSize: 1000
   prefab: {fileID: 5763828162553407202, guid: ce92c40118e5cbd4b8ae153a7b8e7bf0, type: 3}
   icon: {fileID: 0}
@@ -30,3 +30,5 @@ MonoBehaviour:
   color: {r: 0.10980392, g: 0.39607844, b: 0, a: 1}
   value: 0
   blockType: 0
+  canPlaceOn: 1
+  canPickUp: 1

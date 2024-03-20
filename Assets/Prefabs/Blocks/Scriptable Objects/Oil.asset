@@ -30,3 +30,5 @@ MonoBehaviour:
   color: {r: 0, g: 0, b: 0, a: 1}
   value: 10
   blockType: 0
+  canPlaceOn: 1
+  canPickUp: 1

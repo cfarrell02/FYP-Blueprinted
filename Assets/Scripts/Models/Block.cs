@@ -21,6 +21,10 @@ public class Block : Entity
     public int value;
     [SerializeField, Tooltip("This is the type of block, that determines how it behaves.")]
     public BlockType blockType;
+    [SerializeField, Tooltip("Can other blocks be placed on this block?")]
+    public bool canPlaceOn;
+    [SerializeField, Tooltip("Can this block be picked up?")]
+    public bool canPickUp;
 
     public enum BlockType
     {
@@ -91,6 +95,8 @@ public class Block : Entity
         color = block.color;
         value = block.value;
         blockType = block.blockType;
+        canPlaceOn = block.canPlaceOn;
+        canPickUp = block.canPickUp;
     }
 
 }
