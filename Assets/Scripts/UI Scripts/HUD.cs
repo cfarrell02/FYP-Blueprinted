@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class HUD : MonoBehaviour
 {
-    private readonly string prototypeVersion = "prototype-3";
+    private readonly string prototypeVersion = "prototype-4";
 
     [Header("UI Elements")]
     public TextMeshProUGUI text;
