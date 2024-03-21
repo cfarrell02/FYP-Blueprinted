@@ -59,7 +59,7 @@ public class EnemyBehaviour : MonoBehaviour
         // Behaviour tree initialization
         InitializeBehaviourTree();
         
-        ScaleBasedOnLevel();
+     //   ScaleBasedOnLevel();
         
     }
     

@@ -179,7 +179,7 @@ public class WeatherManager : MonoBehaviour
         foreach (var pos in filteredPositions)
         {
             Vector3 offset = new Vector3(-10, 0, -10) + pos;
-            Debug.DrawRay(snow.transform.position + offset, Vector3.down * 100, Color.red, 1000);
+            //Debug.DrawRay(snow.transform.position + offset, Vector3.down * 100, Color.red, 1000);
             RaycastHit hit;
             if (Physics.Raycast(snow.transform.position + offset, Vector3.down, out hit, 100))
             {

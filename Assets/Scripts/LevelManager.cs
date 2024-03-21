@@ -9,6 +9,9 @@ public class LevelManager : MonoBehaviour
     private int currentLevel = 1;
     [SerializeField, Range(0, 1000)]
     public int currentXP = 0;
+    
+    private float difficultyTimer = 0;
+    public float difficultyCheckInterval = 10;
 
     // Method to gain XP
     public void GainXP(int xpAmount)
@@ -61,9 +64,19 @@ public class LevelManager : MonoBehaviour
     
     void Update()
     {
-        // if (Input.GetKeyDown(KeyCode.Space))
-        // {
-        //     GainXP(50);
-        // }
+        difficultyTimer += Time.deltaTime;
+        if (difficultyTimer >= difficultyCheckInterval)
+        {
+            // Increase difficulty
+            AdjustDynamicDifficulty();
+            difficultyTimer = 0;
+        }
+
+    }
+
+    private void AdjustDynamicDifficulty()
+    {
+        //TODO: Implement dynamic difficulty adjustment
+        Debug.Log("Adjusting dynamic difficulty...");
     }
 }

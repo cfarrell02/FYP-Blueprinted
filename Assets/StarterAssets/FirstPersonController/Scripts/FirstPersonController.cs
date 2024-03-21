@@ -140,18 +140,21 @@ namespace StarterAssets
 			{
 				//Raycast down to check if we are in snow
 				RaycastHit hit;
-				if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f, LayerMask.GetMask("NavMesh")))
+				if (Physics.Raycast(transform.position + Vector3.up*1.8f, Vector3.down, out hit, 4f, LayerMask.GetMask("NavMesh")))
 				{
 					if(hit.transform.name.Contains("Snow"))
 					{
 						MoveSpeed = startingSpeed * .75f;
+						SprintSpeed = startingSpeed * 1.25f;
 					}
 					else
 					{
 						MoveSpeed = startingSpeed;
+						SprintSpeed = startingSpeed * 1.25f;
 						
 					}
 				}
+				snowCheckTimer = 0;
 
 			}
 			

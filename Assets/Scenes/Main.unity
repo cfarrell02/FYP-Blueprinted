@@ -1978,8 +1978,8 @@ MonoBehaviour:
   NightDensity: 0.2
   Color: {r: 0.8396226, g: 0.8396226, b: 0.8396226, a: 0}
   NightColor: {r: 0, g: 0, b: 0, a: 0}
-  rainProbability: 0.15
-  snowProbability: 0.9
+  rainProbability: 0.06
+  snowProbability: 0.02
   minRainTime: 20
   minSnowTime: 20
   maxRainTime: 400
@@ -2590,6 +2590,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xpThresholds: 
   currentXP: 0
+  difficultyCheckInterval: 10
 --- !u!4 &1357357813 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4692444953215468569, guid: 27d43179bee105c408c0f99ad29701d2, type: 3}
