@@ -42,7 +42,7 @@ public class BlockyTerrain : MonoBehaviour
 
     private Transform playerTransform;
     private Dictionary<Vector2, VerticalBlocks> coordsToHeight = new Dictionary<Vector2, VerticalBlocks>();
-    private NavMeshSurface surface;
+    private NavMeshSurface surface, snowSurface;
     private float timer = 0f;
     private LightingManager lightingManager;
     private List<Block> emptyBlocks = new List<Block>(), lightingBlocks = new List<Block>();
@@ -62,7 +62,8 @@ public class BlockyTerrain : MonoBehaviour
     void Start()
     {
         //Get surface in child
-        surface = GetComponentInChildren<NavMeshSurface>();
+        surface = transform.GetChild(0).GetComponent<NavMeshSurface>();
+        snowSurface = transform.GetChild(1).GetComponent<NavMeshSurface>();
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         previousPlayerPosX = (int)playerTransform.position.x;
         previousPlayerPosZ = (int)playerTransform.position.z;
@@ -158,10 +159,11 @@ public class BlockyTerrain : MonoBehaviour
                 }
 
                 Vector3 pos = cube.transform.position;
+                bool hasBlockAbove = FindBlock(new Vector3(pos.x, pos.y + 1, pos.z)) != null;
                 // print (pos);
                 // Remove cubes outside the visible area from the scene
                 if ((Mathf.Abs(pos.x - playerTransform.position.x) >= navMeshDistance ||
-                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance) && !cube.transform.name.Contains("(Permanent)"))
+                    Mathf.Abs(pos.z - playerTransform.position.z) >= navMeshDistance) && !cube.transform.name.Contains("(Permanent)") || hasBlockAbove)
                 {
                     cube.transform.parent = transform;
                 }
@@ -270,8 +272,18 @@ public class BlockyTerrain : MonoBehaviour
         {
             surface.BuildNavMesh();
         }
+        if (snowSurface.navMeshData == null)
+        {
+            snowSurface.BuildNavMesh();
+        }
 
         AsyncOperation operation = surface.UpdateNavMesh(surface.navMeshData);
+        while (!operation.isDone)
+        {
+            await Task.Yield();
+        }
+        
+        operation = snowSurface.UpdateNavMesh(snowSurface.navMeshData);
         while (!operation.isDone)
         {
             await Task.Yield();
@@ -513,7 +525,20 @@ public class BlockyTerrain : MonoBehaviour
         cube.isStatic = true;
         float distanceToPlayer = Vector3.Distance(position, playerTransform.position);
         placedBlocks[cube2.name + ": " + position] = position;
-        if (distanceToPlayer < navMeshDistance || permanentNavmesh)
+        if (cube2.name.Contains("Snow"))
+        {
+            cube.transform.parent = transform.GetChild(1);
+            var cubeBelow = FindBlock(new Vector3(position.x, position.y - 1, position.z));
+            if (cubeBelow != null)
+            {
+                //We dont want blocks under snow to have navmesh
+                GameObject.Find(cubeBelow.name + ": " + new Vector3(position.x, position.y - 1, position.z)).transform
+                    .parent = transform;
+                
+            }
+            
+        }
+        else if (distanceToPlayer < navMeshDistance || permanentNavmesh)
         {
             cube.transform.parent = transform.GetChild(0); //Assuming the navmesh is the first child
         }

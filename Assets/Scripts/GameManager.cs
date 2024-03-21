@@ -42,7 +42,6 @@ public class GameManager : MonoBehaviour
     public AudioSource playerAudio;
     public int NightsSurvived { get; set; } = 0;
     
-    private string leaderboardFilePath;
     public string savePath = "data/saves/";
     public string currentSaveFile;
     private BlockyTerrain generator;
@@ -66,7 +65,6 @@ public class GameManager : MonoBehaviour
 
         }
 
-        leaderboardFilePath = "data/leaderboard/leaderboard.json";
     }
     
     
@@ -78,7 +76,10 @@ public class GameManager : MonoBehaviour
         Application.quitting += () => SaveGame(currentSaveFile + ".data");
         firestoreManager = new FirestoreManager();
         
-            
+        if (!Directory.Exists(savePath))
+        {
+            Directory.CreateDirectory(savePath);
+        }
     }
     
     IEnumerator LateStart()

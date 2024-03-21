@@ -472,6 +472,9 @@ public class PlayerInventory : MonoBehaviour
             blockToAdd.blockType = blockItem.blockType;
             blockToAdd.value = blockItem.value;
             blockToAdd.maxDurability = blockItem.maxDurability;
+            blockToAdd.durability = blockItem.durability;
+            blockToAdd.canPickUp = blockItem.canPickUp;
+            blockToAdd.canPlaceOn = blockItem.canPlaceOn;
             
             
             bool success = blockyTerrain.AddBlock(placePos, blockToAdd);
