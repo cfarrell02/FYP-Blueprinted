@@ -21,7 +21,6 @@ public class EnemyBehaviour : MonoBehaviour
     private Animator anim;
     private float timer = 0f;
     private LightingManager lightingManager;
-    private int playerLevel = 1;
     
     // Timer for timeout on chasing
     private float chaseTimeout = 0f;
@@ -42,7 +41,6 @@ public class EnemyBehaviour : MonoBehaviour
 
     void Start()
     {
-        playerLevel = FindObjectOfType<LevelManager>().GetCurrentLevel();
         animator = GetComponentInChildren<Animator>();
         health = GetComponent<Health>();
         
@@ -64,18 +62,19 @@ public class EnemyBehaviour : MonoBehaviour
     }
     
     
-    void ScaleBasedOnLevel()
+    public void ScaleBasedOnLevel(int level)
     {
         //Scale up health
         var health = GetComponent<Health>();
-        health.SetHealth((int)(health.GetCurrentHealth() * (1+playerLevel * 0.1f)));
+        health.SetHealth((int)(health.GetCurrentHealth() * (1+level * 0.1f)));
         
         //Scale up damage
-        damage = (int)(damage * (1+playerLevel * 0.1f));
+        damage = (int)(damage * (1+level * 0.1f));
         
         //Scale up speed
-        agent.speed = speed * (1+playerLevel * 0.1f);
+        agent.speed = speed * (1+level * 0.1f);
     }
+
 
     void Update()
     {

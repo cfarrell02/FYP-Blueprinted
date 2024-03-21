@@ -722,6 +722,8 @@ public class BlockyTerrain : MonoBehaviour
             return false;
         }
         
+ //       blockToAdd.location = position;
+        
         Vector2 pos = new Vector2(position.x, position.z);
         if (coordsToHeight.ContainsKey(pos))
         {

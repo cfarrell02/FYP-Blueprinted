@@ -13,6 +13,13 @@ public class LevelManager : MonoBehaviour
     private float difficultyTimer = 0;
     public float difficultyCheckInterval = 10;
 
+    
+    //References to other scripts
+    private WeatherManager weatherManager;
+    private GameObject player;
+    
+    
+    
     // Method to gain XP
     public void GainXP(int xpAmount)
     {
@@ -53,6 +60,9 @@ public class LevelManager : MonoBehaviour
             Debug.LogWarning("XP thresholds not set! Default thresholds will be used.");
             InitializeDefaultXPThresholds();
         }
+        
+        player = GameObject.FindGameObjectWithTag("Player");
+        weatherManager = FindObjectOfType<WeatherManager>();
     }
 
     // Initialize default XP thresholds (if not provided in the Inspector)
@@ -76,7 +86,16 @@ public class LevelManager : MonoBehaviour
 
     private void AdjustDynamicDifficulty()
     {
-        //TODO: Implement dynamic difficulty adjustment
-        Debug.Log("Adjusting dynamic difficulty...");
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (var enemy in enemies)
+        {
+            var enemyScript = enemy.GetComponent<EnemyBehaviour>();
+            enemyScript.ScaleBasedOnLevel(currentLevel);
+        }
+        
+        weatherManager.ScaleBasedOnLevel(currentLevel);
+        
+        player.GetComponent<Health>().ScaleBasedOnLevel(currentLevel);
+
     }
 }

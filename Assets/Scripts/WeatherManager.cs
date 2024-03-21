@@ -74,16 +74,18 @@ public class WeatherManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   
+        float fogMultiplier = isRaining ? 25 : (isSnowing ? 50 : 1);
+        
         if (lightingManager.isNight())
         {
             fog.color.value = NightColor;
-            fog.intensity.value = NightIntensity * intensityMultiplier;
+            fog.intensity.value = NightIntensity * intensityMultiplier * fogMultiplier;
             fog.density.value = NightDensity;
         }
         else
         {
             fog.color.value = Color;
-            fog.intensity.value = Intensity * intensityMultiplier;
+            fog.intensity.value = Intensity * intensityMultiplier * fogMultiplier;
             fog.density.value = Density;
         }
         weatherTimer += Time.deltaTime;
@@ -167,6 +169,8 @@ public class WeatherManager : MonoBehaviour
                 player.transform.position + new Vector3(0, 10, 0), rotation, player.transform);
             snow.tag = "Snow";
             
+
+            
         }
         else
         {
@@ -175,7 +179,7 @@ public class WeatherManager : MonoBehaviour
     }
     private IEnumerator SpawnSnowBlocksCoroutine()
     {
-        var filteredPositions = particlePositions.FindAll(pos => Random.Range(0,100) <10);
+        var filteredPositions = particlePositions.FindAll(pos => Random.Range(0,100) <=2);
         foreach (var pos in filteredPositions)
         {
             Vector3 offset = new Vector3(-10, 0, -10) + pos;
@@ -186,7 +190,10 @@ public class WeatherManager : MonoBehaviour
                 if (hit.collider.CompareTag("Cube") && !hit.transform.name.Contains("Snow"))
                 {
                     Vector3 blockPos = new Vector3(Mathf.Round(hit.point.x), Mathf.Round(hit.point.y + .4f), Mathf.Round(hit.point.z));
-                    terrainGenerator.AddBlock(blockPos, snowBlock);
+                    Block blockToPlace = ScriptableObject.CreateInstance<Block>();
+                    blockToPlace.CopyOf(snowBlock);
+                    blockToPlace.location = blockPos;
+                    terrainGenerator.AddBlock(blockPos, blockToPlace);
                 }
             }
 
@@ -201,5 +208,11 @@ public class WeatherManager : MonoBehaviour
     public void SetIntensityMultiplier(float multiplier)
     {
         intensityMultiplier = multiplier;
+    }
+
+    public void ScaleBasedOnLevel(int currentLevel)
+    {
+        rainProbability = Mathf.Clamp(rainProbability + currentLevel * 0.05f, 0, 1);
+        snowProbability = Mathf.Clamp(snowProbability + currentLevel * 0.05f, 0, 1);
     }
 }

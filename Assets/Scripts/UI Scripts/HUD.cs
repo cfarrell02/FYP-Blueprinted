@@ -181,7 +181,7 @@ public class HUD : MonoBehaviour
         int currentXP = levelManager.GetCurrentXP() - (currentlevel == 1 ? 0 : xpLevels[currentlevel - 2]);
         float normalizedXP = currentXP / (float)currentXPLevel;
         xpBar.value = normalizedXP;
-        Debug.Log("XP: " + currentXP + " Current Level: " + currentlevel + " XP Level: " + currentXPLevel + " Normalized: " + normalizedXP);
+//        Debug.Log("XP: " + currentXP + " Current Level: " + currentlevel + " XP Level: " + currentXPLevel + " Normalized: " + normalizedXP);
         levelText.text = "Level " + currentlevel;
     }
 

@@ -98,4 +98,9 @@ public class Health : MonoBehaviour
         }
         
     }
+
+    public void ScaleBasedOnLevel(int currentLevel)
+    {
+        rehealPercentage = 0.05f - (currentLevel * 0.01f);
+    }
 }

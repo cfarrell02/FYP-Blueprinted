@@ -192,6 +192,12 @@ public class PlayerInventory : MonoBehaviour
             }
             
             _lookedAtObject = hitObject;
+
+            while (_lookedAtObject.transform.parent != null && _lookedAtObject.transform.parent.gameObject.CompareTag("Cube")) //To account for blocks with children
+            {
+                _lookedAtObject = _lookedAtObject.transform.parent.gameObject;
+            }
+            
             ChangeBlockColor(_lookedAtObject, true);
         }
         else
