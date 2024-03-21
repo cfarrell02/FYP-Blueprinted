@@ -49,6 +49,9 @@ public class BlockyTerrain : MonoBehaviour
     private Dictionary<string, List<GameObject>> pooledBlocks = new Dictionary<string, List<GameObject>>();
     private WeatherManager weatherManager;
     private Dictionary<string, Vector3> placedBlocks = new Dictionary<string, Vector3>();
+    
+    private int totalEnemies = 0;
+    private float enemySpawnInterval = 5f;
 
     private void Awake()
     {
@@ -178,10 +181,10 @@ public class BlockyTerrain : MonoBehaviour
     void HandleEnemySpawn()
     {
         timer += Time.deltaTime;
-        
-        int maxEnemies = 10 + GameManager.Instance.NightsSurvived;
 
-        if (timer >= 5f && GameObject.FindGameObjectsWithTag("Enemy").Length < maxEnemies)
+        int maxEnemies = totalEnemies; // + GameManager.Instance.NightsSurvived;
+
+        if (timer >= enemySpawnInterval && GameObject.FindGameObjectsWithTag("Enemy").Length < maxEnemies)
         {
             timer = 0f;
 
@@ -270,12 +273,13 @@ public class BlockyTerrain : MonoBehaviour
         {
             surface.BuildNavMesh();
         }
-
+        
         AsyncOperation operation = surface.UpdateNavMesh(surface.navMeshData);
         while (!operation.isDone)
         {
             await Task.Yield();
         }
+
     }
 
 
@@ -753,6 +757,7 @@ public class BlockyTerrain : MonoBehaviour
                 InstantiateCube(position, blockToAdd, true);
                 var a = coordsToHeight[pos];
                 a.isLoaded = true;
+                a.blocks = blockList;
                 coordsToHeight[pos] = a;
 
 
@@ -791,6 +796,12 @@ public class BlockyTerrain : MonoBehaviour
         {
             DestroyWithChildren(cube.gameObject);
         }
+    }
+    
+    public void ScaleBasedOnLevel(int level)
+    {
+        enemySpawnInterval = 5f - level * 0.5f;
+        totalEnemies = 5 + level * 2;
     }
 }
 

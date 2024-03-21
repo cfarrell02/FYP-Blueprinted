@@ -17,6 +17,7 @@ public class LevelManager : MonoBehaviour
     //References to other scripts
     private WeatherManager weatherManager;
     private GameObject player;
+    private BlockyTerrain terrain;
     
     
     
@@ -63,6 +64,7 @@ public class LevelManager : MonoBehaviour
         
         player = GameObject.FindGameObjectWithTag("Player");
         weatherManager = FindObjectOfType<WeatherManager>();
+        terrain = FindObjectOfType<BlockyTerrain>();
     }
 
     // Initialize default XP thresholds (if not provided in the Inspector)
@@ -96,6 +98,8 @@ public class LevelManager : MonoBehaviour
         weatherManager.ScaleBasedOnLevel(currentLevel);
         
         player.GetComponent<Health>().ScaleBasedOnLevel(currentLevel);
+        
+        terrain.ScaleBasedOnLevel(currentLevel);
 
     }
 }

@@ -3331,10 +3331,10 @@ MonoBehaviour:
   m_IgnoreNavMeshAgent: 1
   m_IgnoreNavMeshObstacle: 1
   m_OverrideTileSize: 1
-  m_TileSize: 128
+  m_TileSize: 16
   m_OverrideVoxelSize: 1
   m_VoxelSize: 0.04
-  m_MinRegionArea: 2
+  m_MinRegionArea: 1
   m_NavMeshData: {fileID: 0}
   m_BuildHeightMesh: 1
 --- !u!1 &1721319366
