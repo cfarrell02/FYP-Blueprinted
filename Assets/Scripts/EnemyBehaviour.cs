@@ -29,6 +29,7 @@ public class EnemyBehaviour : MonoBehaviour
     
     private float flyTimeout = 0f;
     private float flyTimeoutDuration = 5f; // Adjust this value as needed
+    
 
     // Behaviour tree stuff
     BehaviourTree tree;
@@ -80,6 +81,19 @@ public class EnemyBehaviour : MonoBehaviour
     {
         timer += Time.deltaTime;
         tree.Process();
+        
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1f, LayerMask.GetMask("Navmesh")))
+        {
+            if (hit.collider.CompareTag("Snow"))
+            {
+                agent.speed = speed / 2;
+            }
+            else
+            {
+                agent.speed = speed;
+            }
+        }
     }
 
     void InitializeBehaviourTree()
