@@ -6,6 +6,11 @@ using static Utils.Utils;
 
 public class EnemyBehaviour : MonoBehaviour
 {
+    public enum Type
+    {
+        Melee, Ranged
+    }
+    
 
     // Enemy properties
     public float lookDistance = 30f;
@@ -13,12 +18,12 @@ public class EnemyBehaviour : MonoBehaviour
     public int damage = 10; 
     public float speed = 4f;
     public float fleeDistance = 5f;
+    public float fieldOfView = 90f;
 
     // Components
     private GameObject player;
     private NavMeshAgent agent;
     private Renderer rend;
-    private Animator anim;
     private float timer = 0f;
     private LightingManager lightingManager;
     
@@ -30,6 +35,13 @@ public class EnemyBehaviour : MonoBehaviour
     private float flyTimeout = 0f;
     private float flyTimeoutDuration = 5f; // Adjust this value as needed
     
+    public Type type;
+    private bool shot = false;
+    public float shootInterval = 1f;
+    public GameObject projectilePrefab, projectileSpawnPoint;
+    [Range(0, 100)]
+    public float projectileSpeed = 40f;
+    
 
     // Behaviour tree stuff
     BehaviourTree tree;
@@ -38,6 +50,7 @@ public class EnemyBehaviour : MonoBehaviour
 
 
     private Animator animator;
+    private AnimatorStateInfo info;
     private Health health;
 
     void Start()
@@ -48,7 +61,6 @@ public class EnemyBehaviour : MonoBehaviour
         // Component initialization
         agent = GetComponent<NavMeshAgent>();
         agent.speed = speed;
-        anim = GetComponent<Animator>();
         rend = GetComponent<Renderer>();
         lightingManager = FindObjectOfType<LightingManager>();
         player = GameObject.FindGameObjectWithTag("Player");
@@ -59,6 +71,12 @@ public class EnemyBehaviour : MonoBehaviour
         InitializeBehaviourTree();
         
      //   ScaleBasedOnLevel();
+     
+     
+        if(type == Type.Ranged)
+        {
+            animator.SetFloat("throwSpeed", shootInterval);
+        }
         
     }
     
@@ -79,6 +97,9 @@ public class EnemyBehaviour : MonoBehaviour
 
     void Update()
     {
+        if(animator)
+            info = animator.GetCurrentAnimatorStateInfo(0);
+        
         timer += Time.deltaTime;
         tree.Process();
         
@@ -144,20 +165,28 @@ public class EnemyBehaviour : MonoBehaviour
         // Check if player is within the look distance
         if (distanceToPlayer <= lookDistance)
         {
-            // Perform raycast to check for obstacles
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position, direction, out hit, lookDistance))
+            // Calculate the angle between the direction to the player and the forward direction of the object
+            float angleToPlayer = Vector3.Angle(direction, transform.forward);
+
+            // Check if the angle is within the field of view
+            if (angleToPlayer <= fieldOfView * 0.5f)
             {
-                if (hit.collider.gameObject.CompareTag("Player"))
+                // Perform raycast to check for obstacles
+                RaycastHit hit;
+                if (Physics.Raycast(transform.position, direction, out hit, lookDistance))
                 {
-                    // Player is in sight if no obstacles are blocking the view
-                    return true;
+                    if (hit.collider.gameObject.CompareTag("Player"))
+                    {
+                        // Player is in sight if no obstacles are blocking the view
+                        return true;
+                    }
                 }
             }
         }
 
         return false;
     }
+
 
 
     private bool CanHearPlayer()
@@ -172,10 +201,18 @@ public class EnemyBehaviour : MonoBehaviour
         
         return damageBox.bounds.Intersects(player.GetComponent<Collider>().bounds);
     }
+    
+    private bool IsPlayerInRangedAttackRange()
+    {
+        float distance = Vector3.Distance(transform.position, player.transform.position);
+        return distance < 15f && distance > 5f;
+    }
 
     private bool ShouldFlee()
-    {
-        return GetComponent<Health>().GetCurrentHealth() < 30;
+    {        
+        bool tooCloseToRanged = type == Type.Ranged && Vector3.Distance(transform.position, player.transform.position) < 6f;
+
+        return GetComponent<Health>().GetCurrentHealth() < 30 || tooCloseToRanged;
     }
 
     // Actions
@@ -194,7 +231,6 @@ public class EnemyBehaviour : MonoBehaviour
 
         }
         agent.isStopped = false;
-        Debug.Log("Wandering");
         if (timer > 5f)
         {
             timer = 0f;
@@ -218,36 +254,80 @@ public class EnemyBehaviour : MonoBehaviour
     {
         animator.SetBool("isWalking", false);
         animator.SetBool("isAttacking", true);
-        agent.isStopped = true;
-        agent.SetDestination(transform.position);
-        Debug.Log("Attacking player");
-        if (timer > .8f)
+        var playerHealth = player.GetComponent<Health>();
+        if (type == Type.Melee)
         {
-            timer = 0f;
-            var health = player.GetComponent<Health>();
-            int damageToDeal = damage + Random.Range(5, 10);
+
+            agent.isStopped = true;
+            agent.SetDestination(transform.position);
+            if (timer > .8f)
+            {
+                timer = 0f;
+                int damageToDeal = damage + Random.Range(5, 10);
+
+                if (!IsPlayerInRange())
+                    return Node.Status.FAILURE;
+
+
+                damageToDeal = lightingManager.isNight() ? damageToDeal * 2 : damageToDeal; // Double damage at night
+                playerHealth.TakeDamage(damageToDeal);
+
+                if (playerHealth.GetCurrentHealth() <= 0)
+                {
+                    state = ActionState.IDLE;
+                    return Node.Status.SUCCESS;
+                }
+            }
 
             if (!IsPlayerInRange())
+            {
+                state = ActionState.IDLE;
                 return Node.Status.FAILURE;
-            
-            
-            damageToDeal = lightingManager.isNight() ? damageToDeal * 2 : damageToDeal; // Double damage at night
-            health.TakeDamage(damageToDeal);
+            }
 
-            if (health.GetCurrentHealth() <= 0)
+            return Node.Status.RUNNING;
+        }
+        else
+        {
+            agent.isStopped = true;
+            if (!IsPlayerInRangedAttackRange())
+            {
+                state = ActionState.IDLE;
+                return Node.Status.FAILURE;
+            }
+            
+            
+            // Look at player but only on the y axis
+            transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
+            float progress = info.normalizedTime % shootInterval;
+            if (progress > .9f && !shot)
+            {
+                shot = true;
+                var projectile = Instantiate(projectilePrefab, projectileSpawnPoint.transform.position + transform.forward, Quaternion.identity);
+                var target = player.transform.GetChild(4).transform.position;
+                projectile.name = $"Projectile_{damage}";
+                projectile.tag = "Projectile";
+                projectile.transform.LookAt(target);
+                projectile.GetComponent<Rigidbody>().AddForce((target - transform.position).normalized * projectileSpeed, ForceMode.Impulse);
+                Destroy(projectile, 5f);
+            }
+            if (progress < .5f)
+            {
+                shot = false;
+            }
+            
+            
+            
+            if (playerHealth.GetCurrentHealth() <= 0)
             {
                 state = ActionState.IDLE;
                 return Node.Status.SUCCESS;
             }
+            
+            return Node.Status.RUNNING;
+            
         }
-
-        if (!IsPlayerInRange())
-        {
-            state = ActionState.IDLE;
-            return Node.Status.FAILURE;
-        }
-
-        return Node.Status.RUNNING;
+        
     }
 
     private void BreakBlockInFront()
@@ -352,13 +432,17 @@ public class EnemyBehaviour : MonoBehaviour
         }
 
         // If player is in range, consider chase successful
-        if (IsPlayerInRange())
+        bool inRange = type == Type.Melee ? IsPlayerInRange() : IsPlayerInRangedAttackRange();
+        
+        if (inRange)
         {
             state = ActionState.IDLE;
             return Node.Status.SUCCESS;
         }
         
-        if(health.GetCurrentHealth() < 30)
+        bool tooCloseToRanged = type == Type.Ranged && Vector3.Distance(transform.position, player.transform.position) < 6f;
+        
+        if(health.GetCurrentHealth() < 30 || tooCloseToRanged)
         {
             state = ActionState.IDLE;
             return Node.Status.FAILURE;
@@ -373,7 +457,6 @@ public class EnemyBehaviour : MonoBehaviour
     private Node.Status Flee()
     {
         animator.SetBool("isWalking", true);
-        Debug.Log("Fleeing");
         Vector3 towardsPlayer = (player.transform.position - transform.position).normalized;
         agent.SetDestination(transform.position - towardsPlayer * fleeDistance);
         agent.isStopped = false;

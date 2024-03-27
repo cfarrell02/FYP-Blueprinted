@@ -20,7 +20,7 @@ public class BlockyTerrain : MonoBehaviour
     public float frequency = 1f;
     public float cubeHeight = 1f; // Set a fixed cube height
 
-    public Enemy enemyPrefab; // These prefabs, will be changes to list or dictionary for different types of enemies
+    public Enemy[] enemyPrefab;
 
     public Block grass, dirt, stone, bedrock, leaf, wood;
 
@@ -218,8 +218,8 @@ public class BlockyTerrain : MonoBehaviour
                                     return;
                                 }
                             }
-
-                            enemyPrefab.InstantiateEnemy(spawnPos);
+                            Enemy enemyToUse = enemyPrefab[Random.Range(0, enemyPrefab.Length)];
+                            enemyToUse.InstantiateEnemy(spawnPos);
                             break;
                         }
                     }

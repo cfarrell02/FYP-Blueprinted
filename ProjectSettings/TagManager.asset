@@ -11,6 +11,7 @@ TagManager:
   - NoSpawn
   - Rain
   - Snow
+  - Projectile
   layers:
   - Default
   - TransparentFX

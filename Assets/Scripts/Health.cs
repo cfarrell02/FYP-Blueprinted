@@ -103,4 +103,13 @@ public class Health : MonoBehaviour
     {
         rehealPercentage = 0.05f - (currentLevel * 0.01f);
     }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.CompareTag("Projectile"))
+        {
+            string damage = other.gameObject.name.Split('_')[1];
+            TakeDamage(int.Parse(damage));
+        }
+    }
 }
